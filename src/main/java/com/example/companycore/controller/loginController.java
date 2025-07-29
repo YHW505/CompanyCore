@@ -9,7 +9,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-public class loginController {
+public class LoginController {
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
     @FXML private Button loginButton;
@@ -60,7 +60,7 @@ public class loginController {
     private void loadMainDashboard() {
         try {
             Stage currentStage = (Stage) loginButton.getScene().getWindow();
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/mainDashboardView.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/mainDashBoardView.fxml"));
             Scene scene = new Scene(loader.load(), 1200, 800);
 
             currentStage.setScene(scene);
