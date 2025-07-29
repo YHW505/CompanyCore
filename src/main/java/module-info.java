@@ -13,4 +13,6 @@ module com.example.companycore {
 
     opens com.example.companycore to javafx.fxml;
     exports com.example.companycore;
+    exports com.example.companycore.controller;
+    opens com.example.companycore.controller to javafx.fxml;
 }
