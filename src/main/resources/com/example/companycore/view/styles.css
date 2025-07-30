@@ -1,0 +1,35 @@
+.toggle-switch {
+    -fx-background-color: #bdc3c7;
+    -fx-background-radius: 20;
+    -fx-pref-width: 120;
+    -fx-pref-height: 40;
+    -fx-cursor: hand;
+    -fx-padding: 2;
+}
+
+.toggle-switch.active {
+    -fx-background-color: #27ae60;
+}
+
+.toggle-button {
+    -fx-background-color: white;
+    -fx-background-radius: 18;
+    -fx-pref-width: 36;
+    -fx-pref-height: 36;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 2, 0, 0, 1);
+    -fx-translate-x: 0;
+}
+
+.toggle-switch.active .toggle-button {
+    -fx-translate-x: 80;
+}
+
+.toggle-text {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+.toggle-switch.active .toggle-text {
+    -fx-text-fill: white;
+} 
