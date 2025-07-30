@@ -1,77 +1,126 @@
 package com.example.companycore.controller;
 
+import com.example.companycore.service.ApiClient;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 
-public class LoginController {
-    @FXML private TextField usernameField;
-    @FXML private PasswordField passwordField;
-    @FXML private Button loginButton;
-    @FXML private Label statusLabel;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
+
+public class LoginController implements Initializable {
+
     @FXML
-    private void initialize() {
-        // Enter 키로 로그인 가능하도록
-        passwordField.setOnAction(e -> handleLogin());
-        usernameField.setOnAction(e -> passwordField.requestFocus());
+    private TextField usernameField;
+
+    @FXML
+    private PasswordField passwordField;
+
+    @FXML
+    private Button loginButton;
+
+    @FXML
+    private Label statusLabel;
+
+    @FXML
+    private ProgressIndicator loadingIndicator;
+
+    @FXML
+    private Label clickableText;
+
+    private ApiClient apiClient;
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        // ApiClient 인스턴스 가져오기
+        this.apiClient = ApiClient.getInstance();
+
+        // 초기화 로직
+        loadingIndicator.setVisible(false);
     }
 
     @FXML
     private void handleLogin() {
-        String employeeId = usernameField.getText().trim();
+        String employeeCode = usernameField.getText().trim();
         String password = passwordField.getText();
 
-        // 입력 검증
-        if (employeeId.isEmpty()) {
-            showMessage("직원 ID를 입력해주세요.", "#dc2626");
-            usernameField.requestFocus();
+        if (employeeCode.isEmpty() || password.isEmpty()) {
+            statusLabel.setText("사번과 비밀번호를 입력하세요.");
+            statusLabel.setStyle("-fx-text-fill: red;");
             return;
         }
 
-        if (password.isEmpty()) {
-            showMessage("비밀번호를 입력해주세요.", "#dc2626");
-            passwordField.requestFocus();
-            return;
-        }
+        // UI 상태 변경 (로딩 시작)
+        loadingIndicator.setVisible(true);
+        loginButton.setDisable(true);
+        statusLabel.setText("로그인 중...");
+        statusLabel.setStyle("-fx-text-fill: blue;");
 
-        // 로그인 처리 (임시)
-        if ("admin".equals(employeeId) && "1234".equals(password)) {
-            showMessage("로그인 성공!", "#16a34a");
-            // TODO: 메인 화면으로 이동
-            loadMainDashboard();
-        } else {
-            showMessage("잘못된 직원 ID 또는 비밀번호입니다.", "#dc2626");
-            passwordField.clear();
-            usernameField.selectAll();
-            usernameField.requestFocus();
-        }
+        // 백그라운드에서 로그인 처리
+        Task<Boolean> loginTask = new Task<Boolean>() {
+            @Override
+            protected Boolean call() throws Exception {
+                return apiClient.authenticate(employeeCode, password);
+            }
+        };
+
+        loginTask.setOnSucceeded(e -> {
+            loadingIndicator.setVisible(false);
+            loginButton.setDisable(false);
+
+            Boolean loginSuccess = loginTask.getValue();
+            if (loginSuccess) {
+                statusLabel.setText("로그인 성공!");
+                statusLabel.setStyle("-fx-text-fill: green;");
+                navigateToMainPage();
+            } else {
+                statusLabel.setText("로그인 실패. 사번 또는 비밀번호를 확인하세요.");
+                statusLabel.setStyle("-fx-text-fill: red;");
+            }
+        });
+
+        loginTask.setOnFailed(e -> {
+            loadingIndicator.setVisible(false);
+            loginButton.setDisable(false);
+
+            Throwable exception = loginTask.getException();
+            statusLabel.setText("로그인 처리 중 오류가 발생했습니다: " + exception.getMessage());
+            statusLabel.setStyle("-fx-text-fill: red;");
+        });
+
+        Thread thread = new Thread(loginTask);
+        thread.setDaemon(true);
+        thread.start();
     }
 
-    private void showMessage(String message, String color) {
-        statusLabel.setText(message);
-        statusLabel.setStyle("-fx-text-fill: " + color + "; -fx-font-size: 12px;");
-    }
-
-    private void loadMainDashboard() {
+    private void navigateToMainPage() {
         try {
-            Stage currentStage = (Stage) loginButton.getScene().getWindow();
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/mainDashBoardView.fxml"));
-            Scene scene = new Scene(loader.load(), 1200, 800);
+            Parent root = loader.load();
 
-            currentStage.setScene(scene);
-            currentStage.setTitle("CompanyCore - 직원 관리 시스템");
-            currentStage.centerOnScreen();
+            Stage stage = (Stage) loginButton.getScene().getWindow();
+            Scene scene = new Scene(root, 1400, 800);
 
-        } catch (Exception e) {
+            stage.setScene(scene);
+            stage.setTitle("CompanyCore - 메인");
+            stage.show();
+
+        } catch (IOException e) {
             e.printStackTrace();
-            showMessage("화면 전환 중 오류가 발생했습니다.", "#dc2626");
+            statusLabel.setText("메인 페이지 로드 중 오류가 발생했습니다.");
+            statusLabel.setStyle("-fx-text-fill: red;");
         }
+    }
+
+    @FXML
+    private void handleEmployeeIdInquiry() {
+        statusLabel.setText("사번 조회 기능은 준비 중입니다.");
+        statusLabel.setStyle("-fx-text-fill: orange;");
     }
 }
-
-
