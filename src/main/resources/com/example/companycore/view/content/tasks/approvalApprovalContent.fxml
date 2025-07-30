@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      spacing="20" style="-fx-padding: 20;">
+    <!-- 상단 헤더 -->
+    <HBox alignment="CENTER_LEFT" spacing="20">
+        <Label text="결재 승인" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+    </HBox>
+    
+    <!-- 메인 콘텐츠 -->
+    <VBox spacing="20" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+        <Label text="결재 승인 기능이 여기에 구현됩니다." style="-fx-font-size: 16px; -fx-text-fill: #7f8c8d;"/>
+    </VBox>
+</VBox> 
