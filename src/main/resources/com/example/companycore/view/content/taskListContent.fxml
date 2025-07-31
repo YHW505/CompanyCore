@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.companycore.controller.TasksContentController"
+      spacing="20" style="-fx-padding: 20;">
+    <!-- 상단 헤더 -->
+    <HBox alignment="CENTER_LEFT" spacing="20">
+        <Label text="업무 목록" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+    </HBox>
+    
+    <!-- 메인 콘텐츠 -->
+    <HBox spacing="20">
+        <!-- 왼쪽 컬럼 -->
+        <VBox spacing="20" HBox.hgrow="ALWAYS">
+            <!-- 진행중인 업무 -->
+            <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+                <Label text="진행중인 업무" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <VBox spacing="10" style="-fx-padding: 10 0 0 0;">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="📋" style="-fx-font-size: 16px;"/>
+                        <VBox HBox.hgrow="ALWAYS">
+                            <Label text="웹사이트 리뉴얼 프로젝트" style="-fx-font-weight: bold;"/>
+                            <Label text="진행률: 75%" style="-fx-font-size: 12px; -fx-text-fill: #27ae60;"/>
+                        </VBox>
+                        <Label text="마감: 2025-01-15" style="-fx-font-size: 10px; -fx-text-fill: #e74c3c;"/>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="📋" style="-fx-font-size: 16px;"/>
+                        <VBox HBox.hgrow="ALWAYS">
+                            <Label text="데이터베이스 최적화" style="-fx-font-weight: bold;"/>
+                            <Label text="진행률: 45%" style="-fx-font-size: 12px; -fx-text-fill: #f39c12;"/>
+                        </VBox>
+                        <Label text="마감: 2025-01-20" style="-fx-font-size: 10px; -fx-text-fill: #e74c3c;"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+            
+            <!-- 완료된 업무 -->
+            <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+                <Label text="완료된 업무" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <VBox spacing="10" style="-fx-padding: 10 0 0 0;">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="✅" style="-fx-font-size: 16px;"/>
+                        <VBox HBox.hgrow="ALWAYS">
+                            <Label text="보안 업데이트" style="-fx-font-weight: bold;"/>
+                            <Label text="완료일: 2025-01-05" style="-fx-font-size: 12px; -fx-text-fill: #27ae60;"/>
+                        </VBox>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="✅" style="-fx-font-size: 16px;"/>
+                        <VBox HBox.hgrow="ALWAYS">
+                            <Label text="사용자 매뉴얼 작성" style="-fx-font-weight: bold;"/>
+                            <Label text="완료일: 2025-01-03" style="-fx-font-size: 12px; -fx-text-fill: #27ae60;"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </VBox>
+        
+        <!-- 오른쪽 컬럼 -->
+        <VBox spacing="20" HBox.hgrow="ALWAYS">
+            <!-- 새 업무 추가 -->
+            <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+                <Label text="새 업무 추가" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <VBox spacing="15" style="-fx-padding: 10 0 0 0;">
+                    <TextField promptText="업무 제목" style="-fx-padding: 10;"/>
+                    <TextArea promptText="업무 설명" style="-fx-pref-height: 100; -fx-padding: 10;"/>
+                    <HBox spacing="10">
+                        <DatePicker promptText="시작일" style="-fx-padding: 5;"/>
+                        <DatePicker promptText="마감일" style="-fx-padding: 5;"/>
+                    </HBox>
+                    <ComboBox fx:id="priorityComboBox" promptText="우선순위" style="-fx-padding: 5;"/>
+                    <Button text="업무 추가" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;"/>
+                </VBox>
+            </VBox>
+            
+            <!-- 업무 통계 -->
+            <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+                <Label text="업무 통계" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <VBox spacing="10" style="-fx-padding: 10 0 0 0;">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="📊" style="-fx-font-size: 16px;"/>
+                        <Label text="총 업무: 15개" style="-fx-font-weight: bold;"/>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="🔄" style="-fx-font-size: 16px;"/>
+                        <Label text="진행중: 8개" style="-fx-text-fill: #f39c12;"/>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="✅" style="-fx-font-size: 16px;"/>
+                        <Label text="완료: 7개" style="-fx-text-fill: #27ae60;"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </VBox>
+    </HBox>
+</VBox> 
