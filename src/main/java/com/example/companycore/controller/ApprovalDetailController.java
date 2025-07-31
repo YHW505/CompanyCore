@@ -1,6 +1,6 @@
 package com.example.companycore.controller;
 
-import com.example.companycore.DTO.ApprovalItem;
+import com.example.companycore.model.dto.ApprovalItem;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;

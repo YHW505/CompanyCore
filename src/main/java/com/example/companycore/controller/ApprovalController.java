@@ -1,6 +1,6 @@
 package com.example.companycore.controller;
 
-import com.example.companycore.DTO.ApprovalItem;
+import com.example.companycore.model.dto.ApprovalItem;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
