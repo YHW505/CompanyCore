@@ -18,7 +18,7 @@
 
     <!-- 메인 콘텐츠 영역 -->
     <center>
-        <VBox fx:id="contentArea" spacing="20" style="-fx-padding: 20;">
+        <VBox fx:id="contentArea" spacing="10" style="-fx-padding: 10;" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS">
             <!-- 동적으로 로드되는 콘텐츠가 여기에 표시됩니다 -->
         </VBox>
     </center>
