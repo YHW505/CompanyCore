@@ -11,10 +11,16 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.TableRow;
 import javafx.scene.layout.Region;
+import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -27,7 +33,7 @@ import java.util.List;
 public class ApprovalController {
 
     @FXML private TableView<ApprovalItem> approvalTable;
-    @FXML private TableColumn<ApprovalItem, String> colNumber;       // 순번 컬럼 추가
+    @FXML private TableColumn<ApprovalItem, String> colNumber;
     @FXML private TableColumn<ApprovalItem, String> colTitle;
     @FXML private TableColumn<ApprovalItem, String> colDepartment;
     @FXML private TableColumn<ApprovalItem, String> colAuthor;
@@ -39,21 +45,17 @@ public class ApprovalController {
     private final ObservableList<ApprovalItem> fullData = FXCollections.observableArrayList();
     private ObservableList<ApprovalItem> viewData = FXCollections.observableArrayList();
 
-    private int visibleRowCount = 10;  // 화면에 보이는 행 개수 (초기값)
-
+    private int visibleRowCount = 10;
     private static final boolean TEST_MODE = true;
 
     @FXML
     public void initialize() {
-        // TableView 행 높이 고정 (UI에 맞게 조절하세요)
         approvalTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         approvalTable.setFixedCellSize(40);
 
-        // visibleRowCount 초기 계산 (초기 TableView 높이 기준)
         visibleRowCount = (int) (approvalTable.getHeight() / approvalTable.getFixedCellSize());
-        if (visibleRowCount == 0) visibleRowCount = 10; // 초기 0 방지
+        if (visibleRowCount == 0) visibleRowCount = 10;
 
-        // TableView 높이 변동 시 visibleRowCount 재계산 후 페이징 재설정
         approvalTable.heightProperty().addListener((obs, oldVal, newVal) -> {
             int newCount = (int) (newVal.doubleValue() / approvalTable.getFixedCellSize());
             if (newCount != visibleRowCount && newCount > 0) {
@@ -62,7 +64,6 @@ public class ApprovalController {
             }
         });
 
-        // 컬럼별 셀값 설정
         colNumber.setCellValueFactory(cellData -> {
             ApprovalItem item = cellData.getValue();
             int index = approvalTable.getItems().indexOf(item) + 1
@@ -76,7 +77,6 @@ public class ApprovalController {
         colDate.setCellValueFactory(cd -> cd.getValue().dateProperty());
         colAction.setCellValueFactory(cd -> cd.getValue().actionProperty());
 
-        // 컬럼 정렬 스타일
         colNumber.setStyle("-fx-alignment: CENTER;");
         colTitle.setStyle("-fx-alignment: CENTER;");
         colDepartment.setStyle("-fx-alignment: CENTER;");
@@ -85,6 +85,18 @@ public class ApprovalController {
         colAction.setStyle("-fx-alignment: CENTER;");
 
         approvalTable.setPlaceholder(new Label("데이터가 없습니다."));
+
+        // ✅ 더블클릭 이벤트 등록
+        approvalTable.setRowFactory(tv -> {
+            TableRow<ApprovalItem> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && (!row.isEmpty())) {
+                    ApprovalItem rowData = row.getItem();
+                    showApprovalDetail(rowData);
+                }
+            });
+            return row;
+        });
 
         if (TEST_MODE) {
             fillDummyData(37);
@@ -135,7 +147,7 @@ public class ApprovalController {
 
     private Node createPage(int pageIndex) {
         applyPageItems(pageIndex);
-        return new Region();  // 빈 노드 반환
+        return new Region();
     }
 
     private void loadDataFromServer() {
@@ -161,9 +173,7 @@ public class ApprovalController {
                 List<ApprovalItem> dtoList = mapper.readValue(response.body(), new TypeReference<>() {});
                 var items = dtoList.stream().map(dto -> new ApprovalItem(
                         dto.getId(), dto.getTitle(), dto.getDepartment(), dto.getAuthor(),
-                        dto.getDate(),
-                        null,
-                        dto.getAction()
+                        dto.getDate(), null, dto.getAction()
                 )).toList();
 
                 return FXCollections.observableArrayList(items);
@@ -260,5 +270,25 @@ public class ApprovalController {
                 new Thread(task).start();
             }
         });
+    }
+
+    // ✅ 상세보기 창 열기
+    private void showApprovalDetail(ApprovalItem item) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/content/tasks/approvalDetail.fxml"));
+            Parent root = loader.load();
+
+            ApprovalDetailController controller = loader.getController();
+            controller.setApprovalItem(item);
+
+            Stage stage = new Stage();
+            stage.setTitle("결재 상세보기");
+            stage.setScene(new Scene(root));
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            new Alert(Alert.AlertType.ERROR, "상세보기 창 열기 실패").showAndWait();
+        }
     }
 }
