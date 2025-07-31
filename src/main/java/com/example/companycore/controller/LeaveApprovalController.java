@@ -144,40 +144,57 @@ public class LeaveApprovalController implements Initializable {
     
     private void addTableRow(LeaveRequest request, int rowIndex) {
         HBox row = new HBox(0);
-        row.setStyle("-fx-padding: 20; -fx-border-color: #e9ecef; -fx-border-width: 0 0 1 0; -fx-min-height: 50; -fx-pref-height: 50;");
+        row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        row.setStyle("-fx-padding: 10; -fx-border-color: #e9ecef; -fx-border-width: 0 0 1 0; -fx-min-height: 50; -fx-pref-height: 50;");
         
         // 체크박스
+        VBox checkBoxContainer = new VBox();
+        checkBoxContainer.setAlignment(javafx.geometry.Pos.CENTER);
+        checkBoxContainer.setStyle("-fx-min-width: 50; -fx-pref-width: 50; -fx-min-height: 50; -fx-pref-height: 50;");
         CheckBox checkBox = new CheckBox();
-        checkBox.setStyle("-fx-min-width: 50; -fx-alignment: CENTER;");
+        checkBoxContainer.getChildren().add(checkBox);
         rowCheckBoxes.add(checkBox);
         
         // 휴가 종류
+        VBox leaveTypeContainer = new VBox();
+        leaveTypeContainer.setAlignment(javafx.geometry.Pos.CENTER);
+        leaveTypeContainer.setStyle("-fx-min-width: 200; -fx-pref-width: 200; -fx-min-height: 50; -fx-pref-height: 50;");
         Label leaveTypeLabel = new Label(request.getLeaveType());
-        leaveTypeLabel.setStyle("-fx-min-width: 200; -fx-pref-width: 200; -fx-alignment: CENTER;");
+        leaveTypeContainer.getChildren().add(leaveTypeLabel);
         
         // 사번
+        VBox employeeIdContainer = new VBox();
+        employeeIdContainer.setAlignment(javafx.geometry.Pos.CENTER);
+        employeeIdContainer.setStyle("-fx-min-width: 150; -fx-pref-width: 150; -fx-min-height: 50; -fx-pref-height: 50;");
         Label employeeIdLabel = new Label(request.getEmployeeId());
-        employeeIdLabel.setStyle("-fx-min-width: 150; -fx-pref-width: 150; -fx-alignment: CENTER;");
+        employeeIdContainer.getChildren().add(employeeIdLabel);
         
         // 사원이름
+        VBox employeeNameContainer = new VBox();
+        employeeNameContainer.setAlignment(javafx.geometry.Pos.CENTER);
+        employeeNameContainer.setStyle("-fx-min-width: 200; -fx-pref-width: 200; -fx-min-height: 50; -fx-pref-height: 50;");
         Label employeeNameLabel = new Label(request.getEmployeeName());
-        employeeNameLabel.setStyle("-fx-min-width: 200; -fx-pref-width: 200; -fx-alignment: CENTER;");
+        employeeNameContainer.getChildren().add(employeeNameLabel);
         
         // 일자
+        VBox dateContainer = new VBox();
+        dateContainer.setAlignment(javafx.geometry.Pos.CENTER);
+        dateContainer.setStyle("-fx-min-width: 200; -fx-pref-width: 200; -fx-min-height: 50; -fx-pref-height: 50;");
         Label dateLabel = new Label(request.getDate());
-        dateLabel.setStyle("-fx-min-width: 200; -fx-pref-width: 200; -fx-alignment: CENTER;");
+        dateContainer.getChildren().add(dateLabel);
         
         // 거부/승인 버튼들
         HBox actionButtons = createActionButtons(request, rowIndex);
         actionButtons.setStyle("-fx-min-width: 200; -fx-pref-width: 200; -fx-alignment: CENTER;");
         
-        row.getChildren().addAll(checkBox, leaveTypeLabel, employeeIdLabel, employeeNameLabel, dateLabel, actionButtons);
+        row.getChildren().addAll(checkBoxContainer, leaveTypeContainer, employeeIdContainer, employeeNameContainer, dateContainer, actionButtons);
         tableData.getChildren().add(row);
     }
     
     private HBox createActionButtons(LeaveRequest request, int rowIndex) {
         HBox buttonContainer = new HBox(5);
         buttonContainer.setAlignment(javafx.geometry.Pos.CENTER);
+        buttonContainer.setStyle("-fx-alignment: CENTER;");
         
         if ("pending".equals(request.getStatus())) {
             // 대기중인 경우: 거부/승인 버튼 표시
@@ -209,12 +226,16 @@ public class LeaveApprovalController implements Initializable {
     
     private void addEmptyRow(int rowIndex) {
         HBox row = new HBox(0);
-        row.setStyle("-fx-padding: 20; -fx-border-color: #e9ecef; -fx-border-width: 0 0 1 0; -fx-min-height: 50; -fx-pref-height: 50;");
+        row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        row.setStyle("-fx-padding: 10; -fx-border-color: #e9ecef; -fx-border-width: 0 0 1 0; -fx-min-height: 50; -fx-pref-height: 50;");
         
         // 빈 체크박스
+        VBox checkBoxContainer = new VBox();
+        checkBoxContainer.setAlignment(javafx.geometry.Pos.CENTER);
+        checkBoxContainer.setStyle("-fx-min-width: 50; -fx-pref-width: 50; -fx-min-height: 50; -fx-pref-height: 50;");
         CheckBox checkBox = new CheckBox();
-        checkBox.setStyle("-fx-min-width: 50; -fx-alignment: CENTER;");
         checkBox.setDisable(true);
+        checkBoxContainer.getChildren().add(checkBox);
         rowCheckBoxes.add(checkBox);
         
         // 빈 라벨들
@@ -229,7 +250,7 @@ public class LeaveApprovalController implements Initializable {
         Label emptyLabel5 = new Label("");
         emptyLabel5.setStyle("-fx-min-width: 200; -fx-pref-width: 200; -fx-alignment: CENTER;");
         
-        row.getChildren().addAll(checkBox, emptyLabel1, emptyLabel2, emptyLabel3, emptyLabel4, emptyLabel5);
+        row.getChildren().addAll(checkBoxContainer, emptyLabel1, emptyLabel2, emptyLabel3, emptyLabel4, emptyLabel5);
         tableData.getChildren().add(row);
     }
     

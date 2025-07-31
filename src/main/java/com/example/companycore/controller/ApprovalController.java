@@ -1,6 +1,5 @@
 package com.example.companycore.controller;
 
-
 import com.example.companycore.model.dto.ApprovalItem;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
