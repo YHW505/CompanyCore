@@ -232,7 +232,7 @@ public class SidebarController {
         
         // 첫 번째 하위 메뉴로 이동
         Platform.runLater(() -> {
-            loadTaskListContent();
+            loadAnnouncementsContent();
         });
         // 첫 번째 하위 메뉴 굵게 표시
         resetAllSubMenuStyles();
@@ -368,16 +368,7 @@ public class SidebarController {
         });
     }
     
-    @FXML
-    public void handleTaskListClick() {
-        // 모든 하위 메뉴 스타일 초기화
-        resetAllSubMenuStyles();
-        // 선택된 하위 메뉴 굵게 표시
-        setSubMenuSelectedStyle((HBox) tasksSubMenu.getChildren().get(0));
-        Platform.runLater(() -> {
-            loadTaskListContent();
-        });
-    }
+
     
     @FXML
     public void handleApprovalRequestClick() {
@@ -406,7 +397,7 @@ public class SidebarController {
         // 모든 하위 메뉴 스타일 초기화
         resetAllSubMenuStyles();
         // 선택된 하위 메뉴 굵게 표시
-        setSubMenuSelectedStyle((HBox) tasksSubMenu.getChildren().get(3));
+        setSubMenuSelectedStyle((HBox) tasksSubMenu.getChildren().get(0));
         Platform.runLater(() -> {
             loadAnnouncementsContent();
         });
@@ -546,16 +537,7 @@ public class SidebarController {
         }
     }
     
-    private void loadTaskListContent() {
-        try {
-            MainController mainController = (MainController) homeMenu.getScene().getUserData();
-            if (mainController != null) {
-                mainController.loadContent("taskList");
-            }
-        } catch (Exception e) {
-            System.err.println("업무 목록 콘텐츠 로드 중 오류: " + e.getMessage());
-        }
-    }
+
     
     private void loadApprovalRequestContent() {
         try {
