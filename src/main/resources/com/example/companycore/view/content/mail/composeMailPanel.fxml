@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.companycore.controller.ComposeMailController"
+      spacing="20" style="-fx-background-color: white; -fx-padding: 20;">
+    <!-- 메일쓰기 헤더 -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="✉️" style="-fx-font-size: 20px;"/>
+        <Label text="메일쓰기" style="-fx-font-weight: bold; -fx-font-size: 18px;"/>
+    </HBox>
+    
+    <!-- 받는 사람 -->
+    <VBox spacing="5">
+        <Label text="받는 사람" style="-fx-font-weight: bold;"/>
+        <TextField fx:id="recipientField" promptText="받는 사람 이메일을 입력하세요" 
+                   style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6; -fx-border-radius: 3;"/>
+    </VBox>
+    
+    <!-- 제목 -->
+    <VBox spacing="5">
+        <Label text="제목" style="-fx-font-weight: bold;"/>
+        <TextField fx:id="subjectField" promptText="메일 제목을 입력하세요" 
+                   style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6; -fx-border-radius: 3;"/>
+    </VBox>
+    
+    <!-- 메일 내용 -->
+    <VBox spacing="5" VBox.vgrow="ALWAYS">
+        <Label text="내용" style="-fx-font-weight: bold;"/>
+        <TextArea fx:id="contentArea" promptText="메일 내용을 입력하세요" wrapText="true" VBox.vgrow="ALWAYS"
+                  style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6; -fx-border-radius: 3;"/>
+    </VBox>
+    
+    <!-- 첨부파일 -->
+    <VBox spacing="5">
+        <Label text="첨부파일" style="-fx-font-weight: bold;"/>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Button text="📎 파일 추가" onAction="#handleAddAttachment" 
+                    style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-background-radius: 3;"/>
+            <Label fx:id="attachmentLabel" text="" style="-fx-text-fill: #6c757d;"/>
+        </HBox>
+    </VBox>
+    
+    <!-- 버튼 영역 -->
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="취소" onAction="#handleCancel" 
+                style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-background-radius: 3;"/>
+        <Button text="보내기" onAction="#handleSendMail" 
+                style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-background-radius: 3;"/>
+    </HBox>
+</VBox> 
