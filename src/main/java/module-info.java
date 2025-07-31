@@ -18,6 +18,7 @@ module com.example.companycore {
     // Jackson 관련 모듈 추가
     requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.annotation;
+    requires java.desktop;
 
     opens com.example.companycore to javafx.fxml;
     exports com.example.companycore;
