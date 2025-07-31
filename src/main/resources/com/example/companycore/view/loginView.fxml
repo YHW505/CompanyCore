@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<StackPane style="-fx-background-color: #D6D8EB;" xmlns="http://javafx.com/javafx/24.0.1"
+<StackPane style="-fx-background-color: #D6D8EB;" xmlns="http://javafx.com/javafx/21"
            xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.companycore.controller.LoginController">
 
     <children>
