@@ -122,6 +122,7 @@ public class MainController {
                 case "allMailbox":
                     fxmlPath = "/com/example/companycore/view/content/mail/allMailboxContent.fxml";
                     break;
+
                 case "inbox":
                     fxmlPath = "/com/example/companycore/view/content/mail/inboxContent.fxml";
                     break;
@@ -148,6 +149,18 @@ public class MainController {
             // FXML 로더를 사용하여 콘텐츠 로드
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource(fxmlPath));
             javafx.scene.Parent content = loader.load();
+            
+            // 메일함 컨트롤러에 메일함 타입 설정
+            if (contentType.equals("allMailbox") || contentType.equals("inbox") || contentType.equals("sentMailbox")) {
+                try {
+                    com.example.companycore.controller.MailController mailController = loader.getController();
+                    if (mailController != null) {
+                        mailController.setCurrentMailbox(contentType);
+                    }
+                } catch (Exception e) {
+                    // 컨트롤러가 MailController가 아닌 경우 무시
+                }
+            }
             
             // 메인 영역의 콘텐츠를 교체
             if (contentArea != null) {
