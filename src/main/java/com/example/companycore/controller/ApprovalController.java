@@ -9,16 +9,18 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableRow;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.stage.Stage;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 
 import java.io.IOException;
 import java.net.URI;
@@ -39,7 +41,9 @@ public class ApprovalController {
     @FXML private TableColumn<ApprovalItem, String> colAuthor;
     @FXML private TableColumn<ApprovalItem, String> colDate;
     @FXML private TableColumn<ApprovalItem, String> colAction;
+
     @FXML private TextField searchField;
+    @FXML private ComboBox<String> searchComboBox;  // 여기 추가
     @FXML private Pagination pagination;
 
     private final ObservableList<ApprovalItem> fullData = FXCollections.observableArrayList();
@@ -75,7 +79,56 @@ public class ApprovalController {
         colDepartment.setCellValueFactory(cd -> cd.getValue().departmentProperty());
         colAuthor.setCellValueFactory(cd -> cd.getValue().authorProperty());
         colDate.setCellValueFactory(cd -> cd.getValue().dateProperty());
-        colAction.setCellValueFactory(cd -> cd.getValue().actionProperty());
+
+        colAction.setCellFactory(col -> new TableCell<>() {
+            private final Button approveBtn = new Button("승인");
+            private final Button rejectBtn = new Button("거부");
+            private final HBox container = new HBox(10, approveBtn, rejectBtn);
+
+            {
+                container.setAlignment(Pos.CENTER);
+                approveBtn.setStyle("-fx-background-color: #28a745; -fx-text-fill: white;");
+                rejectBtn.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white;");
+
+                approveBtn.setOnAction(e -> {
+                    ApprovalItem item = getTableView().getItems().get(getIndex());
+                    item.setStatus("승인");
+                    getTableView().refresh();
+                });
+
+                rejectBtn.setOnAction(e -> {
+                    ApprovalItem item = getTableView().getItems().get(getIndex());
+                    item.setStatus("거부");
+                    getTableView().refresh();
+                });
+            }
+
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                    setText(null);
+                } else {
+                    ApprovalItem approvalItem = getTableView().getItems().get(getIndex());
+                    String status = approvalItem.getStatus();
+                    if ("승인".equals(status)) {
+                        Label label = new Label("승인됨");
+                        label.setStyle("-fx-text-fill: #28a745; -fx-font-weight: bold;");
+                        setGraphic(label);
+                        setText(null);
+                    } else if ("거부".equals(status)) {
+                        Label label = new Label("거부됨");
+                        label.setStyle("-fx-text-fill: #dc3545; -fx-font-weight: bold;");
+                        setGraphic(label);
+                        setText(null);
+                    } else {
+                        setGraphic(container);
+                        setText(null);
+                    }
+                }
+            }
+        });
 
         colNumber.setStyle("-fx-alignment: CENTER;");
         colTitle.setStyle("-fx-alignment: CENTER;");
@@ -86,7 +139,6 @@ public class ApprovalController {
 
         approvalTable.setPlaceholder(new Label("데이터가 없습니다."));
 
-        // ✅ 더블클릭 이벤트 등록
         approvalTable.setRowFactory(tv -> {
             TableRow<ApprovalItem> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
@@ -97,6 +149,9 @@ public class ApprovalController {
             });
             return row;
         });
+
+        // ComboBox 초기값 및 아이템 세팅
+        searchComboBox.getSelectionModel().select("전체");
 
         if (TEST_MODE) {
             fillDummyData(37);
@@ -118,12 +173,12 @@ public class ApprovalController {
         for (int i = 1; i <= count; i++) {
             fullData.add(new ApprovalItem(
                     String.valueOf(i),
-                    "기안서",
+                    "기안서 " + i,
                     departments[i % departments.length],
                     authors[i % authors.length],
                     LocalDate.now().minusDays(i).format(fmt),
                     null,
-                    "승인/거부"
+                    ""
             ));
         }
     }
@@ -173,7 +228,7 @@ public class ApprovalController {
                 List<ApprovalItem> dtoList = mapper.readValue(response.body(), new TypeReference<>() {});
                 var items = dtoList.stream().map(dto -> new ApprovalItem(
                         dto.getId(), dto.getTitle(), dto.getDepartment(), dto.getAuthor(),
-                        dto.getDate(), null, dto.getAction()
+                        dto.getDate(), null, dto.getStatus()
                 )).toList();
 
                 return FXCollections.observableArrayList(items);
@@ -200,14 +255,34 @@ public class ApprovalController {
         String keyword = (searchField.getText() == null ? "" : searchField.getText())
                 .trim().toLowerCase();
 
+        String selectedColumn = searchComboBox.getSelectionModel().getSelectedItem();
+        if (selectedColumn == null) selectedColumn = "전체";
+
         if (keyword.isEmpty()) {
             viewData = FXCollections.observableArrayList(fullData);
         } else {
-            viewData = fullData.filtered(item ->
-                    (item.getTitle() != null && item.getTitle().toLowerCase().contains(keyword)) ||
-                            (item.getDepartment() != null && item.getDepartment().toLowerCase().contains(keyword)) ||
-                            (item.getAuthor() != null && item.getAuthor().toLowerCase().contains(keyword))
-            );
+            switch (selectedColumn) {
+                case "제목":
+                    viewData = fullData.filtered(item ->
+                            item.getTitle() != null && item.getTitle().toLowerCase().contains(keyword));
+                    break;
+                case "부서":
+                    viewData = fullData.filtered(item ->
+                            item.getDepartment() != null && item.getDepartment().toLowerCase().contains(keyword));
+                    break;
+                case "작성자":
+                    viewData = fullData.filtered(item ->
+                            item.getAuthor() != null && item.getAuthor().toLowerCase().contains(keyword));
+                    break;
+                case "전체":
+                default:
+                    viewData = fullData.filtered(item ->
+                            (item.getTitle() != null && item.getTitle().toLowerCase().contains(keyword)) ||
+                                    (item.getDepartment() != null && item.getDepartment().toLowerCase().contains(keyword)) ||
+                                    (item.getAuthor() != null && item.getAuthor().toLowerCase().contains(keyword))
+                    );
+                    break;
+            }
         }
 
         resetPagingToFirstPage();
@@ -218,7 +293,7 @@ public class ApprovalController {
     }
 
     @FXML
-    public void handleDelete(ActionEvent event) {
+    public void handleDelete() {
         ApprovalItem selected = approvalTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
             new Alert(Alert.AlertType.WARNING, "삭제할 항목을 선택하세요.").showAndWait();
@@ -230,49 +305,18 @@ public class ApprovalController {
 
         confirm.showAndWait().ifPresent(response -> {
             if (response == ButtonType.YES) {
-                Task<Void> task = new Task<>() {
-                    @Override
-                    protected Void call() throws Exception {
-                        if (!TEST_MODE) {
-                            HttpClient client = HttpClient.newHttpClient();
-                            HttpRequest request = HttpRequest.newBuilder()
-                                    .uri(URI.create("http://localhost:8080/api/approvals/" + selected.getId()))
-                                    .DELETE()
-                                    .build();
-
-                            HttpResponse<String> resp = client.send(request,
-                                    HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-                            if (resp.statusCode() != 200) {
-                                throw new RuntimeException("삭제 실패: " + resp.body());
-                            }
-                        }
-                        return null;
-                    }
-                };
-
-                task.setOnSucceeded(e -> Platform.runLater(() -> {
-                    fullData.remove(selected);
-                    viewData.remove(selected);
-                    int current = pagination.getCurrentPageIndex();
-                    int totalPages = Math.max((viewData.size() + visibleRowCount - 1) / visibleRowCount, 1);
-                    pagination.setPageCount(totalPages);
-                    pagination.setCurrentPageIndex(Math.min(current, totalPages - 1));
-                    applyPageItems(pagination.getCurrentPageIndex());
-                    new Alert(Alert.AlertType.INFORMATION, "삭제되었습니다.").showAndWait();
-                }));
-
-                task.setOnFailed(e -> Platform.runLater(() -> {
-                    Throwable ex = task.getException();
-                    ex.printStackTrace();
-                    new Alert(Alert.AlertType.ERROR, "삭제 중 오류: " + ex.getMessage()).showAndWait();
-                }));
-
-                new Thread(task).start();
+                fullData.remove(selected);
+                viewData.remove(selected);
+                int current = pagination.getCurrentPageIndex();
+                int totalPages = Math.max((viewData.size() + visibleRowCount - 1) / visibleRowCount, 1);
+                pagination.setPageCount(totalPages);
+                pagination.setCurrentPageIndex(Math.min(current, totalPages - 1));
+                applyPageItems(pagination.getCurrentPageIndex());
+                new Alert(Alert.AlertType.INFORMATION, "삭제되었습니다.").showAndWait();
             }
         });
     }
 
-    // ✅ 상세보기 창 열기
     private void showApprovalDetail(ApprovalItem item) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/content/tasks/approvalDetail.fxml"));

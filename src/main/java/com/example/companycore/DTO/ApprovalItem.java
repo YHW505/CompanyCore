@@ -13,21 +13,24 @@ public class ApprovalItem {
     private StringProperty author;
     private StringProperty date;
     private String content;
-    private StringProperty action;
+
+    // 상태: "대기", "승인", "거부" 등
+    private StringProperty status;
+
     private List<String> attachments;  // 첨부파일 리스트
 
     public ApprovalItem(String id, String title, String department, String author,
-                        String date, String content, String action) {
+                        String date, String content, String status) {
         this.id = id;
         this.title = new SimpleStringProperty(title);
         this.department = new SimpleStringProperty(department);
         this.author = new SimpleStringProperty(author);
         this.date = new SimpleStringProperty(date);
         this.content = content;
-        this.action = new SimpleStringProperty(action);
+        this.status = new SimpleStringProperty(status);
     }
 
-    // attachments getter/setter 추가
+    // attachments getter/setter
     public List<String> getAttachments() {
         return attachments;
     }
@@ -35,7 +38,7 @@ public class ApprovalItem {
         this.attachments = attachments;
     }
 
-    // 기존 getter (StringProperty -> String 변환)
+    // 기존 getter/setter
     public String getId() {
         return id;
     }
@@ -76,11 +79,16 @@ public class ApprovalItem {
         return content;
     }
 
-    public StringProperty actionProperty() {
-        return action;
+    // status 프로퍼티 및 getter/setter 추가
+    public String getStatus() {
+        return status.get();
     }
 
-    public String getAction() {
-        return action.get();
+    public void setStatus(String status) {
+        this.status.set(status);
+    }
+
+    public StringProperty statusProperty() {
+        return status;
     }
 }
