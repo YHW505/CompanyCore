@@ -5,123 +5,96 @@
 <?import javafx.scene.layout.*?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.companycore.controller.CalendarController"
       spacing="20" style="-fx-padding: 20;">
     <!-- 상단 헤더 -->
-    <HBox alignment="CENTER_LEFT" spacing="20">
+    <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-padding: 0 0 20 0;">
         <Label text="캘린더" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
     </HBox>
     
     <!-- 메인 콘텐츠 -->
     <HBox spacing="20">
-        <!-- 왼쪽 컬럼 - 캘린더 -->
+        <!-- 좌측 - 주간 시간표 (테이블 스타일) -->
         <VBox spacing="20" HBox.hgrow="ALWAYS">
-            <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
-                <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-padding: 0 0 20 0;">
-                    <Button text="◀" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;"/>
-                    <Label text="2025년 1월" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-                    <Button text="▶" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;"/>
-                </HBox>
+            <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);" VBox.vgrow="ALWAYS">
+                <Label text="주간 일정" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-padding: 0 0 15 0;"/>
                 
-                <!-- 캘린더 그리드 -->
-                <GridPane hgap="5" vgap="5">
-                    <!-- 요일 헤더 -->
-                    <Label text="일" GridPane.columnIndex="0" GridPane.rowIndex="0" style="-fx-font-weight: bold; -fx-text-fill: #e74c3c;"/>
-                    <Label text="월" GridPane.columnIndex="1" GridPane.rowIndex="0" style="-fx-font-weight: bold;"/>
-                    <Label text="화" GridPane.columnIndex="2" GridPane.rowIndex="0" style="-fx-font-weight: bold;"/>
-                    <Label text="수" GridPane.columnIndex="3" GridPane.rowIndex="0" style="-fx-font-weight: bold;"/>
-                    <Label text="목" GridPane.columnIndex="4" GridPane.rowIndex="0" style="-fx-font-weight: bold;"/>
-                    <Label text="금" GridPane.columnIndex="5" GridPane.rowIndex="0" style="-fx-font-weight: bold;"/>
-                    <Label text="토" GridPane.columnIndex="6" GridPane.rowIndex="0" style="-fx-font-weight: bold; -fx-text-fill: #3498db;"/>
-                    
-                    <!-- 날짜들 -->
-                    <Label text="29" GridPane.columnIndex="2" GridPane.rowIndex="1" style="-fx-text-fill: #bdc3c7;"/>
-                    <Label text="30" GridPane.columnIndex="3" GridPane.rowIndex="1" style="-fx-text-fill: #bdc3c7;"/>
-                    <Label text="31" GridPane.columnIndex="4" GridPane.rowIndex="1" style="-fx-text-fill: #bdc3c7;"/>
-                    <Label text="1" GridPane.columnIndex="5" GridPane.rowIndex="1"/>
-                    <Label text="2" GridPane.columnIndex="6" GridPane.rowIndex="1"/>
-                    <Label text="3" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                    <Label text="4" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-                    <Label text="5" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
-                    <Label text="6" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
-                    <Label text="7" GridPane.columnIndex="4" GridPane.rowIndex="2" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5; -fx-background-radius: 15;"/>
-                    <Label text="8" GridPane.columnIndex="5" GridPane.rowIndex="2"/>
-                    <Label text="9" GridPane.columnIndex="6" GridPane.rowIndex="2"/>
-                    <Label text="10" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-                    <Label text="11" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-                    <Label text="12" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
-                    <Label text="13" GridPane.columnIndex="3" GridPane.rowIndex="3"/>
-                    <Label text="14" GridPane.columnIndex="4" GridPane.rowIndex="3"/>
-                    <Label text="15" GridPane.columnIndex="5" GridPane.rowIndex="3"/>
-                    <Label text="16" GridPane.columnIndex="6" GridPane.rowIndex="3"/>
-                    <Label text="17" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-                    <Label text="18" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-                    <Label text="19" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
-                    <Label text="20" GridPane.columnIndex="3" GridPane.rowIndex="4"/>
-                    <Label text="21" GridPane.columnIndex="4" GridPane.rowIndex="4"/>
-                    <Label text="22" GridPane.columnIndex="5" GridPane.rowIndex="4"/>
-                    <Label text="23" GridPane.columnIndex="6" GridPane.rowIndex="4"/>
-                    <Label text="24" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
-                    <Label text="25" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
-                    <Label text="26" GridPane.columnIndex="2" GridPane.rowIndex="5"/>
-                    <Label text="27" GridPane.columnIndex="3" GridPane.rowIndex="5"/>
-                    <Label text="28" GridPane.columnIndex="4" GridPane.rowIndex="5"/>
-                    <Label text="29" GridPane.columnIndex="5" GridPane.rowIndex="5"/>
-                    <Label text="30" GridPane.columnIndex="6" GridPane.rowIndex="5"/>
-                    <Label text="31" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
-                    <Label text="1" GridPane.columnIndex="1" GridPane.rowIndex="6" style="-fx-text-fill: #bdc3c7;"/>
-                    <Label text="2" GridPane.columnIndex="2" GridPane.rowIndex="6" style="-fx-text-fill: #bdc3c7;"/>
-                    <Label text="3" GridPane.columnIndex="3" GridPane.rowIndex="6" style="-fx-text-fill: #bdc3c7;"/>
-                    <Label text="4" GridPane.columnIndex="4" GridPane.rowIndex="6" style="-fx-text-fill: #bdc3c7;"/>
-                    <Label text="5" GridPane.columnIndex="5" GridPane.rowIndex="6" style="-fx-text-fill: #bdc3c7;"/>
-                    <Label text="6" GridPane.columnIndex="6" GridPane.rowIndex="6" style="-fx-text-fill: #bdc3c7;"/>
-                </GridPane>
+                <!-- 테이블 스타일 시간표 -->
+                <TableView fx:id="scheduleTable">
+                    <columns>
+                        <TableColumn text="시간" fx:id="timeColumn"/>
+                        <TableColumn text="월요일" fx:id="mondayColumn"/>
+                        <TableColumn text="화요일" fx:id="tuesdayColumn"/>
+                        <TableColumn text="수요일" fx:id="wednesdayColumn"/>
+                        <TableColumn text="목요일" fx:id="thursdayColumn"/>
+                        <TableColumn text="금요일" fx:id="fridayColumn"/>
+                        <TableColumn text="토요일" fx:id="saturdayColumn"/>
+                    </columns>
+                </TableView>
             </VBox>
         </VBox>
         
-        <!-- 오른쪽 컬럼 - 일정 -->
-        <VBox spacing="20" HBox.hgrow="ALWAYS">
-            <!-- 오늘의 일정 -->
+        <!-- 우측 - 실제 달력 -->
+        <VBox spacing="20" HBox.hgrow="NEVER" style="-fx-min-width: 280;">
+            <!-- 미니 달력 -->
             <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
-                <Label text="오늘의 일정" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-                <VBox spacing="10" style="-fx-padding: 10 0 0 0;">
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="🕐" style="-fx-font-size: 16px;"/>
-                        <VBox HBox.hgrow="ALWAYS">
-                            <Label text="09:00 - 10:00" style="-fx-font-weight: bold;"/>
-                            <Label text="팀 미팅" style="-fx-text-fill: #7f8c8d;"/>
-                        </VBox>
-                    </HBox>
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="🕐" style="-fx-font-size: 16px;"/>
-                        <VBox HBox.hgrow="ALWAYS">
-                            <Label text="14:00 - 15:00" style="-fx-font-weight: bold;"/>
-                            <Label text="프로젝트 리뷰" style="-fx-text-fill: #7f8c8d;"/>
-                        </VBox>
-                    </HBox>
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="🕐" style="-fx-font-size: 16px;"/>
-                        <VBox HBox.hgrow="ALWAYS">
-                            <Label text="16:00 - 17:00" style="-fx-font-weight: bold;"/>
-                            <Label text="고객 미팅" style="-fx-text-fill: #7f8c8d;"/>
-                        </VBox>
-                    </HBox>
-                </VBox>
+                <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 15 0;">
+                    <Label fx:id="calendarTitle" text="August 2025" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="prevMonthButton" text="◀" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 8;" onAction="#handlePrevMonth"/>
+                    <Button fx:id="nextMonthButton" text="▶" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 8;" onAction="#handleNextMonth"/>
+                </HBox>
+                
+                <!-- 요일 헤더 -->
+                <GridPane fx:id="calendarGrid" hgap="2" vgap="2">
+                    <Label text="Mo" GridPane.columnIndex="0" GridPane.rowIndex="0" style="-fx-font-weight: bold; -fx-font-size: 12px; -fx-padding: 5; -fx-alignment: center;"/>
+                    <Label text="Tu" GridPane.columnIndex="1" GridPane.rowIndex="0" style="-fx-font-weight: bold; -fx-font-size: 12px; -fx-padding: 5; -fx-alignment: center;"/>
+                    <Label text="We" GridPane.columnIndex="2" GridPane.rowIndex="0" style="-fx-font-weight: bold; -fx-font-size: 12px; -fx-padding: 5; -fx-alignment: center;"/>
+                    <Label text="Th" GridPane.columnIndex="3" GridPane.rowIndex="0" style="-fx-font-weight: bold; -fx-font-size: 12px; -fx-padding: 5; -fx-alignment: center;"/>
+                    <Label text="Fr" GridPane.columnIndex="4" GridPane.rowIndex="0" style="-fx-font-weight: bold; -fx-font-size: 12px; -fx-padding: 5; -fx-alignment: center;"/>
+                    <Label text="Sa" GridPane.columnIndex="5" GridPane.rowIndex="0" style="-fx-font-weight: bold; -fx-font-size: 12px; -fx-padding: 5; -fx-alignment: center;"/>
+                    <Label text="Su" GridPane.columnIndex="6" GridPane.rowIndex="0" style="-fx-font-weight: bold; -fx-font-size: 12px; -fx-padding: 5; -fx-alignment: center;"/>
+                    
+                    <!-- 날짜들은 동적으로 생성됨 -->
+                </GridPane>
             </VBox>
             
-            <!-- 새 일정 추가 -->
+            <!-- 다가오는 일정 -->
             <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
-                <Label text="새 일정 추가" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-                <VBox spacing="15" style="-fx-padding: 10 0 0 0;">
-                    <TextField promptText="일정 제목" style="-fx-padding: 10;"/>
-                    <HBox spacing="10">
-                        <DatePicker promptText="날짜" style="-fx-padding: 5;"/>
-                        <TextField promptText="시작 시간" style="-fx-padding: 5;"/>
-                        <TextField promptText="종료 시간" style="-fx-padding: 5;"/>
+                <Label text="다가오는 일정" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-padding: 0 0 15 0;"/>
+                
+                <VBox spacing="10">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="🎨" style="-fx-font-size: 16px;"/>
+                        <VBox HBox.hgrow="ALWAYS">
+                            <Label text="반갑습니다. 다가오는일정" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+                            <Label text="• Design • 10:00 am" style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;"/>
+                        </VBox>
+                        <Label text="••" style="-fx-text-fill: #bdc3c7; -fx-font-size: 12px;"/>
                     </HBox>
-                    <TextArea promptText="일정 설명" style="-fx-pref-height: 80; -fx-padding: 10;"/>
-                    <Button text="일정 추가" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;"/>
                 </VBox>
             </VBox>
         </VBox>
     </HBox>
+    
+    <!-- 하단 - 회의록 기능 -->
+    <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+        <Label text="회의록 가져오기" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-padding: 0 0 15 0;"/>
+        
+        <HBox spacing="20">
+            <!-- 7/25일 회의 내역 -->
+            <VBox spacing="10" HBox.hgrow="ALWAYS">
+                <Label text="7/25일 회의 내역" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+                <Label text="멍청과장팀" style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;"/>
+                <Button fx:id="importSchedule1Button" text="➕ 일정 가져오기" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 12; -fx-font-size: 12px;" onAction="#handleImportSchedule1"/>
+            </VBox>
+            
+            <!-- 7월 30일 회의 내역 -->
+            <VBox spacing="10" HBox.hgrow="ALWAYS">
+                <Label text="7월 30일 회의 내역" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+                <Label text="바보부장팀" style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;"/>
+                <Button fx:id="importSchedule2Button" text="➕ 일정 가져오기" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 12; -fx-font-size: 12px;" onAction="#handleImportSchedule2"/>
+            </VBox>
+        </HBox>
+    </VBox>
 </VBox> 
