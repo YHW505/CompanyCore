@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.example.companycore.controller.TasksContentController"
+      fx:controller="com.example.companycore.controller.TaskController"
       spacing="20" style="-fx-padding: 20;">
     <!-- 상단 헤더 -->
     <HBox alignment="CENTER_LEFT" spacing="20">
