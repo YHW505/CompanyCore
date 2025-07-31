@@ -5,101 +5,105 @@
 <?import javafx.scene.layout.*?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.companycore.controller.ProfileController"
       spacing="20" style="-fx-padding: 20;">
     <!-- 상단 헤더 -->
     <HBox alignment="CENTER_LEFT" spacing="20">
         <Label text="프로필" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
     </HBox>
     
-    <!-- 메인 콘텐츠 -->
-    <HBox spacing="20">
-        <!-- 왼쪽 컬럼 -->
-        <VBox spacing="20" HBox.hgrow="ALWAYS">
-            <!-- 프로필 정보 -->
-            <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
-                <Label text="프로필 정보" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-                <VBox alignment="CENTER" spacing="15" style="-fx-padding: 20 0;">
-                    <Label text="🐟" style="-fx-font-size: 64px;"/>
-                    <Label text="홍길동" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
-                    <Label text="개발팀 / 사원" style="-fx-font-size: 16px; -fx-text-fill: #7f8c8d;"/>
-                </VBox>
-                
-                <VBox spacing="10" style="-fx-padding: 10 0 0 0;">
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="📧" style="-fx-font-size: 16px;"/>
-                        <Label text="hong@company.com" style="-fx-font-size: 14px;"/>
-                    </HBox>
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="📱" style="-fx-font-size: 16px;"/>
-                        <Label text="010-1234-5678" style="-fx-font-size: 14px;"/>
-                    </HBox>
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="🏢" style="-fx-font-size: 16px;"/>
-                        <Label text="서울시 강남구" style="-fx-font-size: 14px;"/>
-                    </HBox>
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="📅" style="-fx-font-size: 16px;"/>
-                        <Label text="입사일: 2023년 3월 1일" style="-fx-font-size: 14px;"/>
-                    </HBox>
-                </VBox>
-            </VBox>
-            
-            <!-- 근무 통계 -->
-            <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
-                <Label text="근무 통계" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-                <VBox spacing="10" style="-fx-padding: 10 0 0 0;">
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="📊" style="-fx-font-size: 16px;"/>
-                        <Label text="총 근무일수: 450일" style="-fx-font-weight: bold;"/>
-                    </HBox>
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="⏰" style="-fx-font-size: 16px;"/>
-                        <Label text="평균 근무시간: 8.5시간" style="-fx-text-fill: #27ae60;"/>
-                    </HBox>
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="🎯" style="-fx-font-size: 16px;"/>
-                        <Label text="출근률: 98%" style="-fx-text-fill: #3498db;"/>
-                    </HBox>
-                </VBox>
+    <!-- 상단 프로필 정보 -->
+    <HBox spacing="30">
+        <!-- 좌측 - 프로필 이미지 및 기본 정보 -->
+        <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);" HBox.hgrow="ALWAYS">
+            <VBox alignment="CENTER" spacing="15" style="-fx-padding: 20 0;">
+                <Label text="🐸" style="-fx-font-size: 80px;"/>
+                <Label text="홍길동" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+                <Label text="사원" style="-fx-font-size: 16px; -fx-text-fill: #7f8c8d;"/>
             </VBox>
         </VBox>
         
-        <!-- 오른쪽 컬럼 -->
-        <VBox spacing="20" HBox.hgrow="ALWAYS">
-            <!-- 개인정보 수정 -->
-            <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
-                <Label text="개인정보 수정" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-                <VBox spacing="15" style="-fx-padding: 10 0 0 0;">
-                    <TextField promptText="이름" text="홍길동" style="-fx-padding: 10;"/>
-                    <TextField promptText="이메일" text="hong@company.com" style="-fx-padding: 10;"/>
-                    <TextField promptText="전화번호" text="010-1234-5678" style="-fx-padding: 10;"/>
-                    <TextField promptText="주소" text="서울시 강남구" style="-fx-padding: 10;"/>
-                    <PasswordField promptText="현재 비밀번호" style="-fx-padding: 10;"/>
-                    <PasswordField promptText="새 비밀번호" style="-fx-padding: 10;"/>
-                    <PasswordField promptText="새 비밀번호 확인" style="-fx-padding: 10;"/>
-                    <Button text="정보 수정" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;"/>
-                </VBox>
-            </VBox>
-            
-            <!-- 계정 설정 -->
-            <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
-                <Label text="계정 설정" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-                <VBox spacing="15" style="-fx-padding: 10 0 0 0;">
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <CheckBox text="이메일 알림" selected="true"/>
-                    </HBox>
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <CheckBox text="SMS 알림" selected="false"/>
-                    </HBox>
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <CheckBox text="푸시 알림" selected="true"/>
-                    </HBox>
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <CheckBox text="다크 모드" selected="false"/>
-                    </HBox>
-                    <Button text="설정 저장" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;"/>
-                </VBox>
+        <!-- 우측 - 근무 통계 -->
+        <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);" HBox.hgrow="ALWAYS">
+            <VBox spacing="15" style="-fx-padding: 20 0;">
+                <!-- 총 근무일수 -->
+                <HBox alignment="CENTER_LEFT" style="-fx-padding: 15 0; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
+                    <Label text="총 근무일수" style="-fx-font-size: 14px; -fx-text-fill: #666; -fx-min-width: 100;"/>
+                    <Label text="450일" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                </HBox>
+                
+                <!-- 평균 근무시간 -->
+                <HBox alignment="CENTER_LEFT" style="-fx-padding: 15 0; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
+                    <Label text="평균 근무시간" style="-fx-font-size: 14px; -fx-text-fill: #666; -fx-min-width: 100;"/>
+                    <Label text="8.5시간" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
+                </HBox>
+                
+                <!-- 출근률 -->
+                <HBox alignment="CENTER_LEFT" style="-fx-padding: 15 0;">
+                    <Label text="출근률" style="-fx-font-size: 14px; -fx-text-fill: #666; -fx-min-width: 100;"/>
+                    <Label text="98%" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #3498db;"/>
+                </HBox>
             </VBox>
         </VBox>
+    </HBox>
+    
+    <!-- 하단 - 개인정보 및 비밀번호 변경 -->
+    <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+        <HBox spacing="30">
+            <!-- 좌측 - 개인정보 -->
+            <VBox spacing="15" HBox.hgrow="ALWAYS">
+                <!-- 이름 -->
+                <HBox alignment="CENTER_LEFT" style="-fx-padding: 15 0; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
+                    <Label text="이름" style="-fx-font-size: 14px; -fx-text-fill: #666; -fx-min-width: 80;"/>
+                    <Label text="홍길동" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                </HBox>
+                
+                <!-- 사번 -->
+                <HBox alignment="CENTER_LEFT" style="-fx-padding: 15 0; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
+                    <Label text="사번" style="-fx-font-size: 14px; -fx-text-fill: #666; -fx-min-width: 80;"/>
+                    <Label text="2537001" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                </HBox>
+                
+                <!-- 이메일 -->
+                <HBox alignment="CENTER_LEFT" style="-fx-padding: 15 0; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
+                    <Label text="Email" style="-fx-font-size: 14px; -fx-text-fill: #666; -fx-min-width: 80;"/>
+                    <Label text="hong@company.com" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                </HBox>
+                
+                <!-- 휴대전화 -->
+                <HBox alignment="CENTER_LEFT" style="-fx-padding: 15 0; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
+                    <Label text="휴대전화" style="-fx-font-size: 14px; -fx-text-fill: #666; -fx-min-width: 80;"/>
+                    <Label text="010-1234-5678" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                </HBox>
+                
+                <!-- 주소 -->
+                <HBox alignment="CENTER_LEFT" style="-fx-padding: 15 0; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
+                    <Label text="주소" style="-fx-font-size: 14px; -fx-text-fill: #666; -fx-min-width: 80;"/>
+                    <Label text="서울시 강남구" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                </HBox>
+                
+                <!-- 입사일 -->
+                <HBox alignment="CENTER_LEFT" style="-fx-padding: 15 0;">
+                    <Label text="입사일" style="-fx-font-size: 14px; -fx-text-fill: #666; -fx-min-width: 80;"/>
+                    <Label text="2023년 3월 1일" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                </HBox>
+            </VBox>
+            
+            <!-- 우측 - 비밀번호 변경 -->
+            <VBox spacing="15" HBox.hgrow="NEVER" style="-fx-min-width: 300;">
+                <Label text="비밀번호 변경" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-padding: 0 0 10 0;"/>
+                
+                <PasswordField fx:id="currentPasswordField" promptText="현재 비밀번호" style="-fx-padding: 8;"/>
+                <PasswordField fx:id="newPasswordField" promptText="새 비밀번호" style="-fx-padding: 8;"/>
+                <PasswordField fx:id="confirmPasswordField" promptText="새 비밀번호 확인" style="-fx-padding: 8;"/>
+                
+                <Button fx:id="changePasswordButton" text="비밀번호 변경" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15;" onAction="#handleChangePassword"/>
+            </VBox>
+        </HBox>
+    </VBox>
+    
+    <!-- 하단 저장 버튼 -->
+    <HBox alignment="CENTER_LEFT" style="-fx-padding: 20 0 0 0;">
+        <Button fx:id="saveButton" text="저장하기" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 25; -fx-font-size: 14px;"/>
     </HBox>
 </VBox> 
