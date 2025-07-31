@@ -113,9 +113,9 @@
             <VBox fx:id="tasksSubMenu" spacing="0" visible="false" managed="false">
                 <HBox alignment="CENTER_LEFT" spacing="15" 
                       style="-fx-padding: 8 12 8 40; -fx-cursor: hand;"
-                      onMouseClicked="#handleTaskListClick">
-                    <Label text="📋" style="-fx-font-size: 14px;"/>
-                    <Label text="업무 목록" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 13px;"/>
+                      onMouseClicked="#handleAnnouncementsClick">
+                    <Label text="📢" style="-fx-font-size: 14px;"/>
+                    <Label text="공지사항" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 13px;"/>
                 </HBox>
                 <HBox alignment="CENTER_LEFT" spacing="15" 
                       style="-fx-padding: 8 12 8 40; -fx-cursor: hand;"
@@ -128,12 +128,6 @@
                       onMouseClicked="#handleApprovalApprovalClick">
                     <Label text="✅" style="-fx-font-size: 14px;"/>
                     <Label text="결재 승인" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 13px;"/>
-                </HBox>
-                <HBox alignment="CENTER_LEFT" spacing="15" 
-                      style="-fx-padding: 8 12 8 40; -fx-cursor: hand;"
-                      onMouseClicked="#handleAnnouncementsClick">
-                    <Label text="📢" style="-fx-font-size: 14px;"/>
-                    <Label text="공지사항" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 13px;"/>
                 </HBox>
             </VBox>
         </VBox>
