@@ -1,6 +1,7 @@
 package com.example.companycore.controller.tasks;
 
 import com.example.companycore.model.dto.NoticeItem;
+import com.example.companycore.service.ApiClient;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -56,7 +57,7 @@ public class NoticeController {
     @FXML
     public void initialize() {
         setupTable();         // 테이블 컬럼 설정
-        generateDummyData();  // 더미 데이터 추가
+        loadNoticesFromDatabase();  // 데이터베이스에서 데이터 로드
         setupPagination();    // 페이지네이션 설정
     }
 
@@ -95,7 +96,10 @@ public class NoticeController {
                 NoticeItem item = getTableRow() != null ? getTableRow().getItem() : null;
 
                 // 데이터가 없거나 비어 있는 경우: 체크박스 제거
-                if (empty || item == null || item.getTitle() == null || item.getTitle().isEmpty()) {
+                if (empty || item == null || 
+                    item.getTitle() == null || item.getTitle().isEmpty() ||
+                    item.getDepartment() == null || item.getDepartment().isEmpty() ||
+                    item.getAuthor() == null || item.getAuthor().isEmpty()) {
                     setGraphic(null);
                 } else {
                     checkBox.setSelected(selected != null && selected);
@@ -133,10 +137,8 @@ public class NoticeController {
             currentPageData.addAll(allItems.subList(fromIndex, toIndex));
         }
 
-        // 남은 행은 빈 NoticeItem으로 채움 → 테이블 모양 유지
-        while (currentPageData.size() < ROWS_PER_PAGE) {
-            currentPageData.add(new NoticeItem("", "", "", null, false));
-        }
+        // 빈 행을 채우지 않음 - 실제 데이터만 표시
+        // 체크박스는 setupTable()의 updateItem() 메서드에서 데이터가 있을 때만 표시됨
 
         tableView.setItems(currentPageData);
         return new Region();
@@ -145,18 +147,24 @@ public class NoticeController {
     // ==================== 데이터 생성 ====================
 
     /**
-     * 테스트용 더미 데이터를 생성하여 allItems에 추가
+     * 데이터베이스에서 공지사항 데이터를 로드
      */
-    private void generateDummyData() {
-        IntStream.rangeClosed(1, 16).forEach(i -> {
-            allItems.add(new NoticeItem(
-                    "공지 제목 " + i,
-                    "부서 " + (i % 3 + 1),
-                    "작성자" + i,
-                    LocalDate.now().minusDays(i),
-                    false
-            ));
-        });
+    private void loadNoticesFromDatabase() {
+        try {
+            // ApiClient를 통해 서버에서 공지사항 데이터 가져오기
+            ApiClient apiClient = ApiClient.getInstance();
+            List<NoticeItem> notices = apiClient.getNotices();
+            
+            allItems.clear();
+            allItems.addAll(notices);
+            
+            System.out.println("공지사항 로드 완료: " + notices.size() + "개");
+            
+        } catch (Exception e) {
+            System.out.println("공지사항 로드 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
+            allItems.clear();
+        }
     }
 
     // ==================== 버튼 이벤트 핸들러 ====================

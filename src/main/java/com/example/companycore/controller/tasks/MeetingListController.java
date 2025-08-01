@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ArrayList;
+import com.example.companycore.model.dto.MeetingItem;
 import java.util.stream.Collectors;
 
 /**
@@ -70,7 +71,7 @@ public class MeetingListController {
     private int visibleRowCount = 10;
     
     /** 테스트 모드 플래그 (더미 데이터 사용 여부) */
-    private static final boolean TEST_MODE = true;
+    private static final boolean TEST_MODE = false;
 
     // ==================== 초기화 메서드 ====================
     
@@ -86,10 +87,8 @@ public class MeetingListController {
         // 검색 기능 초기화
         setupSearch();
         
-        // 테스트 데이터 로드 (TEST_MODE가 true인 경우)
-        if (TEST_MODE) {
-            loadDummyData();
-        }
+        // TODO: 데이터베이스에서 회의 데이터 로드
+        // loadMeetingsFromDatabase();
         
         // 페이지네이션 설정
         setupPagination();
@@ -104,7 +103,7 @@ public class MeetingListController {
      */
     private void setupTable() {
         // 테이블 기본 설정
-        meetingTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY); // 너비 자동 조정
+        meetingTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS); // 너비 자동 조정
         meetingTable.setFixedCellSize(40); // 행 높이 고정
 
         // 테이블의 높이에 따라 한 페이지에 표시할 행 개수 계산
@@ -180,7 +179,7 @@ public class MeetingListController {
     private void setupSearch() {
         // 검색 콤보박스 초기화
         searchComboBox.getItems().addAll("전체", "제목", "부서", "작성자");
-        searchComboBox.setValue("전체");
+        searchComboBox.setValue(null);
     }
 
     // ==================== 데이터 관리 메서드 ====================
@@ -192,14 +191,8 @@ public class MeetingListController {
      */
     private void loadDummyData() {
         fullData.clear();
-        for (int i = 1; i <= 20; i++) {
-            String title = "회의 " + i;
-            String department = getRandomDepartment();
-            String author = getRandomAuthor();
-            String date = LocalDate.now().minusDays(i).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-
-            fullData.add(new MeetingItem(title, department, author, date));
-        }
+        // TODO: 데이터베이스에서 실제 회의 데이터를 가져와서 표시
+        // 현재는 빈 데이터로 초기화
         viewData.addAll(fullData);
         meetingTable.setItems(viewData);
     }
@@ -381,49 +374,4 @@ public class MeetingListController {
         alert.showAndWait();
     }
 
-    // ==================== 내부 클래스 ====================
-    
-    /**
-     * 회의 데이터를 표현하는 내부 클래스
-     * JavaFX Property를 사용하여 데이터 바인딩을 지원
-     */
-    public static class MeetingItem {
-        private final javafx.beans.property.StringProperty title;
-        private final javafx.beans.property.StringProperty department;
-        private final javafx.beans.property.StringProperty author;
-        private final javafx.beans.property.StringProperty date;
-
-        /**
-         * MeetingItem 생성자
-         * 
-         * @param title 제목
-         * @param department 부서
-         * @param author 작성자
-         * @param date 날짜
-         */
-        public MeetingItem(String title, String department, String author, String date) {
-            this.title = new javafx.beans.property.SimpleStringProperty(title);
-            this.department = new javafx.beans.property.SimpleStringProperty(department);
-            this.author = new javafx.beans.property.SimpleStringProperty(author);
-            this.date = new javafx.beans.property.SimpleStringProperty(date);
-        }
-
-        // ==================== Getter/Setter 메서드 ====================
-        
-        public String getTitle() { return title.get(); }
-        public void setTitle(String title) { this.title.set(title); }
-        public javafx.beans.property.StringProperty titleProperty() { return title; }
-
-        public String getDepartment() { return department.get(); }
-        public void setDepartment(String department) { this.department.set(department); }
-        public javafx.beans.property.StringProperty departmentProperty() { return department; }
-
-        public String getAuthor() { return author.get(); }
-        public void setAuthor(String author) { this.author.set(author); }
-        public javafx.beans.property.StringProperty authorProperty() { return author; }
-
-        public String getDate() { return date.get(); }
-        public void setDate(String date) { this.date.set(date); }
-        public javafx.beans.property.StringProperty dateProperty() { return date; }
-    }
 }

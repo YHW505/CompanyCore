@@ -72,15 +72,15 @@ public class LeaveApplicationController implements Initializable {
     private void setupInitialData() {
         // 사번 필드는 읽기 전용으로 설정
         employeeIdField.setEditable(false);
-        employeeIdField.setText("2534001");
+        employeeIdField.clear();
         
         // 휴가 종류 콤보박스 초기화
         leaveTypeComboBox.getItems().addAll("연차", "병가", "공가", "반차", "특별휴가");
-        leaveTypeComboBox.setValue("연차");
+        leaveTypeComboBox.setValue(null);
         
-        // 기본 날짜 설정
-        startDatePicker.setValue(LocalDate.of(2025, 8, 1));
-        endDatePicker.setValue(LocalDate.of(2025, 8, 3));
+        // 기본 날짜 설정 - 빈 상태로 초기화
+        startDatePicker.setValue(null);
+        endDatePicker.setValue(null);
     }
     
     private void handleAddFile() {
@@ -239,9 +239,9 @@ public class LeaveApplicationController implements Initializable {
     
     private void clearForm() {
         // 폼 초기화
-        leaveTypeComboBox.setValue("연차");
-        startDatePicker.setValue(LocalDate.of(2025, 8, 1));
-        endDatePicker.setValue(LocalDate.of(2025, 8, 3));
+        leaveTypeComboBox.setValue(null);
+        startDatePicker.setValue(null);
+        endDatePicker.setValue(null);
         reasonTextArea.clear();
         
         // 첨부파일 초기화

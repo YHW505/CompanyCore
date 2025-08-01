@@ -10,6 +10,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.CheckBox;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import com.example.companycore.model.dto.LeaveRequest;
 import javafx.scene.Node;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -31,30 +32,7 @@ public class LeaveApprovalController implements Initializable {
     private List<LeaveRequest> leaveRequests = new ArrayList<>();
     private ObservableList<CheckBox> rowCheckBoxes = FXCollections.observableArrayList();
     
-    // 휴가신청 데이터 클래스
-    public static class LeaveRequest {
-        private String leaveType;
-        private String employeeId;
-        private String employeeName;
-        private String date;
-        private String status; // "pending", "approved", "rejected"
-        
-        public LeaveRequest(String leaveType, String employeeId, String employeeName, String date, String status) {
-            this.leaveType = leaveType;
-            this.employeeId = employeeId;
-            this.employeeName = employeeName;
-            this.date = date;
-            this.status = status;
-        }
-        
-        // Getters and Setters
-        public String getLeaveType() { return leaveType; }
-        public String getEmployeeId() { return employeeId; }
-        public String getEmployeeName() { return employeeName; }
-        public String getDate() { return date; }
-        public String getStatus() { return status; }
-        public void setStatus(String status) { this.status = status; }
-    }
+
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -97,18 +75,9 @@ public class LeaveApprovalController implements Initializable {
     }
     
     private void setupInitialData() {
-        // 샘플 데이터 생성 (실제로는 데이터베이스에서 가져옴)
+        // 데이터 초기화 (실제로는 데이터베이스에서 가져옴)
         leaveRequests.clear();
-        leaveRequests.add(new LeaveRequest("연차", "2534001", "한교동", "2025.08.01", "pending"));
-        leaveRequests.add(new LeaveRequest("연차", "2534001", "한교동", "2025.08.01", "approved"));
-        leaveRequests.add(new LeaveRequest("연차", "2534001", "한교동", "2025.08.01", "rejected"));
-        leaveRequests.add(new LeaveRequest("연차", "2534001", "한교동", "2025.08.01", "pending"));
-        leaveRequests.add(new LeaveRequest("연차", "2534001", "한교동", "2025.08.01", "pending"));
-        leaveRequests.add(new LeaveRequest("연차", "2534001", "한교동", "2025.08.01", "pending"));
-        leaveRequests.add(new LeaveRequest("연차", "2534001", "한교동", "2025.08.01", "pending"));
-        leaveRequests.add(new LeaveRequest("연차", "2534001", "한교동", "2025.08.01", "pending"));
-        leaveRequests.add(new LeaveRequest("연차", "2534001", "한교동", "2025.08.01", "pending"));
-        leaveRequests.add(new LeaveRequest("연차", "2534001", "한교동", "2025.08.01", "pending"));
+        // TODO: 데이터베이스에서 실제 데이터를 가져와서 leaveRequests에 추가
     }
     
     private void loadPage(int page) {

@@ -3,6 +3,7 @@ package com.example.companycore.controller.mail;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import com.example.companycore.model.dto.SentMail;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.layout.StackPane;
@@ -99,29 +100,7 @@ public class MailController {
     // 보낸 메일 데이터 관리 (임시 메모리 저장)
     private java.util.List<SentMail> sentMails = new java.util.ArrayList<>();
     
-    // 보낸 메일 클래스
-    public static class SentMail {
-        private String recipient;
-        private String subject;
-        private String content;
-        private String date;
-        private String attachment;
-        
-        public SentMail(String recipient, String subject, String content, String attachment) {
-            this.recipient = recipient;
-            this.subject = subject;
-            this.content = content;
-            this.attachment = attachment;
-            this.date = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("MMM dd"));
-        }
-        
-        // Getters
-        public String getRecipient() { return recipient; }
-        public String getSubject() { return subject; }
-        public String getContent() { return content; }
-        public String getDate() { return date; }
-        public String getAttachment() { return attachment; }
-    }
+
     
 
     
