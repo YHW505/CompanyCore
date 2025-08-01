@@ -134,7 +134,7 @@ public class HRManagementController {
      */
     private void setupTableColumns() {
         // 테이블 설정 (결재승인 창과 동일)
-        employeeTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
+        employeeTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         employeeTable.setFixedCellSize(40);
         
         // 기본 컬럼 설정
