@@ -1,4 +1,4 @@
-package com.example.companycore.controller;
+package com.example.companycore.controller.mail;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;

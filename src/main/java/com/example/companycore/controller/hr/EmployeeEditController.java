@@ -1,4 +1,4 @@
-package com.example.companycore.controller;
+package com.example.companycore.controller.hr; 
 
 import com.example.companycore.model.entity.Employee;
 import javafx.fxml.FXML;

@@ -1,4 +1,4 @@
-package com.example.companycore.controller;
+package com.example.companycore.controller.hr;
 
 import com.example.companycore.model.entity.Employee;
 import javafx.fxml.FXML;
@@ -25,56 +25,64 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+/**
+ * 인사관리 컨트롤러 클래스
+ * 
+ * 주요 기능:
+ * - 사원 목록 테이블 표시 및 관리
+ * - 사원 검색 및 필터링
+ * - 사원 등록/수정 다이얼로그 호출
+ * - 페이지네이션
+ * - 사원 정보 CRUD 작업
+ * 
+ * @author Company Core Team
+ * @version 1.0
+ */
 public class HRManagementController {
     
-    @FXML
-    private TableView<Employee> employeeTable;
+    // ==================== FXML UI 컴포넌트 ====================
     
-    @FXML
-    private TableColumn<Employee, Integer> idColumn;
+    /** 사원 목록 테이블 */
+    @FXML private TableView<Employee> employeeTable;
     
-    @FXML
-    private TableColumn<Employee, String> nameColumn;
+    /** 테이블 컬럼들 */
+    @FXML private TableColumn<Employee, Integer> idColumn;           // 순서 컬럼
+    @FXML private TableColumn<Employee, String> nameColumn;          // 이름 컬럼
+    @FXML private TableColumn<Employee, String> departmentColumn;    // 부서 컬럼
+    @FXML private TableColumn<Employee, String> employeeIdColumn;    // 사번 컬럼
+    @FXML private TableColumn<Employee, String> emailColumn;         // 이메일 컬럼
+    @FXML private TableColumn<Employee, Void> editColumn;            // 수정 버튼 컬럼
     
-    @FXML
-    private TableColumn<Employee, String> departmentColumn;
+    /** 검색 관련 UI 컴포넌트 */
+    @FXML private ComboBox<String> searchConditionComboBox;  // 검색 조건 선택
+    @FXML private TextField searchTextField;                 // 검색어 입력
+    @FXML private Button searchButton;                       // 검색 버튼
     
-    @FXML
-    private TableColumn<Employee, String> employeeIdColumn;
+    /** 액션 버튼들 */
+    @FXML private Button deleteButton;       // 삭제 버튼
+    @FXML private Button registerButton;     // 사원 등록 버튼
     
-    @FXML
-    private TableColumn<Employee, String> emailColumn;
+    /** 페이지네이션 및 레이아웃 */
+    @FXML private Pagination pagination;     // 페이지네이션
+    @FXML private VBox contentArea;          // 콘텐츠 영역
     
-    @FXML
-    private TableColumn<Employee, Void> editColumn;
+    // ==================== 데이터 관리 ====================
     
-
-    
-    @FXML
-    private ComboBox<String> searchConditionComboBox;
-    
-    @FXML
-    private TextField searchTextField;
-    
-    @FXML
-    private Button deleteButton;
-    
-    @FXML
-    private Button registerButton;
-    
-    @FXML
-    private Button searchButton;
-    
-    @FXML
-    private Pagination pagination;
-    
-    @FXML
-    private VBox contentArea;
-    
+    /** 전체 사원 데이터 */
     private ObservableList<Employee> allEmployees;
+    
+    /** 필터링된 사원 데이터 (검색 결과) */
     private ObservableList<Employee> filteredEmployees;
+    
+    /** 한 페이지에 표시할 항목 수 */
     private static final int ITEMS_PER_PAGE = 10;
     
+    // ==================== 초기화 메서드 ====================
+    
+    /**
+     * FXML 로드 후 자동 호출되는 초기화 메서드
+     * 데이터 초기화, 테이블 설정, 이벤트 핸들러 등록을 수행
+     */
     @FXML
     public void initialize() {
         initializeData();
@@ -89,6 +97,10 @@ public class HRManagementController {
         });
     }
     
+    /**
+     * 샘플 사원 데이터를 초기화
+     * 실제 구현에서는 데이터베이스에서 데이터를 로드
+     */
     private void initializeData() {
         // 샘플 데이터 생성
         allEmployees = FXCollections.observableArrayList();
@@ -114,9 +126,15 @@ public class HRManagementController {
         employeeTable.setItems(filteredEmployees);
     }
     
+    // ==================== 테이블 설정 메서드 ====================
+    
+    /**
+     * 테이블 컬럼들을 설정하고 바인딩
+     * 컬럼 너비, 정렬, 이벤트 핸들러 등을 설정
+     */
     private void setupTableColumns() {
         // 테이블 설정 (결재승인 창과 동일)
-        employeeTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        employeeTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         employeeTable.setFixedCellSize(40);
         
         // 기본 컬럼 설정
@@ -143,6 +161,14 @@ public class HRManagementController {
         editColumn.setStyle("-fx-alignment: CENTER;");
         
         // 수정 버튼 컬럼 설정
+        setupEditColumn();
+    }
+    
+    /**
+     * 수정 버튼이 있는 컬럼을 설정
+     * 각 행에 수정 버튼을 추가하고 클릭 시 사원 수정 다이얼로그를 열음
+     */
+    private void setupEditColumn() {
         editColumn.setCellFactory(param -> new TableCell<>() {
             private final Button editButton = new Button("✏️");
             
@@ -164,10 +190,14 @@ public class HRManagementController {
                 }
             }
         });
-        
-
     }
     
+    // ==================== 검색 기능 메서드 ====================
+    
+    /**
+     * 검색 기능을 초기화
+     * 검색 조건 콤보박스 설정 및 기본값 설정
+     */
     private void setupSearchFunctionality() {
         // 검색 조건 콤보박스 설정
         searchConditionComboBox.getItems().addAll("이름", "부서", "사번", "이메일");
@@ -184,6 +214,10 @@ public class HRManagementController {
         });
     }
     
+    /**
+     * 검색 조건에 따라 사원 목록을 필터링
+     * 검색어가 비어있으면 전체 목록을 표시
+     */
     private void filterEmployees() {
         String searchText = searchTextField.getText().toLowerCase();
         String searchCondition = searchConditionComboBox.getValue();
@@ -216,10 +250,20 @@ public class HRManagementController {
         updatePagination();
     }
     
+    // ==================== 페이지네이션 메서드 ====================
+    
+    /**
+     * 페이지네이션을 설정
+     * 페이지 변경 시 해당 페이지의 데이터만 표시
+     */
     private void setupPagination() {
         updatePagination();
     }
     
+    /**
+     * 페이지네이션을 업데이트
+     * 필터링된 데이터에 따라 페이지 수를 재계산
+     */
     private void updatePagination() {
         int totalPages = (int) Math.ceil((double) filteredEmployees.size() / ITEMS_PER_PAGE);
         pagination.setPageCount(totalPages);
@@ -245,6 +289,12 @@ public class HRManagementController {
         }
     }
     
+    // ==================== 버튼 설정 메서드 ====================
+    
+    /**
+     * 버튼들의 이벤트 핸들러를 설정
+     * 삭제, 등록 버튼의 클릭 이벤트를 등록
+     */
     private void setupButtons() {
         // 삭제 버튼 설정
         deleteButton.setOnAction(event -> {
@@ -258,6 +308,13 @@ public class HRManagementController {
         });
     }
     
+    // ==================== 다이얼로그 메서드 ====================
+    
+    /**
+     * 사원 수정 다이얼로그를 열기
+     * 
+     * @param employee 수정할 사원 객체
+     */
     private void openEmployeeEditDialog(Employee employee) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/content/hr/employeeEditDialog.fxml"));
@@ -284,6 +341,9 @@ public class HRManagementController {
         }
     }
     
+    /**
+     * 사원 등록 다이얼로그를 열기
+     */
     private void openEmployeeRegisterDialog() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/content/hr/employeeRegisterDialog.fxml"));
@@ -309,11 +369,26 @@ public class HRManagementController {
         }
     }
     
+    // ==================== 이벤트 핸들러 메서드 ====================
+    
+    /**
+     * 검색 버튼 클릭 시 호출되는 메서드
+     * FXML에서 onAction으로 연결됨
+     */
     @FXML
     private void handleSearch() {
         filterEmployees();
     }
     
+    // ==================== 유틸리티 메서드 ====================
+    
+    /**
+     * 알림 다이얼로그를 표시
+     * 
+     * @param title 알림 제목
+     * @param content 알림 내용
+     * @param alertType 알림 타입 (ERROR, WARNING, INFORMATION, CONFIRMATION)
+     */
     private void showAlert(String title, String content, Alert.AlertType alertType) {
         Alert alert = new Alert(alertType);
         alert.setTitle(title);

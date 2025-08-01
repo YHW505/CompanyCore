@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.example.companycore.controller.AttendanceRecordController"
+      fx:controller="com.example.companycore.controller.attendance.AttendanceRecordController"
       spacing="15" style="-fx-padding: 10;" alignment="CENTER">
     <!-- 상단 헤더 -->
     <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-padding: 0 0 15 0; -fx-max-width: 1000;">

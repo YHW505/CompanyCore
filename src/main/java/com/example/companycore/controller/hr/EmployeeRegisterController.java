@@ -1,4 +1,4 @@
-package com.example.companycore.controller;
+package com.example.companycore.controller.hr;
 
 import com.example.companycore.model.entity.Employee;
 import javafx.fxml.FXML;
@@ -134,7 +134,7 @@ public class EmployeeRegisterController {
         return true;
     }
     
-    private boolean isValidEmail(String email) {    
+    private boolean isValidEmail(String email) {
         String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
         return email.matches(emailRegex);
     }

@@ -1,4 +1,4 @@
-package com.example.companycore.controller;
+package com.example.companycore.controller.tasks;
 
 import com.example.companycore.model.dto.ApprovalItem;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -54,7 +54,7 @@ public class ApprovalController {
 
     @FXML
     public void initialize() {
-        approvalTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        approvalTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         approvalTable.setFixedCellSize(40);
 
         visibleRowCount = (int) (approvalTable.getHeight() / approvalTable.getFixedCellSize());

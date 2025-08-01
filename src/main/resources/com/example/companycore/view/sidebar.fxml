@@ -7,7 +7,7 @@
 <?import javafx.scene.image.Image?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.example.companycore.controller.SidebarController"
+      fx:controller="com.example.companycore.controller.core.SidebarController"
       style="-fx-background-color: #FFFFFF; -fx-min-width: 250; -fx-pref-width: 250;" spacing="0">
     <padding>
         <Insets top="20" right="20" bottom="40" left="20"/>
