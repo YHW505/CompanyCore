@@ -63,15 +63,8 @@
             <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
                 <Label text="다가오는 일정" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-padding: 0 0 15 0;"/>
                 
-                <VBox spacing="10">
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="🎨" style="-fx-font-size: 16px;"/>
-                        <VBox HBox.hgrow="ALWAYS">
-                            <Label text="반갑습니다. 다가오는일정" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
-                            <Label text="• Design • 10:00 am" style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;"/>
-                        </VBox>
-                        <Label text="••" style="-fx-text-fill: #bdc3c7; -fx-font-size: 12px;"/>
-                    </HBox>
+                <VBox fx:id="upcomingSchedulesContainer" spacing="10">
+                    <!-- 동적으로 생성되는 다가오는 일정들 -->
                 </VBox>
             </VBox>
         </VBox>
@@ -81,20 +74,8 @@
     <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
         <Label text="회의록 가져오기" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-padding: 0 0 15 0;"/>
         
-        <HBox spacing="20">
-            <!-- 7/25일 회의 내역 -->
-            <VBox spacing="10" HBox.hgrow="ALWAYS">
-                <Label text="7/25일 회의 내역" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
-                <Label text="멍청과장팀" style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;"/>
-                <Button fx:id="importSchedule1Button" text="➕ 일정 가져오기" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 12; -fx-font-size: 12px;" onAction="#handleImportSchedule1"/>
-            </VBox>
-            
-            <!-- 7월 30일 회의 내역 -->
-            <VBox spacing="10" HBox.hgrow="ALWAYS">
-                <Label text="7월 30일 회의 내역" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
-                <Label text="바보부장팀" style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;"/>
-                <Button fx:id="importSchedule2Button" text="➕ 일정 가져오기" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 12; -fx-font-size: 12px;" onAction="#handleImportSchedule2"/>
-            </VBox>
-        </HBox>
+        <VBox fx:id="meetingNotesContainer" spacing="20">
+            <!-- 동적으로 생성되는 회의록 항목들 -->
+        </VBox>
     </VBox>
 </VBox> 

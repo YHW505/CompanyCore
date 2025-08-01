@@ -15,6 +15,7 @@ import java.util.ResourceBundle;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.YearMonth;
+import com.example.companycore.model.dto.ScheduleRow;
 import java.time.DayOfWeek;
 
 /**
@@ -84,8 +85,8 @@ public class CalendarController implements Initializable {
         // 테이블 컬럼 설정
         setupTableColumns();
         
-        // 샘플 데이터 추가
-        loadSampleScheduleData();
+        // TODO: 데이터베이스에서 일정 데이터 로드
+        // loadScheduleFromDatabase();
         
         // 달력 초기화
         updateMonthDisplay();
@@ -139,17 +140,18 @@ public class CalendarController implements Initializable {
     private void loadSampleScheduleData() {
         ObservableList<ScheduleRow> scheduleData = FXCollections.observableArrayList();
         
-        // 샘플 일정 데이터 추가
-        scheduleData.add(new ScheduleRow("09:00", "회의", "개발", "회의", "개발", "회의", ""));
-        scheduleData.add(new ScheduleRow("10:00", "개발", "회의", "개발", "회의", "개발", ""));
-        scheduleData.add(new ScheduleRow("11:00", "회의", "개발", "회의", "개발", "회의", ""));
-        scheduleData.add(new ScheduleRow("12:00", "점심", "점심", "점심", "점심", "점심", ""));
-        scheduleData.add(new ScheduleRow("13:00", "개발", "회의", "개발", "회의", "개발", ""));
-        scheduleData.add(new ScheduleRow("14:00", "회의", "개발", "회의", "개발", "회의", ""));
-        scheduleData.add(new ScheduleRow("15:00", "개발", "회의", "개발", "회의", "개발", ""));
-        scheduleData.add(new ScheduleRow("16:00", "회의", "개발", "회의", "개발", "회의", ""));
-        scheduleData.add(new ScheduleRow("17:00", "개발", "회의", "개발", "회의", "개발", ""));
-        scheduleData.add(new ScheduleRow("18:00", "퇴근", "퇴근", "퇴근", "퇴근", "퇴근", ""));
+        // TODO: 데이터베이스에서 실제 일정 데이터를 가져와서 표시
+        // 현재는 빈 일정으로 초기화
+        scheduleData.add(new ScheduleRow("09:00", "", "", "", "", "", ""));
+        scheduleData.add(new ScheduleRow("10:00", "", "", "", "", "", ""));
+        scheduleData.add(new ScheduleRow("11:00", "", "", "", "", "", ""));
+        scheduleData.add(new ScheduleRow("12:00", "", "", "", "", "", ""));
+        scheduleData.add(new ScheduleRow("13:00", "", "", "", "", "", ""));
+        scheduleData.add(new ScheduleRow("14:00", "", "", "", "", "", ""));
+        scheduleData.add(new ScheduleRow("15:00", "", "", "", "", "", ""));
+        scheduleData.add(new ScheduleRow("16:00", "", "", "", "", "", ""));
+        scheduleData.add(new ScheduleRow("17:00", "", "", "", "", "", ""));
+        scheduleData.add(new ScheduleRow("18:00", "", "", "", "", "", ""));
         
         scheduleTable.setItems(scheduleData);
     }
@@ -294,51 +296,4 @@ public class CalendarController implements Initializable {
         alert.showAndWait();
     }
 
-    // ==================== 내부 클래스 ====================
-    
-    /**
-     * 일정 테이블의 행 데이터를 표현하는 내부 클래스
-     * JavaFX Property를 사용하여 데이터 바인딩을 지원
-     */
-    public static class ScheduleRow {
-        private final javafx.beans.property.SimpleStringProperty time;
-        private final javafx.beans.property.SimpleStringProperty monday;
-        private final javafx.beans.property.SimpleStringProperty tuesday;
-        private final javafx.beans.property.SimpleStringProperty wednesday;
-        private final javafx.beans.property.SimpleStringProperty thursday;
-        private final javafx.beans.property.SimpleStringProperty friday;
-        private final javafx.beans.property.SimpleStringProperty saturday;
-
-        /**
-         * ScheduleRow 생성자
-         * 
-         * @param time 시간
-         * @param monday 월요일 일정
-         * @param tuesday 화요일 일정
-         * @param wednesday 수요일 일정
-         * @param thursday 목요일 일정
-         * @param friday 금요일 일정
-         * @param saturday 토요일 일정
-         */
-        public ScheduleRow(String time, String monday, String tuesday, String wednesday, 
-                         String thursday, String friday, String saturday) {
-            this.time = new javafx.beans.property.SimpleStringProperty(time);
-            this.monday = new javafx.beans.property.SimpleStringProperty(monday);
-            this.tuesday = new javafx.beans.property.SimpleStringProperty(tuesday);
-            this.wednesday = new javafx.beans.property.SimpleStringProperty(wednesday);
-            this.thursday = new javafx.beans.property.SimpleStringProperty(thursday);
-            this.friday = new javafx.beans.property.SimpleStringProperty(friday);
-            this.saturday = new javafx.beans.property.SimpleStringProperty(saturday);
-        }
-
-        // ==================== Property Getter 메서드 ====================
-        
-        public javafx.beans.property.StringProperty timeProperty() { return time; }
-        public javafx.beans.property.StringProperty mondayProperty() { return monday; }
-        public javafx.beans.property.StringProperty tuesdayProperty() { return tuesday; }
-        public javafx.beans.property.StringProperty wednesdayProperty() { return wednesday; }
-        public javafx.beans.property.StringProperty thursdayProperty() { return thursday; }
-        public javafx.beans.property.StringProperty fridayProperty() { return friday; }
-        public javafx.beans.property.StringProperty saturdayProperty() { return saturday; }
-    }
 } 

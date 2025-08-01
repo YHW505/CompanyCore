@@ -98,29 +98,16 @@ public class HRManagementController {
     }
     
     /**
-     * 샘플 사원 데이터를 초기화
+     * 데이터베이스에서 사원 데이터를 초기화
      * 실제 구현에서는 데이터베이스에서 데이터를 로드
      */
     private void initializeData() {
-        // 샘플 데이터 생성
+        // 데이터베이스에서 사원 데이터 로드
         allEmployees = FXCollections.observableArrayList();
         filteredEmployees = FXCollections.observableArrayList();
         
-        // 샘플 사원 데이터 추가
-        allEmployees.addAll(
-            new Employee(1, "한교동", "2534001", "개발", "한강물 미역길", "010-1234-5678", "fish@companycore.kr", "용왕", "password123"),
-            new Employee(2, "케로케로피", "2534002", "개발", "개구리 마을", "010-2345-6789", "kero@companycore.kr", "개구리", "password456"),
-            new Employee(3, "김철수", "2534003", "인사", "서울시 강남구", "010-3456-7890", "kim@companycore.kr", "대리", "password789"),
-            new Employee(4, "이영희", "2534004", "마케팅", "서울시 서초구", "010-4567-8901", "lee@companycore.kr", "과장", "password012"),
-            new Employee(5, "박민수", "2534005", "영업", "서울시 마포구", "010-5678-9012", "park@companycore.kr", "사원", "password345"),
-            new Employee(6, "정수진", "2534006", "개발", "서울시 성동구", "010-6789-0123", "jung@companycore.kr", "팀장", "password678"),
-            new Employee(7, "최동욱", "2534007", "인사", "서울시 용산구", "010-7890-1234", "choi@companycore.kr", "부장", "password901"),
-            new Employee(8, "윤서연", "2534008", "마케팅", "서울시 중구", "010-8901-2345", "yoon@companycore.kr", "대리", "password234"),
-            new Employee(9, "임태호", "2534009", "영업", "서울시 종로구", "010-9012-3456", "lim@companycore.kr", "사원", "password567"),
-            new Employee(10, "강미영", "2534010", "개발", "서울시 송파구", "010-0123-4567", "kang@companycore.kr", "과장", "password890"),
-            new Employee(11, "송재현", "2534011", "인사", "서울시 강북구", "010-1234-5678", "song@companycore.kr", "대리", "password123"),
-            new Employee(12, "조은영", "2534012", "마케팅", "서울시 노원구", "010-2345-6789", "jo@companycore.kr", "사원", "password456")
-        );
+        // TODO: 데이터베이스에서 사원 목록을 로드하는 로직 구현
+        // loadEmployeesFromDatabase();
         
         filteredEmployees.addAll(allEmployees);
         employeeTable.setItems(filteredEmployees);
@@ -134,7 +121,7 @@ public class HRManagementController {
      */
     private void setupTableColumns() {
         // 테이블 설정 (결재승인 창과 동일)
-        employeeTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        employeeTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
         employeeTable.setFixedCellSize(40);
         
         // 기본 컬럼 설정
@@ -201,7 +188,7 @@ public class HRManagementController {
     private void setupSearchFunctionality() {
         // 검색 조건 콤보박스 설정
         searchConditionComboBox.getItems().addAll("이름", "부서", "사번", "이메일");
-        searchConditionComboBox.setValue("이름");
+        searchConditionComboBox.setValue(null);
         
         // 검색 버튼 이벤트 설정
         searchButton.setOnAction(event -> {

@@ -50,7 +50,7 @@ public class ApprovalController {
     private ObservableList<ApprovalItem> viewData = FXCollections.observableArrayList();
 
     private int visibleRowCount = 10;
-    private static final boolean TEST_MODE = true;
+    private static final boolean TEST_MODE = false;
 
     @FXML
     public void initialize() {
@@ -153,13 +153,8 @@ public class ApprovalController {
         // ComboBox 초기값 및 아이템 세팅
         searchComboBox.getSelectionModel().select("전체");
 
-        if (TEST_MODE) {
-            fillDummyData(37);
-            viewData = FXCollections.observableArrayList(fullData);
-            resetPagingToFirstPage();
-        } else {
-            loadDataFromServer();
-        }
+        // TODO: 데이터베이스에서 결재 데이터 로드
+        // loadDataFromDatabase();
 
         pagination.setPageFactory(this::createPage);
     }

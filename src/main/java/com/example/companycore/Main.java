@@ -10,7 +10,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/mainDashBoardView.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/loginView.fxml"));
             Scene scene = new Scene(loader.load(), 1400, 800);
 
             primaryStage.setTitle("CompanyCore");

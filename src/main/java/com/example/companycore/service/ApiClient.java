@@ -2,6 +2,7 @@ package com.example.companycore.service;
 
 import com.example.companycore.model.dto.LoginRequest;
 import com.example.companycore.model.dto.LoginResponse;
+import com.example.companycore.model.dto.NoticeItem;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -12,9 +13,11 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.List;
+import java.util.ArrayList;
 
 public class ApiClient {
-    private static final String BASE_URL = "http://localhost:8080/api";
+    private static final String BASE_URL = "http://100.100.100.66:8080/api";
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
 
@@ -116,23 +119,57 @@ public class ApiClient {
             return false;
         }
     }
-//    public boolean authenticate(String employeeCode, String password) {
-//        try {
-//            // API 호출
-//            LoginResponse response = // ... API 호출 코드
-//
-//            // 수정: message 또는 상태 코드로 성공 여부 판단
-//            if ("로그인 성공".equals(response.getMessage()) || response.getToken() != null) {
-//                // 토큰이 있으면 저장
-//                if (response.getToken() != null) {
-//                    this.authToken = response.getToken();
-//                }
-//                return true;
-//            }
-//            return false;
-//
-//        } catch (Exception e) {
-//            return false;
-//        }
-//    }
+
+    /**
+     * 공지사항 목록을 서버에서 가져옴
+     * 
+     * @return 공지사항 목록
+     */
+    public List<NoticeItem> getNotices() {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/notices"))
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            System.out.println("공지사항 요청 상태 코드: " + response.statusCode());
+            System.out.println("공지사항 응답: " + response.body());
+
+            if (response.statusCode() == 200) {
+                if (response.body() == null || response.body().trim().isEmpty()) {
+                    System.out.println("서버에서 빈 공지사항 응답을 받았습니다!");
+                    return new ArrayList<>();
+                }
+
+                try {
+                    // JSON 배열을 List<NoticeItem>으로 파싱
+                    List<NoticeItem> notices = objectMapper.readValue(
+                        response.body(), 
+                        objectMapper.getTypeFactory().constructCollectionType(List.class, NoticeItem.class)
+                    );
+                    System.out.println("공지사항 파싱 성공! 개수: " + notices.size());
+                    return notices;
+
+                } catch (Exception parseException) {
+                    System.out.println("공지사항 JSON 파싱 실패: " + parseException.getMessage());
+                    System.out.println("파싱하려던 JSON: " + response.body());
+                    parseException.printStackTrace();
+                    return new ArrayList<>();
+                }
+
+            } else {
+                System.out.println("공지사항 요청 실패 - 상태 코드: " + response.statusCode());
+                System.out.println("오류 응답: " + response.body());
+                return new ArrayList<>();
+            }
+
+        } catch (Exception e) {
+            System.out.println("공지사항 요청 중 예외 발생: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
 }

@@ -67,13 +67,13 @@ public class EmployeeRegisterController {
         employeeIdTextField.clear();
         employeeIdTextField.setDisable(false); // 수정 가능하도록 활성화
         
-        // 비밀번호 필드에 초기 비밀번호 설정
-        passwordField.setText("초기 비밀번호");
-        passwordField.setDisable(true); // 초기 비밀번호는 수정 불가
+        // 비밀번호 필드 초기화
+        passwordField.clear();
+        passwordField.setDisable(false); // 비밀번호 수정 가능
         
         // 사원 이름과 역할 설정 (새 사원 등록이므로 기본값)
-        employeeNameLabel.setText("새 사원");
-        employeeRoleLabel.setText("사원");
+        employeeNameLabel.setText("");
+        employeeRoleLabel.setText("");
     }
     
     private void setupButtons() {
