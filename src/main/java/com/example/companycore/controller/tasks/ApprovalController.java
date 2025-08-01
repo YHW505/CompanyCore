@@ -54,7 +54,7 @@ public class ApprovalController {
 
     @FXML
     public void initialize() {
-        approvalTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
+        approvalTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         approvalTable.setFixedCellSize(40);
 
         visibleRowCount = (int) (approvalTable.getHeight() / approvalTable.getFixedCellSize());

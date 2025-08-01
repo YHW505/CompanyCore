@@ -104,7 +104,7 @@ public class MeetingListController {
      */
     private void setupTable() {
         // 테이블 기본 설정
-        meetingTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY); // 너비 자동 조정
+        meetingTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY); // 너비 자동 조정
         meetingTable.setFixedCellSize(40); // 행 높이 고정
 
         // 테이블의 높이에 따라 한 페이지에 표시할 행 개수 계산
