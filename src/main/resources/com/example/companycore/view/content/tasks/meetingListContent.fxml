@@ -59,10 +59,12 @@
             </stylesheets>
         </Pagination>
         <Button fx:id="deleteBtn" onAction="#handleDelete" style="-fx-background-color: #444951; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" text="삭제" />
+        <Button fx:id="registerBtn" text="등록하기" onAction="#onRegisterClick"/>
     </HBox>
 
     <!-- 푸터 -->
     <HBox alignment="CENTER_LEFT" style="-fx-padding: 15 0 0 0;">
         <Label style="-fx-text-fill: #6c757d; -fx-font-size: 12px;" text="© Company Core" />
+
     </HBox>
 </VBox> 
