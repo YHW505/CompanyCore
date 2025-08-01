@@ -113,9 +113,9 @@
             <VBox fx:id="tasksSubMenu" spacing="0" visible="false" managed="false">
                 <HBox alignment="CENTER_LEFT" spacing="15" 
                       style="-fx-padding: 8 12 8 40; -fx-cursor: hand;"
-                      onMouseClicked="#handleAnnouncementsClick">
-                    <Label text="📢" style="-fx-font-size: 14px;"/>
-                    <Label text="공지사항" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 13px;"/>
+                      onMouseClicked="#handleMeetingListClick">
+                    <Label text="📋" style="-fx-font-size: 14px;"/>
+                    <Label text="회의 목록" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 13px;"/>
                 </HBox>
                 <HBox alignment="CENTER_LEFT" spacing="15" 
                       style="-fx-padding: 8 12 8 40; -fx-cursor: hand;"
@@ -129,6 +129,12 @@
                     <Label text="✅" style="-fx-font-size: 14px;"/>
                     <Label text="결재 승인" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 13px;"/>
                 </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="15" 
+                      style="-fx-padding: 8 12 8 40; -fx-cursor: hand;"
+                      onMouseClicked="#handleAnnouncementsClick">
+                    <Label text="📢" style="-fx-font-size: 14px;"/>
+                    <Label text="공지사항" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 13px;"/>
+                </HBox>
             </VBox>
         </VBox>
         
@@ -138,6 +144,14 @@
               onMouseClicked="#handleCalendarClick">
             <Label text="📅" style="-fx-font-size: 16px;"/>
             <Label text="캘린더" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+        </HBox>
+        
+        <!-- 인사관리 -->
+        <HBox fx:id="hrManagementMenu" alignment="CENTER_LEFT" spacing="15" 
+              style="-fx-padding: 12; -fx-background-radius: 8; -fx-cursor: hand;"
+              onMouseClicked="#handleHRManagementClick">
+            <Label text="👥" style="-fx-font-size: 16px;"/>
+            <Label text="인사관리" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 14px;"/>
         </HBox>
         
         <!-- 프로필 -->

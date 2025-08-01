@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.companycore.controller.EmployeeRegisterController"
+      style="-fx-background-color: #F8F9FA; -fx-padding: 20;" spacing="20" prefWidth="600" prefHeight="700">
+    
+    <!-- 헤더 -->
+    <HBox alignment="CENTER_LEFT" style="-fx-padding: 0 0 20 0;">
+        <Label text="등록" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="registerButton" text="등록" 
+                style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 5;"/>
+    </HBox>
+    
+    <!-- 사원 프로필 영역 -->
+    <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-padding: 20; -fx-background-color: white; -fx-background-radius: 8;">
+        <VBox alignment="CENTER" spacing="5">
+            <Label text="🐸" style="-fx-font-size: 48px;"/>
+        </VBox>
+        <VBox spacing="5">
+            <Label fx:id="employeeNameLabel" text="새 사원" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+            <Label fx:id="employeeRoleLabel" text="사원" style="-fx-font-size: 14px; -fx-text-fill: #6c757d;"/>
+        </VBox>
+    </HBox>
+    
+    <!-- 폼 영역 -->
+    <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20;" spacing="15">
+        <HBox spacing="20">
+            <!-- 왼쪽 컬럼 -->
+            <VBox spacing="15" HBox.hgrow="ALWAYS">
+                <VBox spacing="5">
+                    <Label text="이름" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                    <TextField fx:id="nameTextField" promptText="이름을 입력하세요"/>
+                </VBox>
+                
+                <VBox spacing="5">
+                    <Label text="사번" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                    <TextField fx:id="employeeIdTextField" promptText="사번을 입력하세요" disable="true"/>
+                </VBox>
+                
+                <VBox spacing="5">
+                    <Label text="부서" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                    <TextField fx:id="departmentTextField" promptText="부서를 입력하세요"/>
+                </VBox>
+                
+                <VBox spacing="5">
+                    <Label text="주소" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                    <TextField fx:id="addressTextField" promptText="주소를 입력하세요"/>
+                </VBox>
+                
+                <VBox spacing="5">
+                    <Label text="전화번호" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                    <TextField fx:id="phoneNumberTextField" promptText="전화번호를 입력하세요"/>
+                </VBox>
+            </VBox>
+            
+            <!-- 오른쪽 컬럼 -->
+            <VBox spacing="15" HBox.hgrow="ALWAYS">
+                <VBox spacing="5">
+                    <Label text="Email" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                    <TextField fx:id="emailTextField" promptText="이메일을 입력하세요"/>
+                </VBox>
+                
+                <VBox spacing="5">
+                    <Label text="직급" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                    <TextField fx:id="positionTextField" promptText="직급을 입력하세요"/>
+                </VBox>
+                
+                <VBox spacing="5">
+                    <Label text="비밀번호" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                    <PasswordField fx:id="passwordField" promptText="초기 비밀번호" disable="true"/>
+                </VBox>
+                
+                <VBox spacing="15">
+                    <!-- 빈 공간 -->
+                </VBox>
+            </VBox>
+        </HBox>
+    </VBox>
+    
+    <!-- 버튼 영역 -->
+    <HBox alignment="CENTER_RIGHT" spacing="10" style="-fx-padding: 10 0;">
+        <Button fx:id="cancelButton" text="취소" 
+                style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 5;"/>
+    </HBox>
+    
+</VBox> 

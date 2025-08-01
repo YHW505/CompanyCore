@@ -84,6 +84,10 @@ public class MainController {
         loadContent("profile");
     }
     
+    public void loadHRManagementContent() {
+        loadContent("hrManagement");
+    }
+    
 
     
     public void loadContent(String contentType) {
@@ -108,6 +112,9 @@ public class MainController {
                     break;
                 case "profile":
                     fxmlPath = "/com/example/companycore/view/content/profileContent.fxml";
+                    break;
+                case "hrManagement":
+                    fxmlPath = "/com/example/companycore/view/content/hrManagementContent.fxml";
                     break;
                 // 하위 메뉴 콘텐츠들
                 case "attendanceRecord":
@@ -134,6 +141,9 @@ public class MainController {
                     break;
                 case "approvalRequest":
                     fxmlPath = "/com/example/companycore/view/content/tasks/approvalRequestContent.fxml";
+                    break;
+                case "meetingList":
+                    fxmlPath = "/com/example/companycore/view/content/tasks/meetingListContent.fxml";
                     break;
                 case "approvalApproval":
                     fxmlPath = "/com/example/companycore/view/content/tasks/approvalApprovalContent.fxml";
