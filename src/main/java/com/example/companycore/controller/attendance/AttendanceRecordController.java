@@ -1,4 +1,4 @@
-package com.example.companycore.controller;
+package com.example.companycore.controller.attendance;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;

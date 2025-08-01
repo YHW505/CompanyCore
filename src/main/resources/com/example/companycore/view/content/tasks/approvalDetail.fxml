@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!-- ==================== JavaFX Import 문 ==================== -->
+<!-- JavaFX 컨트롤 및 레이아웃 컴포넌트들을 import -->
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
@@ -9,39 +11,69 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox spacing="10" style="-fx-padding: 20 20 20 20;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.companycore.controller.ApprovalDetailController">
+<!-- ==================== 메인 레이아웃 ==================== -->
+<!-- 결재 상세 정보를 표시하는 메인 컨테이너 -->
+<VBox spacing="10" style="-fx-padding: 20 20 20 20;" 
+      xmlns="http://javafx.com/javafx/21" 
+      xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.example.companycore.controller.tasks.ApprovalDetailController">
 
+    <!-- ==================== 제목 섹션 ==================== -->
+    <!-- 결재 상세 화면의 제목 -->
     <Label style="-fx-font-size: 18px; -fx-font-weight: bold;" text="결재 상세" />
 
+    <!-- ==================== 결재 정보 그리드 ==================== -->
+    <!-- 결재의 기본 정보(제목, 작성자, 날짜, 부서)를 표시하는 그리드 레이아웃 -->
     <GridPane hgap="10" vgap="10">
+        
+        <!-- 제목 정보 행 -->
         <Label text="제목:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
         <Label fx:id="titleLabel" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
+        <!-- 작성자 정보 행 -->
         <Label text="작성자:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
         <Label fx:id="writerLabel" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
+        <!-- 날짜 정보 행 -->
         <Label text="날짜:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
         <Label fx:id="dateLabel" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
+        <!-- 부서 정보 행 -->
         <Label text="부서:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
         <Label fx:id="departmentLabel" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-      <columnConstraints>
-         <ColumnConstraints />
-         <ColumnConstraints />
-      </columnConstraints>
-      <rowConstraints>
-         <RowConstraints />
-         <RowConstraints />
-         <RowConstraints />
-         <RowConstraints />
-      </rowConstraints>
+        
+        <!-- ==================== 그리드 레이아웃 설정 ==================== -->
+        <!-- 컬럼 제약 조건: 2개의 컬럼을 균등하게 분배 -->
+        <columnConstraints>
+           <ColumnConstraints />
+           <ColumnConstraints />
+        </columnConstraints>
+        
+        <!-- 행 제약 조건: 4개의 행을 균등하게 분배 -->
+        <rowConstraints>
+           <RowConstraints />
+           <RowConstraints />
+           <RowConstraints />
+           <RowConstraints />
+        </rowConstraints>
     </GridPane>
 
+    <!-- ==================== 결재 내용 섹션 ==================== -->
+    <!-- 결재 내용을 표시하는 텍스트 영역 -->
     <Label text="내용:" />
-    <TextArea fx:id="contentArea" editable="false" prefRowCount="10" wrapText="true" />
+    <TextArea fx:id="contentArea" 
+              editable="false" 
+              prefRowCount="10" 
+              wrapText="true" />
 
+    <!-- ==================== 첨부파일 섹션 ==================== -->
+    <!-- 첨부파일 목록을 표시하는 리스트 뷰 -->
     <Label text="첨부파일:" />
-    <ListView fx:id="attachmentListView" prefHeight="54.0" prefWidth="512.0" />
+    <ListView fx:id="attachmentListView" 
+              prefHeight="54.0" 
+              prefWidth="512.0" />
 
+    <!-- ==================== 액션 버튼 ==================== -->
+    <!-- 다이얼로그를 닫는 버튼 -->
     <Button onAction="#onClose" text="닫기" />
 </VBox>

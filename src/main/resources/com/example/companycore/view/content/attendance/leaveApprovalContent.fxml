@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.example.companycore.controller.LeaveApprovalController"
+      fx:controller="com.example.companycore.controller.attendance.LeaveApprovalController"
       spacing="20" style="-fx-padding: 20;" VBox.vgrow="ALWAYS">
     
     <!-- 상단 헤더 -->

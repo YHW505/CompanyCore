@@ -1,4 +1,4 @@
-package com.example.companycore.controller;
+package com.example.companycore.controller.profile;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;

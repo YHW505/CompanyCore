@@ -6,7 +6,7 @@
 <?import javafx.scene.text.Font?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.example.companycore.controller.EmployeeRegisterController"
+      fx:controller="com.example.companycore.controller.hr.EmployeeRegisterController"
       style="-fx-background-color: #F8F9FA; -fx-padding: 20;" spacing="20" prefWidth="600" prefHeight="700">
     
     <!-- 헤더 -->
@@ -40,7 +40,7 @@
                 
                 <VBox spacing="5">
                     <Label text="사번" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-                    <TextField fx:id="employeeIdTextField" promptText="사번을 입력하세요" disable="true"/>
+                    <TextField fx:id="employeeIdTextField" promptText="사번을 입력하세요"/>
                 </VBox>
                 
                 <VBox spacing="5">
@@ -85,7 +85,7 @@
     
     <!-- 버튼 영역 -->
     <HBox alignment="CENTER_RIGHT" spacing="10" style="-fx-padding: 10 0;">
-        <Button fx:id="cancelButton" text="취소" 
+        <Button fx:id="cancelButton" text="취소"
                 style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 5;"/>
     </HBox>
     

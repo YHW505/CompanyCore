@@ -1,4 +1,4 @@
-package com.example.companycore.controller;
+package com.example.companycore.controller.tasks;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
