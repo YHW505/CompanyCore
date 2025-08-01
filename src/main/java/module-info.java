@@ -25,6 +25,10 @@ module com.example.companycore {
     exports com.example.companycore.controller;
     opens com.example.companycore.controller to javafx.fxml;
 
+    // Entity 패키지 설정 추가
+    exports com.example.companycore.model.entity;
+    opens com.example.companycore.model.entity to javafx.base, javafx.fxml;
+
     // DTO 패키지 설정 추가 (이 부분이 누락되어 있었습니다!)
     exports com.example.companycore.model.dto;
     opens com.example.companycore.model.dto to com.fasterxml.jackson.databind;

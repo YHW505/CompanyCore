@@ -1,24 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
 <?import javafx.collections.FXCollections?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Pagination?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
-<?import javafx.scene.layout.VBox?>
-
+<?import java.lang.String?>
 <?import java.net.URL?>
-<VBox alignment="CENTER" spacing="15" style="-fx-padding: 10;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.companycore.controller.ApprovalController">
+
+<VBox alignment="CENTER" spacing="15" style="-fx-padding: 10;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.companycore.controller.MeetingListController">
 
     <!-- 상단 헤더 -->
     <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 50 0 15 0; -fx-max-width: 1000;">
-        <Label prefWidth="120.0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="결재 승인" />
+        <Label prefWidth="120.0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="회의 목록" />
         <Region HBox.hgrow="ALWAYS" />
 
         <!-- 검색용 ComboBox -->
@@ -40,18 +35,18 @@
 
     <!-- 테이블 -->
     <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2); -fx-max-width: 1000;">
-        <TableView fx:id="approvalTable" prefHeight="437.0" prefWidth="842.0" style="-fx-background-color: transparent;">
+        <TableView fx:id="meetingTable" prefHeight="437.0" prefWidth="842.0" style="-fx-background-color: transparent;">
             <!-- 데이터 없을 때 메시지 -->
             <placeholder>
                 <Label style="-fx-text-fill: #999; -fx-font-size: 14px; -fx-padding: 20;" text="데이터가 없습니다." />
             </placeholder>
             <columns>
                 <TableColumn fx:id="colNumber" prefWidth="100" text="순서" />
-                <TableColumn fx:id="colTitle" prefWidth="200" text="제목" />
+                <TableColumn fx:id="colTitle" prefWidth="200" text="회의 제목" />
                 <TableColumn fx:id="colDepartment" prefWidth="120" text="부서" />
                 <TableColumn fx:id="colAuthor" prefWidth="120" text="작성자" />
                 <TableColumn fx:id="colDate" prefWidth="140" text="일자" />
-                <TableColumn fx:id="colAction" prefWidth="160" text="거부/승인" />
+                <TableColumn fx:id="colAction" prefWidth="160" text="상세보기" />
             </columns>
         </TableView>
     </VBox>
@@ -70,4 +65,4 @@
     <HBox alignment="CENTER_LEFT" style="-fx-padding: 15 0 0 0;">
         <Label style="-fx-text-fill: #6c757d; -fx-font-size: 12px;" text="© Company Core" />
     </HBox>
-</VBox>
+</VBox> 

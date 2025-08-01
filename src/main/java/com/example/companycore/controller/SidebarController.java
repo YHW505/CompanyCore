@@ -24,7 +24,10 @@ public class SidebarController {
     @FXML
     private HBox calendarMenu;
     
-        @FXML
+    @FXML
+    private HBox hrManagementMenu;
+    
+    @FXML
     private HBox profileMenu;
 
     @FXML
@@ -253,6 +256,19 @@ public class SidebarController {
     }
     
     @FXML
+    public void handleHRManagementClick() {
+        setSelectedMenu(hrManagementMenu);
+        
+        // 모든 하위 메뉴 닫기
+        closeAllSubMenus();
+        
+        // 메인 컨트롤러에 인사관리 화면 로드 요청
+        Platform.runLater(() -> {
+            loadHRManagementContent();
+        });
+    }
+    
+    @FXML
     public void handleProfileClick() {
         setSelectedMenu(profileMenu);
         
@@ -393,11 +409,22 @@ public class SidebarController {
     }
     
     @FXML
-    public void handleAnnouncementsClick() {
+    public void handleMeetingListClick() {
         // 모든 하위 메뉴 스타일 초기화
         resetAllSubMenuStyles();
         // 선택된 하위 메뉴 굵게 표시
         setSubMenuSelectedStyle((HBox) tasksSubMenu.getChildren().get(0));
+        Platform.runLater(() -> {
+            loadMeetingListContent();
+        });
+    }
+    
+    @FXML
+    public void handleAnnouncementsClick() {
+        // 모든 하위 메뉴 스타일 초기화
+        resetAllSubMenuStyles();
+        // 선택된 하위 메뉴 굵게 표시
+        setSubMenuSelectedStyle((HBox) tasksSubMenu.getChildren().get(3));
         Platform.runLater(() -> {
             loadAnnouncementsContent();
         });
@@ -467,6 +494,17 @@ public class SidebarController {
             }
         } catch (Exception e) {
             System.err.println("프로필 콘텐츠 로드 중 오류: " + e.getMessage());
+        }
+    }
+    
+    private void loadHRManagementContent() {
+        try {
+            MainController mainController = (MainController) homeMenu.getScene().getUserData();
+            if (mainController != null) {
+                mainController.loadHRManagementContent();
+            }
+        } catch (Exception e) {
+            System.err.println("인사관리 콘텐츠 로드 중 오류: " + e.getMessage());
         }
     }
     
@@ -558,6 +596,17 @@ public class SidebarController {
             }
         } catch (Exception e) {
             System.err.println("결재 승인 콘텐츠 로드 중 오류: " + e.getMessage());
+        }
+    }
+    
+    private void loadMeetingListContent() {
+        try {
+            MainController mainController = (MainController) homeMenu.getScene().getUserData();
+            if (mainController != null) {
+                mainController.loadContent("meetingList");
+            }
+        } catch (Exception e) {
+            System.err.println("회의 목록 콘텐츠 로드 중 오류: " + e.getMessage());
         }
     }
     
