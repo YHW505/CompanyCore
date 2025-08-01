@@ -63,9 +63,9 @@ public class EmployeeRegisterController {
     }
     
     private void setupForm() {
-        // 사번 자동 생성
-        employeeIdTextField.setText(String.valueOf(nextEmployeeId));
-        employeeIdTextField.setDisable(true); // 자동 생성이므로 수정 불가
+        // 사번 필드를 빈칸으로 시작 (직접 입력)
+        employeeIdTextField.clear();
+        employeeIdTextField.setDisable(false); // 수정 가능하도록 활성화
         
         // 비밀번호 필드에 초기 비밀번호 설정
         passwordField.setText("초기 비밀번호");
@@ -79,6 +79,7 @@ public class EmployeeRegisterController {
     private void setupButtons() {
         // 등록 버튼
         registerButton.setOnAction(event -> {
+            System.out.println("등록 버튼 클릭됨");
             if (validateInput()) {
                 registerEmployee();
                 closeDialog();
@@ -87,14 +88,22 @@ public class EmployeeRegisterController {
         
         // 취소 버튼
         cancelButton.setOnAction(event -> {
+            System.out.println("취소 버튼 클릭됨 (setupButtons에서)");
             closeDialog();
         });
     }
+    
+
     
     private boolean validateInput() {
         // 필수 필드 검증
         if (nameTextField.getText().trim().isEmpty()) {
             showAlert("입력 오류", "이름을 입력해주세요.", Alert.AlertType.ERROR);
+            return false;
+        }
+        
+        if (employeeIdTextField.getText().trim().isEmpty()) {
+            showAlert("입력 오류", "사번을 입력해주세요.", Alert.AlertType.ERROR);
             return false;
         }
         
@@ -164,11 +173,34 @@ public class EmployeeRegisterController {
     }
     
     private void closeDialog() {
+        System.out.println("closeDialog() 호출됨 (EmployeeRegister)");
+        
+        // 여러 방법으로 Stage를 찾아보기
+        Stage stage = null;
+        
+        // 방법 1: contentArea를 통해 찾기
         if (contentArea != null && contentArea.getScene() != null) {
-            Stage stage = (Stage) contentArea.getScene().getWindow();
-            if (stage != null) {
-                stage.close();
-            }
+            stage = (Stage) contentArea.getScene().getWindow();
+            System.out.println("contentArea를 통해 Stage 찾음: " + (stage != null));
+        }
+        
+        // 방법 2: 다른 컨트롤을 통해 찾기
+        if (stage == null && cancelButton != null && cancelButton.getScene() != null) {
+            stage = (Stage) cancelButton.getScene().getWindow();
+            System.out.println("cancelButton을 통해 Stage 찾음: " + (stage != null));
+        }
+        
+        // 방법 3: registerButton을 통해 찾기
+        if (stage == null && registerButton != null && registerButton.getScene() != null) {
+            stage = (Stage) registerButton.getScene().getWindow();
+            System.out.println("registerButton을 통해 Stage 찾음: " + (stage != null));
+        }
+        
+        if (stage != null) {
+            System.out.println("Stage 닫기 시도");
+            stage.close();
+        } else {
+            System.out.println("Stage를 찾을 수 없음");
         }
     }
     

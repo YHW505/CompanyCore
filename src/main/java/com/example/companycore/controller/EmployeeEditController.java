@@ -113,6 +113,7 @@ public class EmployeeEditController {
         
         // 저장 버튼
         saveButton.setOnAction(event -> {
+            System.out.println("저장 버튼 클릭됨");
             if (validateInput()) {
                 saveEmployeeData();
                 closeDialog();
@@ -121,9 +122,12 @@ public class EmployeeEditController {
         
         // 취소 버튼
         cancelButton.setOnAction(event -> {
+            System.out.println("취소 버튼 클릭됨 (setupButtons에서)");
             closeDialog();
         });
     }
+    
+
     
     private boolean validateInput() {
         // 필수 필드 검증
@@ -189,11 +193,34 @@ public class EmployeeEditController {
     }
     
     private void closeDialog() {
+        System.out.println("closeDialog() 호출됨");
+        
+        // 여러 방법으로 Stage를 찾아보기
+        Stage stage = null;
+        
+        // 방법 1: contentArea를 통해 찾기
         if (contentArea != null && contentArea.getScene() != null) {
-            Stage stage = (Stage) contentArea.getScene().getWindow();
-            if (stage != null) {
-                stage.close();
-            }
+            stage = (Stage) contentArea.getScene().getWindow();
+            System.out.println("contentArea를 통해 Stage 찾음: " + (stage != null));
+        }
+        
+        // 방법 2: 다른 컨트롤을 통해 찾기
+        if (stage == null && cancelButton != null && cancelButton.getScene() != null) {
+            stage = (Stage) cancelButton.getScene().getWindow();
+            System.out.println("cancelButton을 통해 Stage 찾음: " + (stage != null));
+        }
+        
+        // 방법 3: saveButton을 통해 찾기
+        if (stage == null && saveButton != null && saveButton.getScene() != null) {
+            stage = (Stage) saveButton.getScene().getWindow();
+            System.out.println("saveButton을 통해 Stage 찾음: " + (stage != null));
+        }
+        
+        if (stage != null) {
+            System.out.println("Stage 닫기 시도");
+            stage.close();
+        } else {
+            System.out.println("Stage를 찾을 수 없음");
         }
     }
     

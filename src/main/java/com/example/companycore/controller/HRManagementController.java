@@ -134,6 +134,14 @@ public class HRManagementController {
         emailColumn.setPrefWidth(140);
         editColumn.setPrefWidth(160);
         
+        // 모든 컬럼 중앙 정렬 설정
+        idColumn.setStyle("-fx-alignment: CENTER;");
+        nameColumn.setStyle("-fx-alignment: CENTER;");
+        departmentColumn.setStyle("-fx-alignment: CENTER;");
+        employeeIdColumn.setStyle("-fx-alignment: CENTER;");
+        emailColumn.setStyle("-fx-alignment: CENTER;");
+        editColumn.setStyle("-fx-alignment: CENTER;");
+        
         // 수정 버튼 컬럼 설정
         editColumn.setCellFactory(param -> new TableCell<>() {
             private final Button editButton = new Button("✏️");
