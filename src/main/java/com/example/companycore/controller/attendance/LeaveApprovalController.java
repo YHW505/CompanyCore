@@ -10,7 +10,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.CheckBox;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import com.example.companycore.model.dto.LeaveRequest;
+import com.example.companycore.model.dto.LeaveRequestDto;
 import javafx.scene.Node;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -29,7 +29,7 @@ public class LeaveApprovalController implements Initializable {
     
     private int currentPage = 1;
     private int totalPages = 20;
-    private List<LeaveRequest> leaveRequests = new ArrayList<>();
+    private List<LeaveRequestDto> leaveRequests = new ArrayList<>();
     private ObservableList<CheckBox> rowCheckBoxes = FXCollections.observableArrayList();
     
 
@@ -91,7 +91,7 @@ public class LeaveApprovalController implements Initializable {
         rowCheckBoxes.clear();
         
         // 현재 페이지의 데이터만 표시 (실제로는 데이터베이스에서 가져옴)
-        List<LeaveRequest> pageData = getPageData(currentPage);
+        List<LeaveRequestDto> pageData = getPageData(currentPage);
         
         for (int i = 0; i < 10; i++) {
             if (i < pageData.size()) {
@@ -102,7 +102,7 @@ public class LeaveApprovalController implements Initializable {
         }
     }
     
-    private List<LeaveRequest> getPageData(int page) {
+    private List<LeaveRequestDto> getPageData(int page) {
         // 실제로는 데이터베이스에서 페이지별로 가져옴
         if (page == 1) {
             return leaveRequests;
@@ -111,7 +111,7 @@ public class LeaveApprovalController implements Initializable {
         }
     }
     
-    private void addTableRow(LeaveRequest request, int rowIndex) {
+    private void addTableRow(LeaveRequestDto request, int rowIndex) {
         HBox row = new HBox(0);
         row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         row.setStyle("-fx-padding: 10; -fx-border-color: #e9ecef; -fx-border-width: 0 0 1 0; -fx-min-height: 50; -fx-pref-height: 50;");
@@ -149,7 +149,7 @@ public class LeaveApprovalController implements Initializable {
         VBox dateContainer = new VBox();
         dateContainer.setAlignment(javafx.geometry.Pos.CENTER);
         dateContainer.setStyle("-fx-min-width: 200; -fx-pref-width: 200; -fx-min-height: 50; -fx-pref-height: 50;");
-        Label dateLabel = new Label(request.getDate());
+        Label dateLabel = new Label(request.getStartDate() + " ~ " + request.getEndDate());
         dateContainer.getChildren().add(dateLabel);
         
         // 거부/승인 버튼들
@@ -160,7 +160,7 @@ public class LeaveApprovalController implements Initializable {
         tableData.getChildren().add(row);
     }
     
-    private HBox createActionButtons(LeaveRequest request, int rowIndex) {
+    private HBox createActionButtons(LeaveRequestDto request, int rowIndex) {
         HBox buttonContainer = new HBox(5);
         buttonContainer.setAlignment(javafx.geometry.Pos.CENTER);
         buttonContainer.setStyle("-fx-alignment: CENTER;");

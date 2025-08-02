@@ -1,6 +1,7 @@
 package com.example.companycore.controller.hr;
 
-import com.example.companycore.model.entity.Employee;
+import com.example.companycore.model.entity.User;
+import com.example.companycore.model.entity.Enum.Role;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -12,6 +13,9 @@ import javafx.scene.control.PasswordField;
 import javafx.stage.Stage;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import com.example.companycore.service.ApiClient;
 
 public class EmployeeRegisterController {
     
@@ -56,10 +60,13 @@ public class EmployeeRegisterController {
     
     private static int nextEmployeeId = 2534013; // 다음 사번
     
+    private ApiClient apiClient; // Added APIClient instance
+    
     @FXML
     public void initialize() {
         setupForm();
         setupButtons();
+        apiClient = ApiClient.getInstance();
     }
     
     private void setupForm() {
@@ -146,26 +153,42 @@ public class EmployeeRegisterController {
     
     private void registerEmployee() {
         try {
-            // 새 사원 객체 생성
-            Employee newEmployee = new Employee(
-                nextEmployeeId,
-                nameTextField.getText().trim(),
-                employeeIdTextField.getText().trim(),
-                departmentTextField.getText().trim(),
-                addressTextField.getText().trim(),
-                phoneNumberTextField.getText().trim(),
-                emailTextField.getText().trim(),
-                positionTextField.getText().trim(),
-                passwordField.getText()
-            );
+            // 새 사원 객체 생성 (User Entity 사용)
+            User newEmployee = new User();
             
-            // 여기서 실제 데이터베이스에 저장하는 로직을 구현
-            // 현재는 메모리에만 저장하는 예시
+            // 기본 정보 설정
+            newEmployee.setUserId((long) nextEmployeeId);
+            newEmployee.setEmployeeCode(employeeIdTextField.getText().trim());
+            newEmployee.setUsername(nameTextField.getText().trim());
+            newEmployee.setJoinDate(LocalDate.now()); // 입사일은 오늘로 설정
+            newEmployee.setPassword(passwordField.getText());
+            newEmployee.setEmail(emailTextField.getText().trim());
+            newEmployee.setPhone(phoneNumberTextField.getText().trim());
             
-            // 다음 사번 증가
-            nextEmployeeId++;
+            // 기본값 설정
+            newEmployee.setRole(Role.EMPLOYEE); // 기본 역할은 사원
+            newEmployee.setIsFirstLogin(1); // 첫 로그인 여부
+            newEmployee.setIsActive(1); // 활성 상태
+            newEmployee.setCreatedAt(LocalDateTime.now()); // 생성 시간
             
-            showAlert("성공", "사원이 성공적으로 등록되었습니다.", Alert.AlertType.INFORMATION);
+            // 부서와 직급 ID는 임시로 설정 (실제로는 데이터베이스에서 조회해야 함)
+            newEmployee.setDepartmentId(1); // 임시 부서 ID
+            newEmployee.setPositionId(1); // 임시 직급 ID
+            
+            // 생년월일은 선택사항이므로 null로 설정
+            newEmployee.setBirthDate(null);
+            
+            // 실제 API 호출로 사용자 생성
+            User createdUser = apiClient.createUser(newEmployee);
+            
+            if (createdUser != null) {
+                // 다음 사번 증가
+                nextEmployeeId++;
+                
+                showAlert("성공", "사원이 성공적으로 등록되었습니다.", Alert.AlertType.INFORMATION);
+            } else {
+                showAlert("오류", "사원 등록에 실패했습니다.", Alert.AlertType.ERROR);
+            }
             
         } catch (Exception e) {
             showAlert("오류", "사원 등록 중 오류가 발생했습니다: " + e.getMessage(), Alert.AlertType.ERROR);

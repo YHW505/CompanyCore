@@ -1,17 +1,22 @@
 package com.example.companycore.model.dto;
 
+import com.example.companycore.model.entity.Enum.Role;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LoginResponse {
     private String token;
     private String employeeCode;
     private String username;
-    private String role;
+    
+    @JsonProperty("role")
+    private Role role;  // String에서 Role enum으로 변경
+    
     private String message;
     private boolean firstLogin;
-    private int userId;        // int 타입으로 변경
-    private int departmentId;  // 새로 추가
+    private int userId;
+    private int departmentId;
 
     // 기본 생성자
     public LoginResponse() {}
@@ -41,11 +46,11 @@ public class LoginResponse {
         this.username = username;
     }
 
-    public String getRole() {
+    public Role getRole() {  // Role enum 반환
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {  // Role enum 설정
         this.role = role;
     }
 
@@ -87,7 +92,7 @@ public class LoginResponse {
                 "token='" + token + '\'' +
                 ", employeeCode='" + employeeCode + '\'' +
                 ", username='" + username + '\'' +
-                ", role='" + role + '\'' +
+                ", role=" + role +
                 ", message='" + message + '\'' +
                 ", firstLogin=" + firstLogin +
                 ", userId=" + userId +

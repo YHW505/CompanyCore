@@ -1,6 +1,7 @@
 package com.example.companycore.controller;
 
-import com.example.companycore.model.entity.Employee;
+import com.example.companycore.model.entity.User;
+import com.example.companycore.model.entity.Enum.Role;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -12,6 +13,8 @@ import javafx.scene.control.PasswordField;
 import javafx.stage.Stage;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class EmployeeRegisterController {
     
@@ -146,18 +149,30 @@ public class EmployeeRegisterController {
     
     private void registerEmployee() {
         try {
-            // 새 사원 객체 생성
-            Employee newEmployee = new Employee(
-                nextEmployeeId,
-                nameTextField.getText().trim(),
-                employeeIdTextField.getText().trim(),
-                departmentTextField.getText().trim(),
-                addressTextField.getText().trim(),
-                phoneNumberTextField.getText().trim(),
-                emailTextField.getText().trim(),
-                positionTextField.getText().trim(),
-                passwordField.getText()
-            );
+            // 새 사원 객체 생성 (User Entity 사용)
+            User newEmployee = new User();
+            
+            // 기본 정보 설정
+            newEmployee.setUserId((long) nextEmployeeId);
+            newEmployee.setEmployeeCode(employeeIdTextField.getText().trim());
+            newEmployee.setUsername(nameTextField.getText().trim());
+            newEmployee.setJoinDate(LocalDate.now()); // 입사일은 오늘로 설정
+            newEmployee.setPassword(passwordField.getText());
+            newEmployee.setEmail(emailTextField.getText().trim());
+            newEmployee.setPhone(phoneNumberTextField.getText().trim());
+            
+            // 기본값 설정
+            newEmployee.setRole(Role.EMPLOYEE); // 기본 역할은 사원
+            newEmployee.setIsFirstLogin(1); // 첫 로그인 여부
+            newEmployee.setIsActive(1); // 활성 상태
+            newEmployee.setCreatedAt(LocalDateTime.now()); // 생성 시간
+            
+            // 부서와 직급 ID는 임시로 설정 (실제로는 데이터베이스에서 조회해야 함)
+            newEmployee.setDepartmentId(1); // 임시 부서 ID
+            newEmployee.setPositionId(1); // 임시 직급 ID
+            
+            // 생년월일은 선택사항이므로 null로 설정
+            newEmployee.setBirthDate(null);
             
             // 여기서 실제 데이터베이스에 저장하는 로직을 구현
             // 현재는 메모리에만 저장하는 예시

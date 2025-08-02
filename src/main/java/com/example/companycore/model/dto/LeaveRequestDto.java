@@ -1,32 +1,36 @@
 package com.example.companycore.model.dto;
 
 /**
- * 휴가신청 데이터를 담는 DTO 클래스
+ * 휴가신청 데이터를 담는 DTO 클래스 (UI용)
  * 
  * @author Company Core Team
  * @version 1.0
  */
-public class LeaveRequest {
+public class LeaveRequestDto {
     private String leaveType;
     private String employeeId;
     private String employeeName;
-    private String date;
+    private String startDate;
+    private String endDate;
     private String status; // "pending", "approved", "rejected"
     
     /**
-     * LeaveRequest 생성자
+     * LeaveRequestDto 생성자
      * 
      * @param leaveType 휴가 유형
      * @param employeeId 사원 ID
      * @param employeeName 사원 이름
-     * @param date 신청 날짜
+     * @param startDate 시작 날짜
+     * @param endDate 종료 날짜
      * @param status 승인 상태
      */
-    public LeaveRequest(String leaveType, String employeeId, String employeeName, String date, String status) {
+    public LeaveRequestDto(String leaveType, String employeeId, String employeeName, 
+                          String startDate, String endDate, String status) {
         this.leaveType = leaveType;
         this.employeeId = employeeId;
         this.employeeName = employeeName;
-        this.date = date;
+        this.startDate = startDate;
+        this.endDate = endDate;
         this.status = status;
     }
     
@@ -56,12 +60,20 @@ public class LeaveRequest {
         this.employeeName = employeeName; 
     }
     
-    public String getDate() { 
-        return date; 
+    public String getStartDate() { 
+        return startDate; 
     }
     
-    public void setDate(String date) { 
-        this.date = date; 
+    public void setStartDate(String startDate) { 
+        this.startDate = startDate; 
+    }
+    
+    public String getEndDate() { 
+        return endDate; 
+    }
+    
+    public void setEndDate(String endDate) { 
+        this.endDate = endDate; 
     }
     
     public String getStatus() { 
@@ -70,5 +82,17 @@ public class LeaveRequest {
     
     public void setStatus(String status) { 
         this.status = status; 
+    }
+    
+    @Override
+    public String toString() {
+        return "LeaveRequestDto{" +
+                "leaveType='" + leaveType + '\'' +
+                ", employeeId='" + employeeId + '\'' +
+                ", employeeName='" + employeeName + '\'' +
+                ", startDate='" + startDate + '\'' +
+                ", endDate='" + endDate + '\'' +
+                ", status='" + status + '\'' +
+                '}';
     }
 } 
