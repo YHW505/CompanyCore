@@ -9,6 +9,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -180,8 +181,8 @@ public class ProfileController implements Initializable {
         emailLabel.setText(currentUser.getEmail());
         phoneLabel.setText(currentUser.getPhone());
         
-        // 주소는 User Entity에 없으므로 빈 값으로 설정
-        addressLabel.setText("정보 없음");
+        // 주소 필드 설정
+        addressLabel.setText(currentUser.getAddress() != null ? currentUser.getAddress() : "정보 없음");
         
         // 입사일 포맷팅
         if (currentUser.getJoinDate() != null) {

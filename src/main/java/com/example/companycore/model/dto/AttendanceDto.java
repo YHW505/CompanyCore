@@ -1,7 +1,6 @@
 package com.example.companycore.model.dto;
 
 import com.example.companycore.model.entity.Enum.AttendanceStatus;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -16,7 +15,7 @@ public class AttendanceDto {
     private Long userId;
     private LocalDateTime checkIn;
     private LocalDateTime checkOut;
-    private BigDecimal workHours;
+    private String workHours;
     private LocalDate workDate;
     private AttendanceStatus status;
 
@@ -25,7 +24,7 @@ public class AttendanceDto {
 
     // 생성자
     public AttendanceDto(Integer attendanceId, Long userId, LocalDateTime checkIn,
-                        LocalDateTime checkOut, BigDecimal workHours, LocalDate workDate,
+                        LocalDateTime checkOut, String workHours, LocalDate workDate,
                         AttendanceStatus status) {
         this.attendanceId = attendanceId;
         this.userId = userId;
@@ -50,8 +49,8 @@ public class AttendanceDto {
     public LocalDateTime getCheckOut() { return checkOut; }
     public void setCheckOut(LocalDateTime checkOut) { this.checkOut = checkOut; }
 
-    public BigDecimal getWorkHours() { return workHours; }
-    public void setWorkHours(BigDecimal workHours) { this.workHours = workHours; }
+    public String getWorkHours() { return workHours; }
+    public void setWorkHours(String workHours) { this.workHours = workHours; }
 
     public LocalDate getWorkDate() { return workDate; }
     public void setWorkDate(LocalDate workDate) { this.workDate = workDate; }
