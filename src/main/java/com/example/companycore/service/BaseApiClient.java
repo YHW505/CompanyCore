@@ -29,6 +29,7 @@ public abstract class BaseApiClient {
     protected BaseApiClient() {
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
+                .version(HttpClient.Version.HTTP_1_1)  // HTTP 버전 명시
                 .build();
 
         // ObjectMapper 설정
@@ -109,11 +110,48 @@ public abstract class BaseApiClient {
         }
     }
 
+    // 안전한 HTTP 응답 처리 유틸리티 메서드
+    protected String getSafeResponseBody(HttpResponse<String> response) {
+        String responseBody = response.body();
+        if (responseBody == null) {
+            System.out.println("응답 본문이 null입니다.");
+            return "";
+        }
+        return responseBody;
+    }
+
+    // HTTP 응답 상태 확인 및 로깅
+    protected void logResponseInfo(HttpResponse<String> response, String operation) {
+        System.out.println(operation + " 상태 코드: " + response.statusCode());
+        System.out.println(operation + " 응답 헤더: " + response.headers().map());
+        
+        String responseBody = getSafeResponseBody(response);
+        if (!responseBody.isEmpty()) {
+            System.out.println(operation + " 응답 본문 길이: " + responseBody.length());
+            System.out.println(operation + " 응답 본문: '" + responseBody + "'");
+        } else {
+            System.out.println(operation + " 응답 본문이 비어있습니다.");
+        }
+    }
+
+    // Chunked transfer encoding 오류 처리
+    protected void handleChunkedTransferError(Exception e, String operation) {
+        System.out.println(operation + " 중 예외 발생: " + e.getMessage());
+        System.out.println("예외 타입: " + e.getClass().getSimpleName());
+        if (e.getMessage() != null && e.getMessage().contains("chunked")) {
+            System.out.println("⚠️ Chunked transfer encoding 오류가 발생했습니다.");
+            System.out.println("이는 서버 응답 처리 중 발생하는 문제일 수 있습니다.");
+            System.out.println("서버 연결 상태를 확인해주세요.");
+        }
+        e.printStackTrace();
+    }
+
     // 인증된 요청 빌더 생성
     protected HttpRequest.Builder createAuthenticatedRequestBuilder(String endpoint) {
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + endpoint))
-                .header("Content-Type", "application/json");
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json");  // Accept 헤더 추가
 
         if (hasValidToken()) {
             String authHeader = "Bearer " + authToken;
@@ -130,7 +168,8 @@ public abstract class BaseApiClient {
     protected HttpRequest.Builder createAuthenticatedRequestBuilderWithXAuthToken(String endpoint) {
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + endpoint))
-                .header("Content-Type", "application/json");
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json");  // Accept 헤더 추가
 
         if (hasValidToken()) {
             builder.header("X-Auth-Token", authToken);
@@ -147,7 +186,8 @@ public abstract class BaseApiClient {
         String urlWithToken = BASE_URL + endpoint + "?token=" + authToken;
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(urlWithToken))
-                .header("Content-Type", "application/json");
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json");  // Accept 헤더 추가
 
         if (hasValidToken()) {
             System.out.println("🔐 토큰을 쿼리 파라미터로 전송: " + urlWithToken);
@@ -169,47 +209,47 @@ public abstract class BaseApiClient {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(BASE_URL + "/auth/login"))
                     .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")  // Accept 헤더 추가
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println("응답 상태 코드: " + response.statusCode());
-            System.out.println("응답 헤더: " + response.headers().map());
-            System.out.println("응답 본문: '" + response.body() + "'");
-            System.out.println("응답 본문 길이: " + (response.body() != null ? response.body().length() : 0));
+            logResponseInfo(response, "로그인");
+            
+            // 응답 본문 안전하게 읽기
+            String responseBody = getSafeResponseBody(response);
 
             if (response.statusCode() == 200) {
-                if (response.body() == null || response.body().trim().isEmpty()) {
+                if (responseBody == null || responseBody.trim().isEmpty()) {
                     System.out.println("서버에서 빈 응답을 받았습니다!");
                     return null;
                 }
 
                 try {
                     System.out.println("JSON 파싱 시도 중...");
-                    System.out.println("파싱할 JSON: " + response.body());
+                    System.out.println("파싱할 JSON: " + responseBody);
                     
                     // 먼저 JsonNode로 파싱해서 구조 확인
-                    JsonNode jsonNode = objectMapper.readTree(response.body());
+                    JsonNode jsonNode = objectMapper.readTree(responseBody);
                     System.out.println("JSON 구조: " + jsonNode.toString());
                     
-                    LoginResponse loginResponse = objectMapper.readValue(response.body(), LoginResponse.class);
+                    LoginResponse loginResponse = objectMapper.readValue(responseBody, LoginResponse.class);
                     System.out.println("JSON 파싱 성공!");
                     System.out.println("파싱된 응답: " + loginResponse);
                     return loginResponse;
                 } catch (Exception parseException) {
                     System.out.println("JSON 파싱 실패: " + parseException.getMessage());
-                    System.out.println("파싱하려던 JSON: " + response.body());
+                    System.out.println("파싱하려던 JSON: " + responseBody);
                     parseException.printStackTrace();
                     return null;
                 }
             } else {
                 System.out.println("로그인 실패 - 상태 코드: " + response.statusCode());
-                System.out.println("오류 응답: " + response.body());
+                System.out.println("오류 응답: " + responseBody);
                 return null;
             }
         } catch (Exception e) {
-            System.out.println("로그인 중 예외 발생: " + e.getMessage());
-            e.printStackTrace();
+            handleChunkedTransferError(e, "로그인");
             return null;
         }
     }

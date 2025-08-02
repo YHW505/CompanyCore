@@ -226,8 +226,8 @@ public class ApiClient {
         return leaveApiClient.createLeaveRequest(leaveRequest);
     }
 
-    public boolean approveLeaveRequest(Long leaveId, Long approvedBy) {
-        return leaveApiClient.approveLeaveRequest(leaveId, approvedBy);
+    public boolean approveLeaveRequest(Long leaveId, Long approverId) {
+        return leaveApiClient.approveLeaveRequest(leaveId, approverId);
     }
 
     public boolean rejectLeaveRequest(Long leaveId, Long rejectedBy, String rejectionReason) {

@@ -43,32 +43,32 @@ public class UserApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println("공지사항 요청 상태 코드: " + response.statusCode());
-            System.out.println("공지사항 응답: " + response.body());
+            logResponseInfo(response, "공지사항 요청");
 
             if (response.statusCode() == 200) {
-                if (response.body() == null || response.body().trim().isEmpty()) {
+                String responseBody = getSafeResponseBody(response);
+                if (responseBody == null || responseBody.trim().isEmpty()) {
                     System.out.println("서버에서 빈 공지사항 응답을 받았습니다!");
                     return new ArrayList<>();
                 }
 
                 try {
-                    List<NoticeItem> notices = objectMapper.readValue(response.body(),
+                    List<NoticeItem> notices = objectMapper.readValue(responseBody,
                             objectMapper.getTypeFactory().constructCollectionType(List.class, NoticeItem.class));
                     System.out.println("공지사항 파싱 성공! 개수: " + notices.size());
                     return notices;
                 } catch (Exception parseException) {
                     System.out.println("공지사항 JSON 파싱 실패: " + parseException.getMessage());
-                    System.out.println("파싱하려던 JSON: " + response.body());
+                    System.out.println("파싱하려던 JSON: " + responseBody);
                     return new ArrayList<>();
                 }
             } else {
                 System.out.println("공지사항 요청 실패 - 상태 코드: " + response.statusCode());
-                System.out.println("오류 응답: " + response.body());
+                System.out.println("오류 응답: " + getSafeResponseBody(response));
                 return new ArrayList<>();
             }
         } catch (Exception e) {
-            System.out.println("공지사항 요청 중 예외 발생: " + e.getMessage());
+            handleChunkedTransferError(e, "공지사항 요청");
             return new ArrayList<>();
         }
     }
@@ -175,15 +175,18 @@ public class UserApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println("사용자 목록 요청 상태 코드: " + response.statusCode());
+            logResponseInfo(response, "사용자 목록 요청");
+
+            // 응답 본문 안전하게 읽기
+            String responseBody = getSafeResponseBody(response);
 
             if (response.statusCode() == 200) {
-                if (response.body() == null || response.body().trim().isEmpty()) {
+                if (responseBody == null || responseBody.trim().isEmpty()) {
                     System.out.println("서버에서 빈 사용자 목록 응답을 받았습니다!");
                     return new ArrayList<>();
                 }
 
-                String jsonResponse = response.body();
+                String jsonResponse = responseBody;
                 System.out.println("📏 JSON 응답 길이: " + jsonResponse.length());
 
                 // JSON 복구 시도
@@ -249,11 +252,11 @@ public class UserApiClient extends BaseApiClient {
 
              } else {
                  System.out.println("❌ 사용자 목록 요청 실패 - 상태 코드: " + response.statusCode());
-                 System.out.println("🔍 오류 응답: " + response.body());
+                 System.out.println("🔍 오류 응답: " + responseBody);
                  return new ArrayList<>();
              }
          } catch (Exception e) {
-             System.out.println("❌ 사용자 목록 요청 중 예외 발생: " + e.getMessage());
+             handleChunkedTransferError(e, "사용자 목록 요청");
              return new ArrayList<>();
          }
     }

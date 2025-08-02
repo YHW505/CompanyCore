@@ -64,7 +64,7 @@ List<LeaveRequestDto> userLeaves = apiClient.getLeaveRequestsByUserId(1L);
 
 ```java
 // 휴가 승인 (관리자)
-boolean approved = apiClient.approveLeaveRequest(1L, 2L); // leaveId, approvedBy
+boolean approved = apiClient.approveLeaveRequest(1L, 2L); // leaveId, approverId
 
 // 휴가 반려 (관리자)
 boolean rejected = apiClient.rejectLeaveRequest(1L, 2L, "업무 일정상 해당 기간 휴가 불가");

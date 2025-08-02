@@ -40,17 +40,18 @@ public class AttendanceApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            logResponseInfo(response, "출근 체크인");
 
             if (response.statusCode() == 200) {
                 System.out.println("출근 체크인 성공!");
                 return true;
             } else {
                 System.out.println("출근 체크인 실패 - 상태 코드: " + response.statusCode());
-                System.out.println("오류 응답: " + response.body());
+                System.out.println("오류 응답: " + getSafeResponseBody(response));
                 return false;
             }
         } catch (Exception e) {
-            System.out.println("출근 체크인 중 예외 발생: " + e.getMessage());
+            handleChunkedTransferError(e, "출근 체크인");
             return false;
         }
     }
@@ -66,17 +67,18 @@ public class AttendanceApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            logResponseInfo(response, "퇴근 체크아웃");
 
             if (response.statusCode() == 200) {
                 System.out.println("퇴근 체크아웃 성공!");
                 return true;
             } else {
                 System.out.println("퇴근 체크아웃 실패 - 상태 코드: " + response.statusCode());
-                System.out.println("오류 응답: " + response.body());
+                System.out.println("오류 응답: " + getSafeResponseBody(response));
                 return false;
             }
         } catch (Exception e) {
-            System.out.println("퇴근 체크아웃 중 예외 발생: " + e.getMessage());
+            handleChunkedTransferError(e, "퇴근 체크아웃");
             return false;
         }
     }
@@ -92,14 +94,16 @@ public class AttendanceApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            logResponseInfo(response, "사용자 출근 기록 요청");
 
             if (response.statusCode() == 200) {
-                if (response.body() == null || response.body().trim().isEmpty()) {
+                String responseBody = getSafeResponseBody(response);
+                if (responseBody == null || responseBody.trim().isEmpty()) {
                     return new ArrayList<>();
                 }
 
                 try {
-                    List<Attendance> attendances = objectMapper.readValue(response.body(),
+                    List<Attendance> attendances = objectMapper.readValue(responseBody,
                             objectMapper.getTypeFactory().constructCollectionType(List.class, Attendance.class));
                     return attendances;
                 } catch (Exception e) {
@@ -108,10 +112,11 @@ public class AttendanceApiClient extends BaseApiClient {
                 }
             } else {
                 System.out.println("사용자 출근 기록 요청 실패 - 상태 코드: " + response.statusCode());
+                System.out.println("오류 응답: " + getSafeResponseBody(response));
                 return new ArrayList<>();
             }
         } catch (Exception e) {
-            System.out.println("사용자 출근 기록 요청 중 예외 발생: " + e.getMessage());
+            handleChunkedTransferError(e, "사용자 출근 기록 요청");
             return new ArrayList<>();
         }
     }
@@ -127,14 +132,16 @@ public class AttendanceApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            logResponseInfo(response, "기간별 출근 기록 요청");
 
             if (response.statusCode() == 200) {
-                if (response.body() == null || response.body().trim().isEmpty()) {
+                String responseBody = getSafeResponseBody(response);
+                if (responseBody == null || responseBody.trim().isEmpty()) {
                     return new ArrayList<>();
                 }
 
                 try {
-                    List<Attendance> attendances = objectMapper.readValue(response.body(),
+                    List<Attendance> attendances = objectMapper.readValue(responseBody,
                             objectMapper.getTypeFactory().constructCollectionType(List.class, Attendance.class));
                     return attendances;
                 } catch (Exception e) {
@@ -143,10 +150,11 @@ public class AttendanceApiClient extends BaseApiClient {
                 }
             } else {
                 System.out.println("기간별 출근 기록 요청 실패 - 상태 코드: " + response.statusCode());
+                System.out.println("오류 응답: " + getSafeResponseBody(response));
                 return new ArrayList<>();
             }
         } catch (Exception e) {
-            System.out.println("기간별 출근 기록 요청 중 예외 발생: " + e.getMessage());
+            handleChunkedTransferError(e, "기간별 출근 기록 요청");
             return new ArrayList<>();
         }
     }

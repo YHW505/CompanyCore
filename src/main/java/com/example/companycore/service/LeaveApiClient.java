@@ -165,10 +165,10 @@ public class LeaveApiClient extends BaseApiClient {
     /**
      * 휴가 신청을 승인합니다.
      */
-    public boolean approveLeaveRequest(Long leaveId, Long approvedBy) {
+    public boolean approveLeaveRequest(Long leaveId, Long approverId) {
         try {
             ObjectNode requestBody = objectMapper.createObjectNode();
-            requestBody.put("approvedBy", approvedBy);
+            requestBody.put("approverId", approverId);  // 서버가 기대하는 파라미터명으로 변경
 
             String json = objectMapper.writeValueAsString(requestBody);
             String endpoint = "/leave-requests/" + leaveId + "/approve";
@@ -198,8 +198,8 @@ public class LeaveApiClient extends BaseApiClient {
     public boolean rejectLeaveRequest(Long leaveId, Long rejectedBy, String rejectionReason) {
         try {
             ObjectNode requestBody = objectMapper.createObjectNode();
-            requestBody.put("rejectedBy", rejectedBy);
-            requestBody.put("rejectionReason", rejectionReason);
+            requestBody.put("rejectedBy", rejectedBy);  // 서버와 일치
+            requestBody.put("rejectionReason", rejectionReason);  // 서버와 일치
 
             String json = objectMapper.writeValueAsString(requestBody);
             String endpoint = "/leave-requests/" + leaveId + "/reject";
