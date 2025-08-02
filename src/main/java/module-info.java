@@ -18,13 +18,38 @@ module com.example.companycore {
     // Jackson 관련 모듈 추가
     requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.annotation;
+    requires java.desktop;
 
     opens com.example.companycore to javafx.fxml;
     exports com.example.companycore;
     exports com.example.companycore.controller;
     opens com.example.companycore.controller to javafx.fxml;
+    
+    // Controller sub-packages exports and opens
+    exports com.example.companycore.controller.core;
+    opens com.example.companycore.controller.core to javafx.fxml;
+    exports com.example.companycore.controller.hr;
+    opens com.example.companycore.controller.hr to javafx.fxml;
+    exports com.example.companycore.controller.attendance;
+    opens com.example.companycore.controller.attendance to javafx.fxml;
+    exports com.example.companycore.controller.mail;
+    opens com.example.companycore.controller.mail to javafx.fxml;
+    exports com.example.companycore.controller.tasks;
+    opens com.example.companycore.controller.tasks to javafx.fxml;
+    exports com.example.companycore.controller.calendar;
+    opens com.example.companycore.controller.calendar to javafx.fxml;
+    exports com.example.companycore.controller.profile;
+    opens com.example.companycore.controller.profile to javafx.fxml;
 
-    // DTO 패키지 설정 추가 (이 부분이 누락되어 있었습니다!)
+    // Entity 패키지 설정 추가
+    exports com.example.companycore.model.entity;
+    opens com.example.companycore.model.entity to javafx.base, javafx.fxml;
+
+    // Enum 패키지 설정 추가 (Jackson 직렬화/역직렬화를 위해)
+    exports com.example.companycore.model.entity.Enum;
+    opens com.example.companycore.model.entity.Enum to com.fasterxml.jackson.databind;
+
+    // DTO 패키지 설정 추가
     exports com.example.companycore.model.dto;
     opens com.example.companycore.model.dto to com.fasterxml.jackson.databind;
 }

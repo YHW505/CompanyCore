@@ -7,7 +7,7 @@
 <?import javafx.scene.image.Image?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.example.companycore.controller.MainController"
+            fx:controller="com.example.companycore.controller.core.MainController"
             style="-fx-background-color: #f5f6fa;"
             stylesheets="@styles.css">
 
@@ -18,7 +18,7 @@
 
     <!-- 메인 콘텐츠 영역 -->
     <center>
-        <VBox fx:id="contentArea" spacing="20" style="-fx-padding: 20;">
+        <VBox fx:id="contentArea" spacing="10" style="-fx-padding: 10;" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS">
             <!-- 동적으로 로드되는 콘텐츠가 여기에 표시됩니다 -->
         </VBox>
     </center>
