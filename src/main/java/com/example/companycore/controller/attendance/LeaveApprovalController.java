@@ -11,12 +11,15 @@ import javafx.scene.control.CheckBox;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import com.example.companycore.model.dto.LeaveRequestDto;
+import com.example.companycore.model.entity.User;
 import com.example.companycore.service.ApiClient;
 import javafx.scene.Node;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 public class LeaveApprovalController implements Initializable {
     
@@ -33,9 +36,8 @@ public class LeaveApprovalController implements Initializable {
     private List<LeaveRequestDto> leaveRequests = new ArrayList<>();
     private ObservableList<CheckBox> rowCheckBoxes = FXCollections.observableArrayList();
     private ApiClient apiClient = ApiClient.getInstance();
-    
+    private Map<Long, User> userCache = new HashMap<>(); // 사용자 정보 캐시
 
-    
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         setupEventHandlers();
@@ -86,9 +88,85 @@ public class LeaveApprovalController implements Initializable {
             // 서버에서 모든 휴가 신청을 가져옴
             leaveRequests = apiClient.getAllLeaveRequests();
             System.out.println("서버에서 " + leaveRequests.size() + "개의 휴가 신청을 가져왔습니다.");
+            
+            // 사용자 정보 캐시 로드
+            loadUserCache();
+            
         } catch (Exception e) {
             System.err.println("서버에서 휴가 신청 데이터를 가져오는 중 오류 발생: " + e.getMessage());
             showAlert("오류", "서버에서 데이터를 가져오는 중 오류가 발생했습니다.", Alert.AlertType.ERROR);
+        }
+    }
+    
+    /**
+     * 사용자 정보를 캐시에 로드합니다.
+     */
+    private void loadUserCache() {
+        try {
+            System.out.println("=== 사용자 정보 캐시 로드 시작 ===");
+            
+            // 모든 사용자 정보를 가져와서 캐시에 저장
+            List<User> allUsers = apiClient.getUsers();
+            System.out.println("API에서 가져온 사용자 수: " + allUsers.size());
+            
+            // 사용자 정보 상세 출력
+            for (User user : allUsers) {
+                System.out.println("사용자 정보 - ID: " + user.getUserId() + 
+                                 ", 이름: " + user.getUsername() + 
+                                 ", 사번: " + user.getEmployeeCode());
+            }
+            
+            // 사용자 ID를 키로 하는 맵으로 변환
+            for (User user : allUsers) {
+                if (user.getUserId() != null) {
+                    userCache.put(user.getUserId(), user);
+                    System.out.println("캐시에 추가됨 - ID: " + user.getUserId() + ", 이름: " + user.getUsername());
+                }
+            }
+            
+            System.out.println("사용자 정보 캐시 로드 완료: " + userCache.size() + "명");
+            System.out.println("캐시된 사용자 ID들: " + userCache.keySet());
+            
+        } catch (Exception e) {
+            System.err.println("사용자 정보 캐시 로드 중 오류: " + e.getMessage());
+            e.printStackTrace();
+            // 오류 발생 시 임시 사용자 정보 생성
+            createTemporaryUserCache();
+        }
+    }
+    
+    /**
+     * 임시 사용자 정보를 생성합니다 (API 오류 시 사용)
+     */
+    private void createTemporaryUserCache() {
+        try {
+            System.out.println("=== 임시 사용자 정보 생성 시작 ===");
+            
+            // 모든 휴가신청에서 사용자 ID를 수집
+            List<Long> userIds = new ArrayList<>();
+            for (LeaveRequestDto request : leaveRequests) {
+                if (request.getUserId() != null && !userIds.contains(request.getUserId())) {
+                    userIds.add(request.getUserId());
+                }
+            }
+            
+            System.out.println("휴가신청에서 발견된 사용자 ID들: " + userIds);
+            
+            // 임시 사용자 정보 생성
+            for (Long userId : userIds) {
+                User user = new User();
+                user.setUserId(userId);
+                user.setUsername("사원" + userId);
+                user.setEmployeeCode("EMP" + String.format("%03d", userId));
+                userCache.put(userId, user);
+                System.out.println("임시 사용자 생성 - ID: " + userId + ", 이름: " + user.getUsername());
+            }
+            
+            System.out.println("임시 사용자 정보 캐시 생성 완료: " + userCache.size() + "명");
+            
+        } catch (Exception e) {
+            System.err.println("임시 사용자 정보 생성 중 오류: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
@@ -127,6 +205,30 @@ public class LeaveApprovalController implements Initializable {
         return leaveRequests.subList(startIndex, endIndex);
     }
     
+    /**
+     * 휴가종류를 한글로 변환합니다.
+     */
+    private String getLeaveTypeDisplayName(String leaveType) {
+        switch (leaveType) {
+            case "ANNUAL": return "연차";
+            case "SICK": return "병가";
+            case "OFFICIAL": return "공가";
+            case "HALF": return "반차";
+            case "SPECIAL": return "특별휴가";
+            default: return leaveType;
+        }
+    }
+    
+    /**
+     * 사용자 정보를 가져옵니다.
+     */
+    private User getUserById(Long userId) {
+        User user = userCache.get(userId);
+        System.out.println("사용자 조회 - ID: " + userId + 
+                         ", 캐시에서 찾은 사용자: " + (user != null ? user.getUsername() : "null"));
+        return user;
+    }
+    
     private void addTableRow(LeaveRequestDto request, int rowIndex) {
         HBox row = new HBox(0);
         row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
@@ -140,25 +242,49 @@ public class LeaveApprovalController implements Initializable {
         checkBoxContainer.getChildren().add(checkBox);
         rowCheckBoxes.add(checkBox);
         
-        // 휴가 종류
+        // 휴가 종류 (한글로 표시)
         VBox leaveTypeContainer = new VBox();
         leaveTypeContainer.setAlignment(javafx.geometry.Pos.CENTER);
         leaveTypeContainer.setStyle("-fx-min-width: 200; -fx-pref-width: 200; -fx-min-height: 50; -fx-pref-height: 50;");
-        Label leaveTypeLabel = new Label(request.getLeaveType());
+        Label leaveTypeLabel = new Label(getLeaveTypeDisplayName(request.getLeaveType()));
         leaveTypeContainer.getChildren().add(leaveTypeLabel);
         
-        // 사번
+        // 사번 (실제 사번 표시)
         VBox employeeIdContainer = new VBox();
         employeeIdContainer.setAlignment(javafx.geometry.Pos.CENTER);
         employeeIdContainer.setStyle("-fx-min-width: 150; -fx-pref-width: 150; -fx-min-height: 50; -fx-pref-height: 50;");
-        Label employeeIdLabel = new Label(request.getEmployeeId());
+        String employeeId = "사번 없음";
+        if (request.getUserId() != null) {
+            User user = getUserById(request.getUserId());
+            if (user != null && user.getEmployeeCode() != null) {
+                employeeId = user.getEmployeeCode();
+            } else {
+                employeeId = request.getUserId().toString();
+            }
+        }
+        Label employeeIdLabel = new Label(employeeId);
         employeeIdContainer.getChildren().add(employeeIdLabel);
         
-        // 사원이름
+        // 사원이름 (실제 사용자 이름 표시)
         VBox employeeNameContainer = new VBox();
         employeeNameContainer.setAlignment(javafx.geometry.Pos.CENTER);
         employeeNameContainer.setStyle("-fx-min-width: 200; -fx-pref-width: 200; -fx-min-height: 50; -fx-pref-height: 50;");
-        Label employeeNameLabel = new Label(request.getEmployeeName());
+        String employeeName = "사원";
+        if (request.getUserId() != null) {
+            System.out.println("=== 사원이름 처리 시작 ===");
+            System.out.println("휴가신청 사용자 ID: " + request.getUserId());
+            User user = getUserById(request.getUserId());
+            System.out.println("찾은 사용자: " + (user != null ? user.getUsername() : "null"));
+            if (user != null && user.getUsername() != null) {
+                employeeName = user.getUsername();
+                System.out.println("최종 사원이름: " + employeeName);
+            } else {
+                System.out.println("사용자 정보가 없거나 이름이 null입니다.");
+            }
+        } else {
+            System.out.println("휴가신청의 사용자 ID가 null입니다.");
+        }
+        Label employeeNameLabel = new Label(employeeName);
         employeeNameContainer.getChildren().add(employeeNameLabel);
         
         // 일자

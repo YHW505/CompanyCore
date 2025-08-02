@@ -36,7 +36,18 @@ public class LeaveApiClient extends BaseApiClient {
      */
     public LeaveRequestDto createLeaveRequest(LeaveRequestDto leaveRequest) {
         try {
-            String json = objectMapper.writeValueAsString(leaveRequest);
+            // 날짜를 문자열로 변환하여 전송
+            ObjectNode requestBody = objectMapper.createObjectNode();
+            requestBody.put("userId", leaveRequest.getUserId());
+            requestBody.put("leaveType", leaveRequest.getLeaveType());
+            requestBody.put("startDate", leaveRequest.getStartDate() != null ? leaveRequest.getStartDate().toString() : null);
+            requestBody.put("endDate", leaveRequest.getEndDate() != null ? leaveRequest.getEndDate().toString() : null);
+            requestBody.put("reason", leaveRequest.getReason());
+            requestBody.put("status", leaveRequest.getStatus());
+            
+            String json = objectMapper.writeValueAsString(requestBody);
+            System.out.println("전송할 JSON: " + json);
+            
             HttpRequest request = createAuthenticatedRequestBuilder("/leave-requests")
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();

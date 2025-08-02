@@ -223,11 +223,12 @@ public class UserApiClient extends BaseApiClient {
                         user.setPositionId(dto.getPositionId());
                         user.setDepartmentId(dto.getDepartmentId());
                         user.setRole(dto.getRole());
-                        user.setIsFirstLogin(dto.getIsFirstLogin());
-                        user.setIsActive(dto.getIsActive());
+                        // null 값 처리
+                        user.setIsFirstLogin(dto.getIsFirstLogin() != null ? dto.getIsFirstLogin() : false);
+                        user.setIsActive(dto.getIsActive() != null ? dto.getIsActive() : true);
                         user.setCreatedAt(dto.getCreatedAt());
-                                                 user.setPositionName(dto.getPositionName());
-                         // user.setDepartmentName(dto.getDepartmentName()); // User 엔티티에 departmentName 필드가 없음
+                        user.setPositionName(dto.getPositionName());
+                        // user.setDepartmentName(dto.getDepartmentName()); // User 엔티티에 departmentName 필드가 없음
                         userList.add(user);
                     }
 
@@ -241,6 +242,17 @@ public class UserApiClient extends BaseApiClient {
                         // User 엔티티로 직접 파싱
                         userList = objectMapper.readValue(jsonResponse,
                                 objectMapper.getTypeFactory().constructCollectionType(List.class, User.class));
+                        
+                        // null 값 처리
+                        for (User user : userList) {
+                            if (user.getIsFirstLogin() == null) {
+                                user.setIsFirstLogin(false);
+                            }
+                            if (user.getIsActive() == null) {
+                                user.setIsActive(true);
+                            }
+                        }
+                        
                         System.out.println("✅ User 엔티티 직접 파싱 성공! 개수: " + userList.size());
                         return userList;
 
