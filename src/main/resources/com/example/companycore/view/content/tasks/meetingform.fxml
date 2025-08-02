@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="20" style="-fx-padding: 30; -fx-background-color: white;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.companycore.controller.tasks.MeetingFormController">
+
+    <!-- 제목 -->
+    <Label style="-fx-font-size: 20px; -fx-font-weight: bold;" text="회의록" />
+
+    <!-- 일자 -->
+    <DatePicker fx:id="datePicker" promptText="날짜 선택" />
+
+    <!-- 제목 -->
+    <TextField fx:id="titleField" promptText="제목" />
+
+    <VBox spacing="6">
+        <Label styleClass="field-label" text="첨부파일 추가  📎" />
+        <VBox fx:id="dropZone" prefHeight="120" spacing="8" styleClass="dropzone">
+            <Label styleClass="dropzone-help" text="여기에 파일을 끌어다 놓거나 클릭하여 추가하세요." />
+
+            <HBox alignment="CENTER_LEFT" spacing="8">
+                <Button fx:id="addFileBtn" maxWidth="120" onAction="#onAddFile" styleClass="secondary-btn" text="파일 선택" />
+                <Button fx:id="removeFileBtn" onAction="#onRemoveFile" text="삭제" />
+            </HBox>
+
+            <ListView fx:id="attachmentList" managed="false" visible="false" />
+        </VBox>
+    </VBox>
+
+                <!-- 버튼 -->
+    <HBox alignment="CENTER_RIGHT" spacing="10">
+        <Button onAction="#onCancel" style="-fx-background-color: #6c757d; -fx-text-fill: white;" text="취소" />
+        <Button onAction="#onSubmit" style="-fx-background-color: #007bff; -fx-text-fill: white;" text="등록하기" />
+    </HBox>
+
+                   <!-- 업무 캘린더 라벨 -->
+    <Label style="-fx-font-size: 18px; -fx-font-weight: bold;" text="업무 캘린더" />
+
+    <!-- 캘린더: 여기선 단순히 GridPane으로 틀만 구성 -->
+    <GridPane fx:id="calendarGrid" hgap="5" vgap="5">
+        <!-- 실제 날짜 그리드는 컨트롤러에서 동적으로 구성 -->
+    </GridPane>
+
+</VBox>

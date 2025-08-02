@@ -3,129 +3,24 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.example.companycore.controller.mainController">
+            fx:controller="com.example.companycore.controller.core.MainController"
+            style="-fx-background-color: #f5f6fa;"
+            stylesheets="@styles.css">
 
-    <!-- 상단 메뉴바 -->
-    <top>
-        <MenuBar style="-fx-background-color: #2c3e50;">
-            <menus>
-                <Menu text="직원 관리" style="-fx-text-fill: white;">
-                    <items>
-                        <MenuItem text="직원 등록"/>
-                        <MenuItem text="직원 목록"/>
-                        <MenuItem text="직원 검색"/>
-                    </items>
-                </Menu>
-                <Menu text="부서 관리" style="-fx-text-fill: white;">
-                    <items>
-                        <MenuItem text="부서 등록"/>
-                        <MenuItem text="부서 목록"/>
-                    </items>
-                </Menu>
-                <Menu text="보고서" style="-fx-text-fill: white;">
-                    <items>
-                        <MenuItem text="직원 현황"/>
-                        <MenuItem text="부서별 통계"/>
-                    </items>
-                </Menu>
-                <Menu text="설정" style="-fx-text-fill: white;">
-                    <items>
-                        <MenuItem text="시스템 설정"/>
-                        <MenuItem text="로그아웃"/>
-                    </items>
-                </Menu>
-            </menus>
-        </MenuBar>
-    </top>
+    <!-- 왼쪽 사이드바 -->
+    <left>
+        <fx:include source="sidebar.fxml"/>
+    </left>
 
-    <!-- 메인 컨텐츠 영역 -->
+    <!-- 메인 콘텐츠 영역 -->
     <center>
-        <VBox spacing="20.0" style="-fx-background-color: #ecf0f1;">
-            <padding>
-                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
-            </padding>
-
-            <children>
-                <!-- 환영 메시지 -->
-                <Label text="CompanyCore 대시보드"
-                       style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-
-                <!-- 통계 카드들 -->
-                <HBox spacing="20.0" alignment="CENTER">
-                    <children>
-                        <!-- 총 직원 수 -->
-                        <VBox alignment="CENTER" spacing="10.0"
-                              style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);"
-                              prefWidth="200.0">
-                            <children>
-                                <Label text="👥" style="-fx-font-size: 32px;"/>
-                                <Label text="총 직원 수" style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d;"/>
-                                <Label text="150명"
-                                       style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #3498db;"/>
-                            </children>
-                        </VBox>
-
-                        <!-- 부서 수 -->
-                        <VBox alignment="CENTER" spacing="10.0"
-                              style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);"
-                              prefWidth="200.0">
-                            <children>
-                                <Label text="🏢" style="-fx-font-size: 32px;"/>
-                                <Label text="총 부서 수" style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d;"/>
-                                <Label text="8개"
-                                       style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;"/>
-                            </children>
-                        </VBox>
-
-                        <!-- 신규 직원 -->
-                        <VBox alignment="CENTER" spacing="10.0"
-                              style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);"
-                              prefWidth="200.0">
-                            <children>
-                                <Label text="✨" style="-fx-font-size: 32px;"/>
-                                <Label text="이번 달 신규" style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d;"/>
-                                <Label text="5명"
-                                       style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
-                            </children>
-                        </VBox>
-                    </children>
-                </HBox>
-
-                <!-- 빠른 액션 버튼들 -->
-                <VBox spacing="15.0">
-                    <children>
-                        <Label text="빠른 작업"
-                               style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-
-                        <HBox spacing="15.0">
-                            <children>
-                                <Button text="➕ 새 직원 등록"
-                                        style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-padding: 15px; -fx-background-radius: 5;"/>
-                                <Button text="📋 직원 목록 보기"
-                                        style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-padding: 15px; -fx-background-radius: 5;"/>
-                                <Button text="🔍 직원 검색"
-                                        style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-padding: 15px; -fx-background-radius: 5;"/>
-                                <Button text="📊 보고서 생성"
-                                        style="-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-padding: 15px; -fx-background-radius: 5;"/>
-                            </children>
-                        </HBox>
-                    </children>
-                </VBox>
-            </children>
+        <VBox fx:id="contentArea" spacing="10" style="-fx-padding: 10;" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS">
+            <!-- 동적으로 로드되는 콘텐츠가 여기에 표시됩니다 -->
         </VBox>
     </center>
-
-    <!-- 하단 상태바 -->
-    <bottom>
-        <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: #34495e; -fx-padding: 10;">
-            <children>
-                <Label text="로그인 사용자: 관리자" style="-fx-text-fill: white; -fx-font-size: 12px;"/>
-                <Label text="|" style="-fx-text-fill: #7f8c8d;"/>
-                <Label text="마지막 로그인: 2025-07-29 13:14" style="-fx-text-fill: white; -fx-font-size: 12px;"/>
-            </children>
-        </HBox>
-    </bottom>
 
 </BorderPane>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.companycore.controller.tasks.TaskController"
+      spacing="20" style="-fx-padding: 20;">
+    <!-- 상단 헤더 -->
+    <HBox alignment="CENTER_LEFT" spacing="20">
+        <Label text="업무 목록" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+    </HBox>
+    
+    <!-- 메인 콘텐츠 -->
+    <HBox spacing="20">
+        <!-- 왼쪽 컬럼 -->
+        <VBox spacing="20" HBox.hgrow="ALWAYS">
+            <!-- 진행중인 업무 -->
+            <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+                <Label text="진행중인 업무" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <VBox fx:id="ongoingTasksContainer" spacing="10" style="-fx-padding: 10 0 0 0;">
+                    <!-- 동적으로 생성되는 진행중인 업무들 -->
+                </VBox>
+            </VBox>
+            
+            <!-- 완료된 업무 -->
+            <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+                <Label text="완료된 업무" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <VBox fx:id="completedTasksContainer" spacing="10" style="-fx-padding: 10 0 0 0;">
+                    <!-- 동적으로 생성되는 완료된 업무들 -->
+                </VBox>
+            </VBox>
+        </VBox>
+        
+        <!-- 오른쪽 컬럼 -->
+        <VBox spacing="20" HBox.hgrow="ALWAYS">
+            <!-- 새 업무 추가 -->
+            <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+                <Label text="새 업무 추가" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <VBox spacing="15" style="-fx-padding: 10 0 0 0;">
+                    <TextField fx:id="taskTitleField" promptText="업무 제목" style="-fx-padding: 10;"/>
+                    <TextArea fx:id="taskDescriptionArea" promptText="업무 설명" style="-fx-pref-height: 100; -fx-padding: 10;"/>
+                    <HBox spacing="10">
+                        <DatePicker fx:id="startDatePicker" promptText="시작일" style="-fx-padding: 5;"/>
+                        <DatePicker fx:id="endDatePicker" promptText="마감일" style="-fx-padding: 5;"/>
+                    </HBox>
+                    <ComboBox fx:id="priorityComboBox" promptText="우선순위" style="-fx-padding: 5;"/>
+                    <Button fx:id="addTaskButton" text="업무 추가" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;" onAction="#handleAddTask"/>
+                </VBox>
+            </VBox>
+            
+            <!-- 업무 통계 -->
+            <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+                <Label text="업무 통계" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <VBox spacing="10" style="-fx-padding: 10 0 0 0;">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="📊" style="-fx-font-size: 16px;"/>
+                        <Label fx:id="totalTasksLabel" text="총 업무: 0개" style="-fx-font-weight: bold;"/>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="🔄" style="-fx-font-size: 16px;"/>
+                        <Label fx:id="ongoingTasksLabel" text="진행중: 0개" style="-fx-text-fill: #f39c12;"/>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="✅" style="-fx-font-size: 16px;"/>
+                        <Label fx:id="completedTasksLabel" text="완료: 0개" style="-fx-text-fill: #27ae60;"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </VBox>
+    </HBox>
+</VBox> 

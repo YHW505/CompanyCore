@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Pagination?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<?import java.net.URL?>
+
+<VBox prefHeight="785.0" prefWidth="819.0" spacing="20" style="-fx-padding: 20;"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.companycore.controller.tasks.NoticeController">
+
+    <!-- 상단 헤더 -->
+    <HBox alignment="CENTER_LEFT" spacing="20">
+        <Label style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="공지사항" />
+    </HBox>
+
+    <!-- 메인 콘텐츠 -->
+    <VBox prefHeight="635.0" prefWidth="779.0" spacing="20"
+          style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20;
+                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+
+        <TableView fx:id="tableView" prefHeight="437.0" prefWidth="739.0">
+            <columns>
+                <TableColumn fx:id="titleColumn" prefWidth="249.0" text="제목" />
+                <TableColumn fx:id="departmentColumn" prefWidth="105.0" text="부서" />
+                <TableColumn fx:id="authorColumn" prefWidth="134.0" text="작성자" />
+                <TableColumn fx:id="dateColumn" prefWidth="160.0" text="일자" />
+                <TableColumn fx:id="selectColumn" prefWidth="90.0" text="선택" />
+            </columns>
+        </TableView>
+
+        <ButtonBar prefHeight="40.0" prefWidth="200.0">
+            <buttons>
+                <Button mnemonicParsing="false" text="삭제"
+                        style="-fx-background-color: #444951; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;"
+                        onAction="#handleDelete"/>
+                <Button mnemonicParsing="false" text="등록"
+                        style="-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;"
+                        onAction="#handleRegister"/>
+            </buttons>
+        </ButtonBar>
+
+        <Pagination fx:id="pagination" prefHeight="45.0" prefWidth="746.0"
+                    style="-fx-page-information-visible: false; -fx-arrows-visible: true;">
+            <stylesheets>
+                <URL value="@../../content/pagination.css" />
+            </stylesheets>
+        </Pagination>
+
+        <Label style="-fx-font-size: 16px; -fx-text-fill: #7f8c8d;" />
+
+    </VBox>
+
+</VBox>

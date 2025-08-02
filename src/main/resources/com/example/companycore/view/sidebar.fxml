@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.companycore.controller.core.SidebarController"
+      style="-fx-background-color: #FFFFFF; -fx-min-width: 250; -fx-pref-width: 250;" spacing="0">
+    <padding>
+        <Insets top="20" right="20" bottom="40" left="20"/>
+    </padding>
+    
+    <!-- 로고 영역 -->
+    <HBox alignment="CENTER_LEFT" spacing="-10" style="-fx-padding: 0 0 30 0;">
+        <ImageView fx:id="logoImage" fitWidth="37" fitHeight="37" preserveRatio="true">
+            <Image url="@../images/logo/logo_image.png"/>
+        </ImageView>
+        <ImageView fx:id="logoText" fitWidth="200" fitHeight="50" preserveRatio="true">
+            <Image url="@../images/logo/logo_text.png"/>
+        </ImageView>
+    </HBox>
+    
+    <!-- 네비게이션 메뉴 -->
+    <VBox spacing="5">
+        <!-- 홈 -->
+        <HBox fx:id="homeMenu" alignment="CENTER_LEFT" spacing="15" 
+              style="-fx-padding: 12; -fx-background-radius: 8; -fx-cursor: hand;"
+              onMouseClicked="#handleHomeClick">
+            <Label text="🏠" style="-fx-font-size: 16px;"/>
+            <Label text="홈" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+        </HBox>
+        
+        <!-- 근태관리 -->
+        <VBox spacing="0">
+            <HBox fx:id="attendanceMenu" alignment="CENTER_LEFT" spacing="15" 
+                  style="-fx-padding: 12; -fx-background-radius: 8; -fx-cursor: hand;"
+                  onMouseClicked="#handleAttendanceClick">
+                <Label text="👤" style="-fx-font-size: 16px;"/>
+                <Label text="근태관리" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                                 <Label fx:id="attendanceArrow" text="▶" style="-fx-text-fill: #9197B3; -fx-font-size: 12px; -fx-min-width: 12;"/>
+            </HBox>
+            <!-- 근태관리 하위 메뉴 -->
+            <VBox fx:id="attendanceSubMenu" spacing="0" visible="false" managed="false">
+                <HBox alignment="CENTER_LEFT" spacing="15" 
+                      style="-fx-padding: 8 12 8 40; -fx-cursor: hand;"
+                      onMouseClicked="#handleAttendanceRecordClick">
+                    <Label text="📊" style="-fx-font-size: 14px;"/>
+                    <Label text="출근기록부" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 13px;"/>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="15" 
+                      style="-fx-padding: 8 12 8 40; -fx-cursor: hand;"
+                      onMouseClicked="#handleLeaveApplicationClick">
+                    <Label text="📝" style="-fx-font-size: 14px;"/>
+                    <Label text="휴가신청" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 13px;"/>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="15" 
+                      style="-fx-padding: 8 12 8 40; -fx-cursor: hand;"
+                      onMouseClicked="#handleLeaveApprovalClick">
+                    <Label text="✅" style="-fx-font-size: 14px;"/>
+                    <Label text="휴가승인" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 13px;"/>
+                </HBox>
+            </VBox>
+        </VBox>
+        
+        <!-- 메일 -->
+        <VBox spacing="0">
+            <HBox fx:id="mailMenu" alignment="CENTER_LEFT" spacing="15" 
+                  style="-fx-padding: 12; -fx-background-radius: 8; -fx-cursor: hand;"
+                  onMouseClicked="#handleMailClick">
+                <Label text="📧" style="-fx-font-size: 16px;"/>
+                <Label text="메일" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                                 <Label fx:id="mailArrow" text="▶" style="-fx-text-fill: #9197B3; -fx-font-size: 12px; -fx-min-width: 12;"/>
+            </HBox>
+            <!-- 메일 하위 메뉴 -->
+            <VBox fx:id="mailSubMenu" spacing="0" visible="false" managed="false">
+                <HBox alignment="CENTER_LEFT" spacing="15" 
+                      style="-fx-padding: 8 12 8 40; -fx-cursor: hand;"
+                      onMouseClicked="#handleAllMailboxClick">
+                    <Label text="📬" style="-fx-font-size: 14px;"/>
+                    <Label text="전체 메일함" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 13px;"/>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="15" 
+                      style="-fx-padding: 8 12 8 40; -fx-cursor: hand;"
+                      onMouseClicked="#handleInboxClick">
+                    <Label text="📥" style="-fx-font-size: 14px;"/>
+                    <Label text="받은 메일함" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 13px;"/>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="15" 
+                      style="-fx-padding: 8 12 8 40; -fx-cursor: hand;"
+                      onMouseClicked="#handleSentMailboxClick">
+                    <Label text="📤" style="-fx-font-size: 14px;"/>
+                    <Label text="보낸 메일함" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 13px;"/>
+                </HBox>
+            </VBox>
+        </VBox>
+        
+        <!-- 업무 -->
+        <VBox spacing="0">
+            <HBox fx:id="tasksMenu" alignment="CENTER_LEFT" spacing="15" 
+                  style="-fx-padding: 12; -fx-background-radius: 8; -fx-cursor: hand;"
+                  onMouseClicked="#handleTasksClick">
+                <Label text="📄" style="-fx-font-size: 16px;"/>
+                <Label text="업무" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                                 <Label fx:id="tasksArrow" text="▶" style="-fx-text-fill: #9197B3; -fx-font-size: 12px; -fx-min-width: 12;"/>
+            </HBox>
+            <!-- 업무 하위 메뉴 -->
+            <VBox fx:id="tasksSubMenu" spacing="0" visible="false" managed="false">
+                <HBox alignment="CENTER_LEFT" spacing="15" 
+                      style="-fx-padding: 8 12 8 40; -fx-cursor: hand;"
+                      onMouseClicked="#handleMeetingListClick">
+                    <Label text="📋" style="-fx-font-size: 14px;"/>
+                    <Label text="회의 목록" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 13px;"/>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="15" 
+                      style="-fx-padding: 8 12 8 40; -fx-cursor: hand;"
+                      onMouseClicked="#handleApprovalRequestClick">
+                    <Label text="📝" style="-fx-font-size: 14px;"/>
+                    <Label text="결재 요청" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 13px;"/>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="15" 
+                      style="-fx-padding: 8 12 8 40; -fx-cursor: hand;"
+                      onMouseClicked="#handleApprovalApprovalClick">
+                    <Label text="✅" style="-fx-font-size: 14px;"/>
+                    <Label text="결재 승인" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 13px;"/>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="15" 
+                      style="-fx-padding: 8 12 8 40; -fx-cursor: hand;"
+                      onMouseClicked="#handleAnnouncementsClick">
+                    <Label text="📢" style="-fx-font-size: 14px;"/>
+                    <Label text="공지사항" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 13px;"/>
+                </HBox>
+            </VBox>
+        </VBox>
+        
+        <!-- 캘린더 -->
+        <HBox fx:id="calendarMenu" alignment="CENTER_LEFT" spacing="15" 
+              style="-fx-padding: 12; -fx-background-radius: 8; -fx-cursor: hand;"
+              onMouseClicked="#handleCalendarClick">
+            <Label text="📅" style="-fx-font-size: 16px;"/>
+            <Label text="캘린더" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+        </HBox>
+        
+        <!-- 인사관리 -->
+        <HBox fx:id="hrManagementMenu" alignment="CENTER_LEFT" spacing="15" 
+              style="-fx-padding: 12; -fx-background-radius: 8; -fx-cursor: hand;"
+              onMouseClicked="#handleHRManagementClick">
+            <Label text="👥" style="-fx-font-size: 16px;"/>
+            <Label text="인사관리" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+        </HBox>
+        
+        <!-- 프로필 -->
+        <HBox fx:id="profileMenu" alignment="CENTER_LEFT" spacing="15" 
+              style="-fx-padding: 12; -fx-background-radius: 8; -fx-cursor: hand;"
+              onMouseClicked="#handleProfileClick">
+            <Label text="👤" style="-fx-font-size: 16px;"/>
+            <Label text="프로필" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+        </HBox>
+    </VBox>
+</VBox> 

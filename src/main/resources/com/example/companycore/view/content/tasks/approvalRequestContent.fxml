@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.companycore.controller.tasks.TaskController"
+      spacing="20" style="-fx-padding: 20;">
+
+    <!-- 상단 헤더 -->
+    <HBox alignment="CENTER_LEFT" spacing="20">
+        <Label text="결재 요청"
+               style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+    </HBox>
+
+    <!-- 메인 콘텐츠 (폼) -->
+    <VBox spacing="20"
+          style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+
+        <!-- 폼 전체 -->
+        <VBox spacing="24">
+            <!-- 제목 -->
+            <VBox spacing="6">
+                <Label text="제목" styleClass="field-label"/>
+                <TextField fx:id="titleField" promptText="제목을 입력하세요" styleClass="text-input-lg"/>
+            </VBox>
+
+            <!-- 작성 글 -->
+            <VBox spacing="6">
+                <Label text="작성 글" styleClass="field-label"/>
+                <TextArea fx:id="contentArea" promptText="내용을 입력하세요"
+                          prefRowCount="12" styleClass="textarea-lg"/>
+            </VBox>
+
+            <!-- 첨부파일 -->
+            <VBox spacing="6">
+                <Label text="첨부파일 추가  📎" styleClass="field-label"/>
+                <VBox fx:id="dropZone" spacing="8" styleClass="dropzone" prefHeight="120">
+                    <Label text="여기에 파일을 끌어다 놓거나 클릭하여 추가하세요." styleClass="dropzone-help"/>
+
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Button fx:id="addFileBtn" text="파일 선택"
+                                styleClass="secondary-btn" maxWidth="120"
+                                onAction="#onAddFile"/>
+                        <Button fx:id="removeFileBtn" text="삭제"
+                                styleClass="ghost-btn" maxWidth="60"
+                                onAction="#onRemoveFile" disable="true"/>
+                    </HBox>
+
+                    <ListView fx:id="attachmentList" visible="false" managed="false"/>
+                </VBox>
+            </VBox>
+
+            <!-- 하단 버튼 -->
+            <HBox alignment="CENTER_RIGHT" spacing="12">
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="cancelBtn" text="지우개" styleClass="ghost-btn" onAction="#onCancel"/>
+                <Button fx:id="submitBtn" text="요청하기" styleClass="primary-btn" onAction="#onSubmit"/>
+            </HBox>
+        </VBox>
+    </VBox>
+</VBox>

@@ -1,0 +1,25 @@
+/* 페이지네이션 기본 버튼 스타일 */
+.pagination .toggle-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #444;
+    -fx-font-weight: normal;
+    -fx-background-radius: 4;
+    -fx-padding: 4 10;          /* 위아래 패딩 줄임 */
+    -fx-alignment: center;      /* 숫자 중앙 정렬 */
+    -fx-min-height: 28;         /* 버튼 높이 명시적으로 지정 */
+    -fx-pref-height: 28;
+}
+
+/* 선택된 페이지 버튼 스타일 */
+.pagination .toggle-button:selected {
+    -fx-background-color: #5932EA;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-min-height: 28;
+    -fx-pref-height: 28;
+}
+
+/* 호버 */
+.pagination .toggle-button:hover {
+    -fx-background-color: #e4e4e4;
+} 

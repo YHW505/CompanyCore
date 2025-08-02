@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+<?import java.net.URL?>
+
+<VBox alignment="CENTER" spacing="15" style="-fx-padding: 10;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.companycore.controller.tasks.MeetingListController">
+
+    <!-- 상단 헤더 -->
+    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 50 0 15 0; -fx-max-width: 1000;">
+        <Label prefWidth="120.0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="회의 목록" />
+        <Region HBox.hgrow="ALWAYS" />
+
+        <!-- 검색용 ComboBox -->
+        <ComboBox fx:id="searchComboBox" prefWidth="100" promptText="컬럼 선택" style="-fx-background-radius: 20; -fx-border-color: black; -fx-border-width: 1; -fx-border-radius: 20; -fx-padding: 3 10;">
+            <items>
+                <FXCollections fx:factory="observableArrayList">
+                    <String fx:value="전체" />
+                    <String fx:value="제목" />
+                    <String fx:value="부서" />
+                    <String fx:value="작성자" />
+                </FXCollections>
+            </items>
+        </ComboBox>
+
+        <TextField fx:id="searchField" prefWidth="200" promptText="검색" style="-fx-background-radius: 20; -fx-background-color: #f3f5fa; -fx-border-color: black; -fx-border-width: 1; -fx-border-radius: 20; -fx-padding: 6 15;" />
+
+        <Button onAction="#handleSearch" style="-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" text="검색" />
+    </HBox>
+
+    <!-- 테이블 -->
+    <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2); -fx-max-width: 1000;">
+        <TableView fx:id="meetingTable" prefHeight="437.0" prefWidth="842.0" style="-fx-background-color: transparent;">
+            <!-- 데이터 없을 때 메시지 -->
+            <placeholder>
+                <Label style="-fx-text-fill: #999; -fx-font-size: 14px; -fx-padding: 20;" text="데이터가 없습니다." />
+            </placeholder>
+            <columns>
+                <TableColumn fx:id="colNumber" prefWidth="100" text="순서" />
+                <TableColumn fx:id="colTitle" prefWidth="200" text="회의 제목" />
+                <TableColumn fx:id="colDepartment" prefWidth="120" text="부서" />
+                <TableColumn fx:id="colAuthor" prefWidth="120" text="작성자" />
+                <TableColumn fx:id="colDate" prefWidth="140" text="일자" />
+                <TableColumn fx:id="colAction" prefWidth="160" text="상세보기" />
+            </columns>
+        </TableView>
+    </VBox>
+
+    <!-- 페이지네이션 -->
+    <HBox alignment="CENTER" prefHeight="75.0" prefWidth="594.0" spacing="10" style="-fx-padding: 15 0;">
+        <Pagination fx:id="pagination" style="-fx-page-information-visible: false; -fx-arrows-visible: true;">
+            <stylesheets>
+                <URL value="@../../content/pagination.css" />
+            </stylesheets>
+        </Pagination>
+        <Button fx:id="deleteBtn" onAction="#handleDelete" style="-fx-background-color: #444951; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" text="삭제" />
+        <Button fx:id="registerBtn" text="등록하기" onAction="#onRegisterClick" style="-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;"/>
+    </HBox>
+
+    <!-- 푸터 -->
+    <HBox alignment="CENTER_LEFT" style="-fx-padding: 15 0 0 0;">
+        <Label style="-fx-text-fill: #6c757d; -fx-font-size: 12px;" text="© Company Core" />
+
+    </HBox>
+</VBox> 
