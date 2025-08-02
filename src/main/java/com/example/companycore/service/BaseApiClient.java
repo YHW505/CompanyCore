@@ -2,6 +2,7 @@ package com.example.companycore.service;
 
 import com.example.companycore.model.dto.LoginRequest;
 import com.example.companycore.model.dto.LoginResponse;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -175,7 +176,7 @@ public abstract class BaseApiClient {
             System.out.println("응답 상태 코드: " + response.statusCode());
             System.out.println("응답 헤더: " + response.headers().map());
             System.out.println("응답 본문: '" + response.body() + "'");
-            System.out.println("응답 본문 길이: " + response.body().length());
+            System.out.println("응답 본문 길이: " + (response.body() != null ? response.body().length() : 0));
 
             if (response.statusCode() == 200) {
                 if (response.body() == null || response.body().trim().isEmpty()) {
@@ -185,12 +186,20 @@ public abstract class BaseApiClient {
 
                 try {
                     System.out.println("JSON 파싱 시도 중...");
+                    System.out.println("파싱할 JSON: " + response.body());
+                    
+                    // 먼저 JsonNode로 파싱해서 구조 확인
+                    JsonNode jsonNode = objectMapper.readTree(response.body());
+                    System.out.println("JSON 구조: " + jsonNode.toString());
+                    
                     LoginResponse loginResponse = objectMapper.readValue(response.body(), LoginResponse.class);
                     System.out.println("JSON 파싱 성공!");
+                    System.out.println("파싱된 응답: " + loginResponse);
                     return loginResponse;
                 } catch (Exception parseException) {
                     System.out.println("JSON 파싱 실패: " + parseException.getMessage());
                     System.out.println("파싱하려던 JSON: " + response.body());
+                    parseException.printStackTrace();
                     return null;
                 }
             } else {
@@ -200,29 +209,47 @@ public abstract class BaseApiClient {
             }
         } catch (Exception e) {
             System.out.println("로그인 중 예외 발생: " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }
 
     // 인증 메서드 (공통)
     public boolean authenticate(String employeeCode, String password) {
+        System.out.println("=== 인증 시작 ===");
+        System.out.println("직원코드: " + employeeCode);
+        System.out.println("패스워드: [" + password + "]");
+        
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmployeeCode(employeeCode);
         loginRequest.setPassword(password);
 
         LoginResponse response = login(loginRequest);
 
+        if (response == null) {
+            System.out.println("❌ 로그인 응답이 null입니다.");
+            return false;
+        }
+
+        System.out.println("📋 로그인 응답 분석:");
+        System.out.println("- 토큰: " + (response.getToken() != null ? "있음 (" + response.getToken().length() + "자)" : "없음"));
+        System.out.println("- 사용자명: " + response.getUsername());
+        System.out.println("- 직원코드: " + response.getEmployeeCode());
+        System.out.println("- 역할: " + response.getRole());
+        System.out.println("- 첫 로그인: " + response.getIsFirstLogin());
+
         // 🚨 문제: token이 null이면 무조건 false 반환
-        if (response != null && response.getToken() != null && !response.getToken().trim().isEmpty()) {
+        if (response.getToken() != null && !response.getToken().trim().isEmpty()) {
             this.authToken = response.getToken(); // 토큰 저장
-            System.out.println("인증 성공! 토큰: " + this.authToken);
+            System.out.println("✅ 인증 성공! 토큰: " + this.authToken);
             System.out.println("사용자 정보: " + response.getUsername() + " (" + response.getEmployeeCode() + ")");
             System.out.println("역할: " + response.getRole());
             System.out.println("첫 로그인: " + response.getIsFirstLogin());
             analyzeToken(this.authToken); // 토큰 분석
             return true;
         } else {
-            System.out.println("인증 실패 - 토큰이 없습니다.");
+            System.out.println("❌ 인증 실패 - 토큰이 없습니다.");
+            System.out.println("응답 전체: " + response);
             return false;
         }
     }

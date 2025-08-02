@@ -6,8 +6,12 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
 import javafx.fxml.Initializable;
+import com.example.companycore.model.dto.AttendanceDto;
+import com.example.companycore.service.ApiClient;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.List;
+import java.util.ArrayList;
 
 public class AttendanceRecordController implements Initializable {
     
@@ -37,11 +41,24 @@ public class AttendanceRecordController implements Initializable {
     
     private int currentPage = 1;
     private int totalPages = 40;
+    private List<AttendanceDto> attendanceRecords = new ArrayList<>();
+    private ApiClient apiClient = ApiClient.getInstance();
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         setupPaginationHandlers();
+        loadAttendanceRecordsFromServer();
         loadPageData(currentPage);
+    }
+    
+    private void loadAttendanceRecordsFromServer() {
+        try {
+            // TODO: ApiClient에 해당 메서드 구현 필요
+            // attendanceRecords = apiClient.getAttendanceRecordsByUser(1L);
+            System.out.println("출근 기록 데이터 로드 (API 구현 필요)");
+        } catch (Exception e) {
+            System.err.println("서버에서 출근 기록 데이터를 가져오는 중 오류 발생: " + e.getMessage());
+        }
     }
     
     private void setupPaginationHandlers() {
@@ -76,11 +93,41 @@ public class AttendanceRecordController implements Initializable {
         // 테이블 데이터를 클리어
         tableData.getChildren().clear();
         
-        // TODO: 데이터베이스에서 실제 출근 기록 데이터를 가져와서 표시
-        // 현재는 빈 데이터로 초기화
-        for (int i = 0; i < 10; i++) {
+        // 페이지네이션 로직
+        int pageSize = 10;
+        int startIndex = (page - 1) * pageSize;
+        int endIndex = Math.min(startIndex + pageSize, attendanceRecords.size());
+        
+        if (startIndex < attendanceRecords.size()) {
+            List<AttendanceDto> pageData = attendanceRecords.subList(startIndex, endIndex);
+            for (AttendanceDto record : pageData) {
+                addAttendanceRow(record);
+            }
+        }
+        
+        // 빈 행으로 채우기
+        int remainingRows = 10 - (endIndex - startIndex);
+        for (int i = 0; i < remainingRows; i++) {
             addTableRow("", "", "", "", "#f8f9fa", "#6c757d");
         }
+    }
+    
+    private void addAttendanceRow(AttendanceDto record) {
+        String date = record.getWorkDate() != null ? record.getWorkDate().toString() : "";
+        String clockIn = record.getCheckIn() != null ? record.getCheckIn().toString() : "";
+        String clockOut = record.getCheckOut() != null ? record.getCheckOut().toString() : "";
+        String status = record.getStatus() != null ? record.getStatus().toString() : "";
+        
+        String buttonColor = "#28a745"; // 기본 녹색
+        String textColor = "white";
+        
+        if ("LATE".equals(status)) {
+            buttonColor = "#dc3545"; // 빨간색
+        } else if ("ABSENT".equals(status)) {
+            buttonColor = "#6c757d"; // 회색
+        }
+        
+        addTableRow(date, clockIn, clockOut, status, buttonColor, textColor);
     }
     
     private void addTableRow(String date, String clockIn, String clockOut, String status, String buttonColor, String textColor) {

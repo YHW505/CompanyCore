@@ -2,6 +2,7 @@ package com.example.companycore.controller;
 
 import com.example.companycore.model.entity.User;
 import com.example.companycore.model.entity.Enum.Role;
+import com.example.companycore.service.ApiClient;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -58,6 +59,7 @@ public class EmployeeRegisterController {
     private Button cancelButton;
     
     private static int nextEmployeeId = 2534013; // 다음 사번
+    private ApiClient apiClient = ApiClient.getInstance();
     
     @FXML
     public void initialize() {
@@ -174,16 +176,16 @@ public class EmployeeRegisterController {
             // 생년월일은 선택사항이므로 null로 설정
             newEmployee.setBirthDate(null);
             
-            // 여기서 실제 데이터베이스에 저장하는 로직을 구현
-            // 현재는 메모리에만 저장하는 예시
+            // TODO: ApiClient에 registerUser 메서드 구현 필요
+            // User createdUser = apiClient.registerUser(newEmployee);
             
-            // 다음 사번 증가
+            // 임시로 성공 처리
             nextEmployeeId++;
-            
             showAlert("성공", "사원이 성공적으로 등록되었습니다.", Alert.AlertType.INFORMATION);
             
         } catch (Exception e) {
-            showAlert("오류", "사원 등록 중 오류가 발생했습니다: " + e.getMessage(), Alert.AlertType.ERROR);
+            System.err.println("사원 등록 중 오류 발생: " + e.getMessage());
+            showAlert("오류", "서버와의 통신 중 오류가 발생했습니다: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
     
