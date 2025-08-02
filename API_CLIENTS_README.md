@@ -31,7 +31,20 @@
 - 출근 통계
 - 출근 기록 관리
 
-### 5. ApiClient (통합 관리자)
+### 5. LeaveApiClient (휴가 관련)
+- 휴가 신청, 조회
+- 휴가 승인/반려
+- 휴가 수정/취소
+- 휴가 검색 및 필터링
+
+### 6. MessageApiClient (메시지 관련)
+- 메시지 전송, 조회
+- 메시지 상태 변경 (읽음/삭제)
+- 메시지 답장
+- 대화 내역 조회
+- 메시지 대시보드
+
+### 7. ApiClient (통합 관리자)
 - 각 API 클라이언트들을 통합 관리
 - 기존 코드와의 호환성 유지
 - 토큰 공유 및 동기화
@@ -55,6 +68,14 @@ List<Task> tasks = apiClient.getTasks();
 
 // 출근 체크
 boolean checkedIn = apiClient.checkIn(1L);
+
+// 휴가 신청
+LeaveRequestDto leaveRequest = new LeaveRequestDto(1L, "ANNUAL", LocalDate.now(), LocalDate.now().plusDays(2), "가족 여행");
+LeaveRequestDto createdLeave = apiClient.createLeaveRequest(leaveRequest);
+
+// 메시지 전송
+MessageDto message = new MessageDto(2L, "회의 일정 안내", "내일 오후 2시에 회의실 A에서 팀 미팅이 있습니다.", "MESSAGE");
+MessageDto sentMessage = apiClient.sendMessage(message, 1L);
 ```
 
 ### 개별 API 클라이언트 직접 사용
@@ -74,6 +95,16 @@ Task newTask = taskClient.createTask(task);
 AttendanceApiClient attendanceClient = AttendanceApiClient.getInstance();
 boolean checkedIn = attendanceClient.checkIn(1L);
 List<Attendance> records = attendanceClient.getUserAttendance(1L);
+
+// 휴가 관련 API만 사용
+LeaveApiClient leaveClient = LeaveApiClient.getInstance();
+List<LeaveRequestDto> leaveRequests = leaveClient.getAllLeaveRequests();
+LeaveRequestDto newLeave = leaveClient.createLeaveRequest(leaveRequest);
+
+// 메시지 관련 API만 사용
+MessageApiClient messageClient = MessageApiClient.getInstance();
+List<MessageDto> messages = messageClient.getReceivedMessages(1L, null, null, false);
+MessageDto newMessage = messageClient.sendMessage(message, 1L);
 ```
 
 ### 토큰 공유
@@ -86,10 +117,14 @@ boolean success = userClient.authenticate("emp001", "password123");
 // 다른 클라이언트들도 같은 토큰 사용 가능
 TaskApiClient taskClient = TaskApiClient.getInstance();
 AttendanceApiClient attendanceClient = AttendanceApiClient.getInstance();
+LeaveApiClient leaveClient = LeaveApiClient.getInstance();
+MessageApiClient messageClient = MessageApiClient.getInstance();
 
 // 토큰이 자동으로 공유됨
 List<Task> tasks = taskClient.getTasks(); // 인증됨
 List<Attendance> records = attendanceClient.getUserAttendance(1L); // 인증됨
+List<LeaveRequestDto> leaves = leaveClient.getAllLeaveRequests(); // 인증됨
+List<MessageDto> messages = messageClient.getReceivedMessages(1L, null, null, false); // 인증됨
 ```
 
 ## 장점
@@ -131,6 +166,8 @@ ApiClient apiClient = ApiClient.getInstance();
 UserApiClient userClient = UserApiClient.getInstance();
 TaskApiClient taskClient = TaskApiClient.getInstance();
 AttendanceApiClient attendanceClient = AttendanceApiClient.getInstance();
+LeaveApiClient leaveClient = LeaveApiClient.getInstance();
+MessageApiClient messageClient = MessageApiClient.getInstance();
 ```
 
 ### 메서드 시그니처
@@ -146,6 +183,8 @@ src/main/java/com/example/companycore/service/
 ├── UserApiClient.java          # 사용자 관련 API
 ├── TaskApiClient.java          # 작업 관련 API
 ├── AttendanceApiClient.java    # 출근 관련 API
+├── LeaveApiClient.java         # 휴가 관련 API
+├── MessageApiClient.java       # 메시지 관련 API
 └── ApiClient.java             # 통합 관리자 (기존 호환성)
 ```
 

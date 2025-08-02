@@ -12,11 +12,15 @@ public class ApiClient {
     private final UserApiClient userApiClient;
     private final TaskApiClient taskApiClient;
     private final AttendanceApiClient attendanceApiClient;
+    private final LeaveApiClient leaveApiClient;
+    private final MessageApiClient messageApiClient;
 
     private ApiClient() {
         this.userApiClient = UserApiClient.getInstance();
         this.taskApiClient = TaskApiClient.getInstance();
         this.attendanceApiClient = AttendanceApiClient.getInstance();
+        this.leaveApiClient = LeaveApiClient.getInstance();
+        this.messageApiClient = MessageApiClient.getInstance();
     }
 
     public static ApiClient getInstance() {
@@ -42,6 +46,8 @@ public class ApiClient {
             String token = userApiClient.getAuthToken();
             taskApiClient.setAuthToken(token);
             attendanceApiClient.setAuthToken(token);
+            leaveApiClient.setAuthToken(token);
+            messageApiClient.setAuthToken(token);
         }
         return result;
     }
@@ -58,6 +64,8 @@ public class ApiClient {
         userApiClient.clearToken();
         taskApiClient.clearToken();
         attendanceApiClient.clearToken();
+        leaveApiClient.clearToken();
+        messageApiClient.clearToken();
     }
 
     // User API 관련 메서드들
@@ -199,5 +207,105 @@ public class ApiClient {
 
     public AttendanceApiClient getAttendanceApiClient() {
         return attendanceApiClient;
+    }
+
+    // Leave API 관련 메서드들
+    public java.util.List<com.example.companycore.model.dto.LeaveRequestDto> getAllLeaveRequests() {
+        return leaveApiClient.getAllLeaveRequests();
+    }
+
+    public com.example.companycore.model.dto.LeaveRequestDto getLeaveRequestById(Long leaveId) {
+        return leaveApiClient.getLeaveRequestById(leaveId);
+    }
+
+    public java.util.List<com.example.companycore.model.dto.LeaveRequestDto> getLeaveRequestsByUserId(Long userId) {
+        return leaveApiClient.getLeaveRequestsByUserId(userId);
+    }
+
+    public com.example.companycore.model.dto.LeaveRequestDto createLeaveRequest(com.example.companycore.model.dto.LeaveRequestDto leaveRequest) {
+        return leaveApiClient.createLeaveRequest(leaveRequest);
+    }
+
+    public boolean approveLeaveRequest(Long leaveId, Long approvedBy) {
+        return leaveApiClient.approveLeaveRequest(leaveId, approvedBy);
+    }
+
+    public boolean rejectLeaveRequest(Long leaveId, Long rejectedBy, String rejectionReason) {
+        return leaveApiClient.rejectLeaveRequest(leaveId, rejectedBy, rejectionReason);
+    }
+
+    public boolean cancelLeaveRequest(Long leaveId, Long userId) {
+        return leaveApiClient.cancelLeaveRequest(leaveId, userId);
+    }
+
+    public boolean updateLeaveRequest(Long leaveId, com.example.companycore.model.dto.LeaveRequestDto leaveRequest) {
+        return leaveApiClient.updateLeaveRequest(leaveId, leaveRequest);
+    }
+
+    public java.util.List<com.example.companycore.model.dto.LeaveRequestDto> searchLeaveRequests(String status, String type, Long userId, 
+                                                                                               String startDate, String endDate) {
+        return leaveApiClient.searchLeaveRequests(status, type, userId, startDate, endDate);
+    }
+
+    public boolean deleteLeaveRequest(Long leaveId) {
+        return leaveApiClient.deleteLeaveRequest(leaveId);
+    }
+
+    public LeaveApiClient getLeaveApiClient() {
+        return leaveApiClient;
+    }
+
+    // Message API 관련 메서드들
+    public com.example.companycore.model.dto.MessageDto sendMessage(com.example.companycore.model.dto.MessageDto message, Long senderId) {
+        return messageApiClient.sendMessage(message, senderId);
+    }
+
+    public java.util.List<com.example.companycore.model.dto.MessageDto> getMessages(Long userId, String type, String messageType, 
+                                                                                   String keyword, Boolean unreadOnly) {
+        return messageApiClient.getMessages(userId, type, messageType, keyword, unreadOnly);
+    }
+
+    public com.example.companycore.model.dto.MessageDto getMessageById(Long messageId, Long userId) {
+        return messageApiClient.getMessageById(messageId, userId);
+    }
+
+    public boolean updateMessageStatus(Long messageId, Long userId, String action) {
+        return messageApiClient.updateMessageStatus(messageId, userId, action);
+    }
+
+    public boolean bulkUpdateMessages(Long userId, java.util.List<Long> messageIds, String action) {
+        return messageApiClient.bulkUpdateMessages(userId, messageIds, action);
+    }
+
+    public com.example.companycore.model.dto.MessageDto replyToMessage(Long messageId, Long userId, String title, String content) {
+        return messageApiClient.replyToMessage(messageId, userId, title, content);
+    }
+
+    public java.util.List<com.example.companycore.model.dto.MessageDto> getConversation(Long userId, Long otherUserId) {
+        return messageApiClient.getConversation(userId, otherUserId);
+    }
+
+    public com.fasterxml.jackson.databind.JsonNode getMessageDashboard(Long userId) {
+        return messageApiClient.getMessageDashboard(userId);
+    }
+
+    public java.util.List<com.example.companycore.model.dto.MessageDto> getReceivedMessages(Long userId, String messageType, String keyword, Boolean unreadOnly) {
+        return messageApiClient.getReceivedMessages(userId, messageType, keyword, unreadOnly);
+    }
+
+    public java.util.List<com.example.companycore.model.dto.MessageDto> getSentMessages(Long userId, String messageType, String keyword) {
+        return messageApiClient.getSentMessages(userId, messageType, keyword);
+    }
+
+    public java.util.List<com.example.companycore.model.dto.MessageDto> getAllMessages(Long userId, String messageType, String keyword) {
+        return messageApiClient.getAllMessages(userId, messageType, keyword);
+    }
+
+    public java.util.List<com.example.companycore.model.dto.MessageDto> getUnreadMessages(Long userId) {
+        return messageApiClient.getUnreadMessages(userId);
+    }
+
+    public MessageApiClient getMessageApiClient() {
+        return messageApiClient;
     }
 }

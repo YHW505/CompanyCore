@@ -241,14 +241,17 @@ public class DtoConverter {
         if (message == null) return null;
         
         return new MessageDto(
-            message.getMessageId(),
+            message.getMessageId() != null ? message.getMessageId().longValue() : null,
             message.getSenderId(),
             message.getReceiverId(),
-            message.getMessageType(),
             message.getTitle(),
             message.getContent(),
+            message.getMessageType() != null ? message.getMessageType().toString() : null,
             message.getIsRead(),
-            message.getSentAt()
+            message.getSentAt(),
+            null, // readAt
+            null, // senderName
+            null  // receiverName
         );
     }
 
@@ -259,14 +262,16 @@ public class DtoConverter {
         if (messageDto == null) return null;
         
         Message message = new Message();
-        message.setMessageId(messageDto.getMessageId());
+        message.setMessageId(messageDto.getMessageId() != null ? messageDto.getMessageId().intValue() : null);
         message.setSenderId(messageDto.getSenderId());
         message.setReceiverId(messageDto.getReceiverId());
-        message.setMessageType(messageDto.getMessageType());
+        if (messageDto.getMessageType() != null) {
+            message.setMessageType(com.example.companycore.model.entity.Enum.MessageType.valueOf(messageDto.getMessageType()));
+        }
         message.setTitle(messageDto.getTitle());
         message.setContent(messageDto.getContent());
         message.setIsRead(messageDto.getIsRead());
-        message.setSentAt(messageDto.getSentAt());
+        message.setSentAt(messageDto.getCreatedAt());
         
         return message;
     }
@@ -278,12 +283,18 @@ public class DtoConverter {
         if (leaveRequest == null) return null;
         
         return new LeaveRequestDto(
-            leaveRequest.getLeaveType().toString(),
-            leaveRequest.getUserId().toString(),
-            null, // employeeName은 별도로 조회해야 함
-            leaveRequest.getStartDate().toString(),
-            leaveRequest.getEndDate().toString(),
-            leaveRequest.getStatus().toString()
+            leaveRequest.getLeaveId() != null ? leaveRequest.getLeaveId().longValue() : null,
+            leaveRequest.getUserId(),
+            leaveRequest.getLeaveType() != null ? leaveRequest.getLeaveType().toString() : null,
+            leaveRequest.getStartDate(),
+            leaveRequest.getEndDate(),
+            leaveRequest.getReason(),
+            leaveRequest.getStatus() != null ? leaveRequest.getStatus().toString() : null,
+            leaveRequest.getApprovedBy(),
+            null, // rejectedBy (LeaveRequest 엔티티에 없음)
+            null, // rejectionReason (LeaveRequest 엔티티에 없음)
+            leaveRequest.getAppliedAt() != null ? leaveRequest.getAppliedAt().toLocalDate() : null,
+            leaveRequest.getAppliedAt() != null ? leaveRequest.getAppliedAt().toLocalDate() : null
         );
     }
 
@@ -294,12 +305,15 @@ public class DtoConverter {
         if (leaveRequestDto == null) return null;
         
         LeaveRequest leaveRequest = new LeaveRequest();
-        leaveRequest.setLeaveId(null); // 새로 생성되는 경우
+        leaveRequest.setLeaveId(leaveRequestDto.getLeaveId() != null ? leaveRequestDto.getLeaveId().intValue() : null);
         leaveRequest.setUserId(Long.parseLong(leaveRequestDto.getEmployeeId()));
-        leaveRequest.setLeaveType(com.example.companycore.model.entity.Enum.LeaveType.valueOf(leaveRequestDto.getLeaveType()));
-        leaveRequest.setStartDate(java.time.LocalDate.parse(leaveRequestDto.getStartDate()));
-        leaveRequest.setEndDate(java.time.LocalDate.parse(leaveRequestDto.getEndDate()));
-        leaveRequest.setStatus(com.example.companycore.model.entity.Enum.LeaveStatus.valueOf(leaveRequestDto.getStatus()));
+        if (leaveRequestDto.getLeaveType() != null) {
+            leaveRequest.setLeaveType(com.example.companycore.model.entity.Enum.LeaveType.valueOf(leaveRequestDto.getLeaveType()));
+        }
+        leaveRequest.setStartDate(leaveRequestDto.getStartDate());
+        leaveRequest.setEndDate(leaveRequestDto.getEndDate());
+        leaveRequest.setReason(leaveRequestDto.getReason());
+        leaveRequest.setStatus(com.example.companycore.model.entity.Enum.LeaveStatus.PENDING);
         leaveRequest.setAppliedAt(java.time.LocalDateTime.now());
         
         return leaveRequest;

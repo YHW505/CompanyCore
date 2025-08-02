@@ -1,44 +1,57 @@
 package com.example.companycore.model.dto;
 
-import com.example.companycore.model.entity.Enum.MessageType;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.LocalDateTime;
 
 /**
- * Message 정보를 전달하기 위한 DTO 클래스
- * 
- * @author Company Core Team
- * @version 1.0
+ * 메시지 DTO
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MessageDto {
-    private Integer messageId;
+    private Long messageId;
     private Long senderId;
     private Long receiverId;
-    private MessageType messageType;
     private String title;
     private String content;
+    private String messageType; // MESSAGE, EMAIL, NOTICE
     private Boolean isRead;
-    private LocalDateTime sentAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime readAt;
+    private String senderName;
+    private String receiverName;
 
     // 기본 생성자
     public MessageDto() {}
 
-    // 생성자
-    public MessageDto(Integer messageId, Long senderId, Long receiverId, MessageType messageType,
-                     String title, String content, Boolean isRead, LocalDateTime sentAt) {
+    // 메시지 전송용 생성자
+    public MessageDto(Long receiverId, String title, String content, String messageType) {
+        this.receiverId = receiverId;
+        this.title = title;
+        this.content = content;
+        this.messageType = messageType;
+        this.isRead = false;
+    }
+
+    // 전체 생성자
+    public MessageDto(Long messageId, Long senderId, Long receiverId, String title, String content,
+                     String messageType, Boolean isRead, LocalDateTime createdAt, LocalDateTime readAt,
+                     String senderName, String receiverName) {
         this.messageId = messageId;
         this.senderId = senderId;
         this.receiverId = receiverId;
-        this.messageType = messageType;
         this.title = title;
         this.content = content;
+        this.messageType = messageType;
         this.isRead = isRead;
-        this.sentAt = sentAt;
+        this.createdAt = createdAt;
+        this.readAt = readAt;
+        this.senderName = senderName;
+        this.receiverName = receiverName;
     }
 
-    // ==================== Getter/Setter 메서드 ====================
-
-    public Integer getMessageId() { return messageId; }
-    public void setMessageId(Integer messageId) { this.messageId = messageId; }
+    // Getter & Setter
+    public Long getMessageId() { return messageId; }
+    public void setMessageId(Long messageId) { this.messageId = messageId; }
 
     public Long getSenderId() { return senderId; }
     public void setSenderId(Long senderId) { this.senderId = senderId; }
@@ -46,20 +59,29 @@ public class MessageDto {
     public Long getReceiverId() { return receiverId; }
     public void setReceiverId(Long receiverId) { this.receiverId = receiverId; }
 
-    public MessageType getMessageType() { return messageType; }
-    public void setMessageType(MessageType messageType) { this.messageType = messageType; }
-
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
 
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
 
+    public String getMessageType() { return messageType; }
+    public void setMessageType(String messageType) { this.messageType = messageType; }
+
     public Boolean getIsRead() { return isRead; }
     public void setIsRead(Boolean isRead) { this.isRead = isRead; }
 
-    public LocalDateTime getSentAt() { return sentAt; }
-    public void setSentAt(LocalDateTime sentAt) { this.sentAt = sentAt; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getReadAt() { return readAt; }
+    public void setReadAt(LocalDateTime readAt) { this.readAt = readAt; }
+
+    public String getSenderName() { return senderName; }
+    public void setSenderName(String senderName) { this.senderName = senderName; }
+
+    public String getReceiverName() { return receiverName; }
+    public void setReceiverName(String receiverName) { this.receiverName = receiverName; }
 
     @Override
     public String toString() {
@@ -67,11 +89,14 @@ public class MessageDto {
                 "messageId=" + messageId +
                 ", senderId=" + senderId +
                 ", receiverId=" + receiverId +
-                ", messageType=" + messageType +
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
+                ", messageType='" + messageType + '\'' +
                 ", isRead=" + isRead +
-                ", sentAt=" + sentAt +
+                ", createdAt=" + createdAt +
+                ", readAt=" + readAt +
+                ", senderName='" + senderName + '\'' +
+                ", receiverName='" + receiverName + '\'' +
                 '}';
     }
 } 
