@@ -163,8 +163,8 @@ public class EmployeeRegisterController {
             
             // 기본값 설정
             newEmployee.setRole(Role.EMPLOYEE); // 기본 역할은 사원
-            newEmployee.setIsFirstLogin(1); // 첫 로그인 여부
-            newEmployee.setIsActive(1); // 활성 상태
+            newEmployee.setIsFirstLogin(true); // 첫 로그인 여부
+            newEmployee.setIsActive(true); // 활성 상태
             newEmployee.setCreatedAt(LocalDateTime.now()); // 생성 시간
             
             // 부서와 직급 ID는 임시로 설정 (실제로는 데이터베이스에서 조회해야 함)

@@ -34,7 +34,10 @@ public class ProfileController implements Initializable {
     
     // 프로필 정보 표시용 컨트롤
     @FXML
-    private Label nameLabel;
+    private Label profileNameLabel;  // 상단 프로필 섹션의 이름
+    
+    @FXML
+    private Label nameLabel;  // 하단 개인정보 섹션의 이름
     
     @FXML
     private Label roleLabel;
@@ -128,10 +131,24 @@ public class ProfileController implements Initializable {
      */
     private User getCurrentUser() {
         try {
+            System.out.println("🔍 getCurrentUser() 호출됨");
+            
             // ApiClient를 통해 현재 사용자 정보를 가져옴
-            return apiClient.getCurrentUser();
+            User user = apiClient.getCurrentUser();
+            
+            if (user != null) {
+                System.out.println("✅ 사용자 정보 성공적으로 가져옴:");
+                System.out.println("  - 이름: " + user.getUsername());
+                System.out.println("  - 사원번호: " + user.getEmployeeCode());
+                System.out.println("  - 이메일: " + user.getEmail());
+            } else {
+                System.out.println("❌ 사용자 정보가 null입니다!");
+            }
+            
+            return user;
         } catch (Exception e) {
-            System.out.println("현재 사용자 정보를 가져오는 중 오류: " + e.getMessage());
+            System.out.println("❌ 현재 사용자 정보를 가져오는 중 오류: " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }
@@ -140,12 +157,25 @@ public class ProfileController implements Initializable {
      * 프로필 화면을 업데이트합니다.
      */
     private void updateProfileDisplay() {
-        if (currentUser == null) return;
+        if (currentUser == null) {
+            System.out.println("❌ currentUser가 null입니다!");
+            return;
+        }
+        
+        System.out.println("🔍 프로필 정보 업데이트 시작...");
+        System.out.println("📋 받은 사용자 정보:");
+        System.out.println("  - 이름: " + currentUser.getUsername());
+        System.out.println("  - 사원번호: " + currentUser.getEmployeeCode());
+        System.out.println("  - 이메일: " + currentUser.getEmail());
+        System.out.println("  - 전화번호: " + currentUser.getPhone());
+        System.out.println("  - 직급: " + (currentUser.getRole() != null ? currentUser.getRole().toString() : "null"));
+        System.out.println("  - 입사일: " + currentUser.getJoinDate());
         
         // 기본 정보 업데이트 (상단과 하단 모두 업데이트)
         String userName = currentUser.getUsername();
-        nameLabel.setText(userName);
-        roleLabel.setText(currentUser.getRole() != null ? currentUser.getRole().toString() : "사원");
+        profileNameLabel.setText(userName);  // 상단 프로필 섹션
+        nameLabel.setText(userName);        // 하단 개인정보 섹션
+        roleLabel.setText(currentUser.getPositionName() != null ? currentUser.getPositionName() : "사원");
         employeeCodeLabel.setText(currentUser.getEmployeeCode());
         emailLabel.setText(currentUser.getEmail());
         phoneLabel.setText(currentUser.getPhone());
@@ -160,6 +190,8 @@ public class ProfileController implements Initializable {
         } else {
             joinDateLabel.setText("정보 없음");
         }
+        
+        System.out.println("✅ UI 업데이트 완료");
         
         // 근무 통계 정보 업데이트 (실제로는 데이터베이스에서 계산된 값 사용)
         updateWorkStatistics();

@@ -1,7 +1,11 @@
 package com.example.companycore.model.entity;
 
 import com.example.companycore.model.entity.Enum.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import javafx.beans.property.*;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import java.time.LocalDate;
@@ -18,22 +22,30 @@ public class User {
     private final IntegerProperty positionId;
     private final IntegerProperty departmentId;
     private final ObjectProperty<Role> role;
-    private final IntegerProperty isFirstLogin;
-    private final IntegerProperty isActive;
+    private final BooleanProperty isFirstLogin;
+    private final BooleanProperty isActive;
     private final ObjectProperty<LocalDateTime> createdAt;
     private final StringProperty email;
     private final StringProperty phone;
     private final ObjectProperty<LocalDate> birthDate;
+    private final StringProperty positionName;
     
     // 관계 객체들
     private final ObjectProperty<Position> position;
     private final ObjectProperty<Department> department;
+    @JsonIgnore
     private final ObservableList<Attendance> attendances;
+    @JsonIgnore
     private final ObservableList<Schedule> schedules;
+    @JsonIgnore
     private final ObservableList<Task> assignedTasks;
+    @JsonIgnore
     private final ObservableList<Task> createdTasks;
+    @JsonIgnore
     private final ObservableList<LeaveRequest> leaves;
+    @JsonIgnore
     private final ObservableList<Message> sentMessages;
+    @JsonIgnore
     private final ObservableList<Message> receivedMessages;
 
     public User() {
@@ -45,12 +57,13 @@ public class User {
         this.positionId = new SimpleIntegerProperty();
         this.departmentId = new SimpleIntegerProperty();
         this.role = new SimpleObjectProperty<>();
-        this.isFirstLogin = new SimpleIntegerProperty();
-        this.isActive = new SimpleIntegerProperty();
+        this.isFirstLogin = new SimpleBooleanProperty();
+        this.isActive = new SimpleBooleanProperty();
         this.createdAt = new SimpleObjectProperty<>();
         this.email = new SimpleStringProperty();
         this.phone = new SimpleStringProperty();
         this.birthDate = new SimpleObjectProperty<>();
+        this.positionName = new SimpleStringProperty();
         
         // 관계 객체들 초기화
         this.position = new SimpleObjectProperty<>();
@@ -66,7 +79,7 @@ public class User {
 
     public User(Long userId, String employeeCode, String username, LocalDate joinDate,
                 String password, Integer positionId, Integer departmentId, Role role,
-                Integer isFirstLogin, Integer isActive, LocalDateTime createdAt,
+                Boolean isFirstLogin, Boolean isActive, LocalDateTime createdAt,
                 String email, String phone, LocalDate birthDate) {
         this.userId = new SimpleLongProperty(userId);
         this.employeeCode = new SimpleStringProperty(employeeCode);
@@ -76,12 +89,13 @@ public class User {
         this.positionId = new SimpleIntegerProperty(positionId);
         this.departmentId = new SimpleIntegerProperty(departmentId);
         this.role = new SimpleObjectProperty<>(role);
-        this.isFirstLogin = new SimpleIntegerProperty(isFirstLogin);
-        this.isActive = new SimpleIntegerProperty(isActive);
+        this.isFirstLogin = new SimpleBooleanProperty(isFirstLogin);
+        this.isActive = new SimpleBooleanProperty(isActive);
         this.createdAt = new SimpleObjectProperty<>(createdAt);
         this.email = new SimpleStringProperty(email);
         this.phone = new SimpleStringProperty(phone);
         this.birthDate = new SimpleObjectProperty<>(birthDate);
+        this.positionName = new SimpleStringProperty();
         
         // 관계 객체들 초기화
         this.position = new SimpleObjectProperty<>();
@@ -136,14 +150,14 @@ public class User {
     public ObjectProperty<Role> roleProperty() { return role; }
 
     // IsFirstLogin
-    public Integer getIsFirstLogin() { return isFirstLogin.get(); }
-    public void setIsFirstLogin(Integer isFirstLogin) { this.isFirstLogin.set(isFirstLogin); }
-    public IntegerProperty isFirstLoginProperty() { return isFirstLogin; }
+    public Boolean getIsFirstLogin() { return isFirstLogin.get(); }
+    public void setIsFirstLogin(Boolean isFirstLogin) { this.isFirstLogin.set(isFirstLogin); }
+    public BooleanProperty isFirstLoginProperty() { return isFirstLogin; }
 
     // IsActive
-    public Integer getIsActive() { return isActive.get(); }
-    public void setIsActive(Integer isActive) { this.isActive.set(isActive); }
-    public IntegerProperty isActiveProperty() { return isActive; }
+    public Boolean getIsActive() { return isActive.get(); }
+    public void setIsActive(Boolean isActive) { this.isActive.set(isActive); }
+    public BooleanProperty isActiveProperty() { return isActive; }
 
     // CreatedAt
     public LocalDateTime getCreatedAt() { return createdAt.get(); }
@@ -164,6 +178,11 @@ public class User {
     public LocalDate getBirthDate() { return birthDate.get(); }
     public void setBirthDate(LocalDate birthDate) { this.birthDate.set(birthDate); }
     public ObjectProperty<LocalDate> birthDateProperty() { return birthDate; }
+
+    // PositionName
+    public String getPositionName() { return positionName.get(); }
+    public void setPositionName(String positionName) { this.positionName.set(positionName); }
+    public StringProperty positionNameProperty() { return positionName; }
 
     // Position
     public Position getPosition() { return position.get(); }

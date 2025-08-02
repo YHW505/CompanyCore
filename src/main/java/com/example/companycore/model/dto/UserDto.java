@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 /**
  * 사용자 정보를 전달하기 위한 DTO 클래스
+ * 순환 참조 문제를 방지하기 위해 관계 필드들을 제외
  * 
  * @author Company Core Team
  * @version 1.0
@@ -23,8 +24,8 @@ public class UserDto {
     private Integer departmentId;
     private String departmentName;
     private Role role;
-    private Integer isFirstLogin;
-    private Integer isActive;
+    private Boolean isFirstLogin;
+    private Boolean isActive;
     private LocalDateTime createdAt;
 
     // 기본 생성자
@@ -34,7 +35,7 @@ public class UserDto {
     public UserDto(Long userId, String employeeCode, String username, LocalDate joinDate,
                    String email, String phone, LocalDate birthDate, Integer positionId,
                    String positionName, Integer departmentId, String departmentName,
-                   Role role, Integer isFirstLogin, Integer isActive, LocalDateTime createdAt) {
+                   Role role, Boolean isFirstLogin, Boolean isActive, LocalDateTime createdAt) {
         this.userId = userId;
         this.employeeCode = employeeCode;
         this.username = username;
@@ -90,11 +91,11 @@ public class UserDto {
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
 
-    public Integer getIsFirstLogin() { return isFirstLogin; }
-    public void setIsFirstLogin(Integer isFirstLogin) { this.isFirstLogin = isFirstLogin; }
+    public Boolean getIsFirstLogin() { return isFirstLogin; }
+    public void setIsFirstLogin(Boolean isFirstLogin) { this.isFirstLogin = isFirstLogin; }
 
-    public Integer getIsActive() { return isActive; }
-    public void setIsActive(Integer isActive) { this.isActive = isActive; }
+    public Boolean getIsActive() { return isActive; }
+    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

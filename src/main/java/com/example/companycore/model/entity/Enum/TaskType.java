@@ -3,6 +3,8 @@ package com.example.companycore.model.entity.Enum;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum TaskType {
+    TASK("TASK"),
+    REPORT("REPORT"),
     DEVELOPMENT("DEVELOPMENT"), 
     DESIGN("DESIGN"), 
     TESTING("TESTING");
