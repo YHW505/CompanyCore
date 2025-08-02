@@ -1,0 +1,102 @@
+package com.example.companycore.model.dto;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.time.LocalDateTime;
+
+/**
+ * 메시지 DTO
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class MessageDto {
+    private Long messageId;
+    private Long senderId;
+    private Long receiverId;
+    private String title;
+    private String content;
+    private String messageType; // MESSAGE, EMAIL, NOTICE
+    private Boolean isRead;
+    private LocalDateTime createdAt;
+    private LocalDateTime readAt;
+    private String senderName;
+    private String receiverName;
+
+    // 기본 생성자
+    public MessageDto() {}
+
+    // 메시지 전송용 생성자
+    public MessageDto(Long receiverId, String title, String content, String messageType) {
+        this.receiverId = receiverId;
+        this.title = title;
+        this.content = content;
+        this.messageType = messageType;
+        this.isRead = false;
+    }
+
+    // 전체 생성자
+    public MessageDto(Long messageId, Long senderId, Long receiverId, String title, String content,
+                     String messageType, Boolean isRead, LocalDateTime createdAt, LocalDateTime readAt,
+                     String senderName, String receiverName) {
+        this.messageId = messageId;
+        this.senderId = senderId;
+        this.receiverId = receiverId;
+        this.title = title;
+        this.content = content;
+        this.messageType = messageType;
+        this.isRead = isRead;
+        this.createdAt = createdAt;
+        this.readAt = readAt;
+        this.senderName = senderName;
+        this.receiverName = receiverName;
+    }
+
+    // Getter & Setter
+    public Long getMessageId() { return messageId; }
+    public void setMessageId(Long messageId) { this.messageId = messageId; }
+
+    public Long getSenderId() { return senderId; }
+    public void setSenderId(Long senderId) { this.senderId = senderId; }
+
+    public Long getReceiverId() { return receiverId; }
+    public void setReceiverId(Long receiverId) { this.receiverId = receiverId; }
+
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+
+    public String getContent() { return content; }
+    public void setContent(String content) { this.content = content; }
+
+    public String getMessageType() { return messageType; }
+    public void setMessageType(String messageType) { this.messageType = messageType; }
+
+    public Boolean getIsRead() { return isRead; }
+    public void setIsRead(Boolean isRead) { this.isRead = isRead; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getReadAt() { return readAt; }
+    public void setReadAt(LocalDateTime readAt) { this.readAt = readAt; }
+
+    public String getSenderName() { return senderName; }
+    public void setSenderName(String senderName) { this.senderName = senderName; }
+
+    public String getReceiverName() { return receiverName; }
+    public void setReceiverName(String receiverName) { this.receiverName = receiverName; }
+
+    @Override
+    public String toString() {
+        return "MessageDto{" +
+                "messageId=" + messageId +
+                ", senderId=" + senderId +
+                ", receiverId=" + receiverId +
+                ", title='" + title + '\'' +
+                ", content='" + content + '\'' +
+                ", messageType='" + messageType + '\'' +
+                ", isRead=" + isRead +
+                ", createdAt=" + createdAt +
+                ", readAt=" + readAt +
+                ", senderName='" + senderName + '\'' +
+                ", receiverName='" + receiverName + '\'' +
+                '}';
+    }
+} 

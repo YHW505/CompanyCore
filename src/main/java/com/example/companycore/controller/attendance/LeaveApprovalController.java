@@ -10,7 +10,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.CheckBox;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import com.example.companycore.model.dto.LeaveRequest;
+import com.example.companycore.model.dto.LeaveRequestDto;
+import com.example.companycore.service.ApiClient;
 import javafx.scene.Node;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -29,8 +30,9 @@ public class LeaveApprovalController implements Initializable {
     
     private int currentPage = 1;
     private int totalPages = 20;
-    private List<LeaveRequest> leaveRequests = new ArrayList<>();
+    private List<LeaveRequestDto> leaveRequests = new ArrayList<>();
     private ObservableList<CheckBox> rowCheckBoxes = FXCollections.observableArrayList();
+    private ApiClient apiClient = ApiClient.getInstance();
     
 
     
@@ -75,9 +77,19 @@ public class LeaveApprovalController implements Initializable {
     }
     
     private void setupInitialData() {
-        // 데이터 초기화 (실제로는 데이터베이스에서 가져옴)
-        leaveRequests.clear();
-        // TODO: 데이터베이스에서 실제 데이터를 가져와서 leaveRequests에 추가
+        // 서버에서 휴가 신청 데이터를 가져옴
+        loadLeaveRequestsFromServer();
+    }
+    
+    private void loadLeaveRequestsFromServer() {
+        try {
+            // 서버에서 모든 휴가 신청을 가져옴
+            leaveRequests = apiClient.getAllLeaveRequests();
+            System.out.println("서버에서 " + leaveRequests.size() + "개의 휴가 신청을 가져왔습니다.");
+        } catch (Exception e) {
+            System.err.println("서버에서 휴가 신청 데이터를 가져오는 중 오류 발생: " + e.getMessage());
+            showAlert("오류", "서버에서 데이터를 가져오는 중 오류가 발생했습니다.", Alert.AlertType.ERROR);
+        }
     }
     
     private void loadPage(int page) {
@@ -91,7 +103,7 @@ public class LeaveApprovalController implements Initializable {
         rowCheckBoxes.clear();
         
         // 현재 페이지의 데이터만 표시 (실제로는 데이터베이스에서 가져옴)
-        List<LeaveRequest> pageData = getPageData(currentPage);
+        List<LeaveRequestDto> pageData = getPageData(currentPage);
         
         for (int i = 0; i < 10; i++) {
             if (i < pageData.size()) {
@@ -102,16 +114,20 @@ public class LeaveApprovalController implements Initializable {
         }
     }
     
-    private List<LeaveRequest> getPageData(int page) {
-        // 실제로는 데이터베이스에서 페이지별로 가져옴
-        if (page == 1) {
-            return leaveRequests;
-        } else {
-            return new ArrayList<>(); // 빈 페이지
+    private List<LeaveRequestDto> getPageData(int page) {
+        // 페이지네이션 로직 구현
+        int pageSize = 10;
+        int startIndex = (page - 1) * pageSize;
+        int endIndex = Math.min(startIndex + pageSize, leaveRequests.size());
+        
+        if (startIndex >= leaveRequests.size()) {
+            return new ArrayList<>();
         }
+        
+        return leaveRequests.subList(startIndex, endIndex);
     }
     
-    private void addTableRow(LeaveRequest request, int rowIndex) {
+    private void addTableRow(LeaveRequestDto request, int rowIndex) {
         HBox row = new HBox(0);
         row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         row.setStyle("-fx-padding: 10; -fx-border-color: #e9ecef; -fx-border-width: 0 0 1 0; -fx-min-height: 50; -fx-pref-height: 50;");
@@ -149,7 +165,7 @@ public class LeaveApprovalController implements Initializable {
         VBox dateContainer = new VBox();
         dateContainer.setAlignment(javafx.geometry.Pos.CENTER);
         dateContainer.setStyle("-fx-min-width: 200; -fx-pref-width: 200; -fx-min-height: 50; -fx-pref-height: 50;");
-        Label dateLabel = new Label(request.getDate());
+        Label dateLabel = new Label(request.getStartDate() + " ~ " + request.getEndDate());
         dateContainer.getChildren().add(dateLabel);
         
         // 거부/승인 버튼들
@@ -160,12 +176,12 @@ public class LeaveApprovalController implements Initializable {
         tableData.getChildren().add(row);
     }
     
-    private HBox createActionButtons(LeaveRequest request, int rowIndex) {
+    private HBox createActionButtons(LeaveRequestDto request, int rowIndex) {
         HBox buttonContainer = new HBox(5);
         buttonContainer.setAlignment(javafx.geometry.Pos.CENTER);
         buttonContainer.setStyle("-fx-alignment: CENTER;");
         
-        if ("pending".equals(request.getStatus())) {
+        if ("PENDING".equals(request.getStatus())) {
             // 대기중인 경우: 거부/승인 버튼 표시
             Button rejectButton = new Button("거부");
             rejectButton.setStyle("-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 10; -fx-cursor: hand; -fx-background-radius: 3;");
@@ -176,13 +192,13 @@ public class LeaveApprovalController implements Initializable {
             approveButton.setOnAction(e -> handleApprove(rowIndex));
             
             buttonContainer.getChildren().addAll(rejectButton, approveButton);
-        } else if ("approved".equals(request.getStatus())) {
+        } else if ("APPROVED".equals(request.getStatus())) {
             // 승인된 경우: 승인 버튼만 표시 (비활성화)
             Button approvedButton = new Button("승인");
             approvedButton.setStyle("-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 10; -fx-background-radius: 3;");
             approvedButton.setDisable(true);
             buttonContainer.getChildren().add(approvedButton);
-        } else if ("rejected".equals(request.getStatus())) {
+        } else if ("REJECTED".equals(request.getStatus())) {
             // 거부된 경우: 거부 버튼만 표시 (비활성화)
             Button rejectedButton = new Button("거부");
             rejectedButton.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 10; -fx-background-radius: 3;");
@@ -225,15 +241,41 @@ public class LeaveApprovalController implements Initializable {
     
     private void handleApprove(int rowIndex) {
         if (rowIndex < leaveRequests.size()) {
-            leaveRequests.get(rowIndex).setStatus("approved");
-            loadPageData(); // 테이블 새로고침
+            LeaveRequestDto request = leaveRequests.get(rowIndex);
+            try {
+                // 서버에 승인 요청
+                boolean success = apiClient.approveLeaveRequest(request.getLeaveId(), 1L); // TODO: 실제 승인자 ID 사용
+                if (success) {
+                    request.setStatus("APPROVED");
+                    loadPageData(); // 테이블 새로고침
+                    showAlert("성공", "휴가 신청이 승인되었습니다.", Alert.AlertType.INFORMATION);
+                } else {
+                    showAlert("오류", "휴가 신청 승인에 실패했습니다.", Alert.AlertType.ERROR);
+                }
+            } catch (Exception e) {
+                System.err.println("휴가 승인 중 오류 발생: " + e.getMessage());
+                showAlert("오류", "서버와의 통신 중 오류가 발생했습니다.", Alert.AlertType.ERROR);
+            }
         }
     }
     
     private void handleReject(int rowIndex) {
         if (rowIndex < leaveRequests.size()) {
-            leaveRequests.get(rowIndex).setStatus("rejected");
-            loadPageData(); // 테이블 새로고침
+            LeaveRequestDto request = leaveRequests.get(rowIndex);
+            try {
+                // 서버에 거부 요청
+                boolean success = apiClient.rejectLeaveRequest(request.getLeaveId(), 1L, "관리자에 의해 거부됨"); // TODO: 실제 거부자 ID 사용
+                if (success) {
+                    request.setStatus("REJECTED");
+                    loadPageData(); // 테이블 새로고침
+                    showAlert("성공", "휴가 신청이 거부되었습니다.", Alert.AlertType.INFORMATION);
+                } else {
+                    showAlert("오류", "휴가 신청 거부에 실패했습니다.", Alert.AlertType.ERROR);
+                }
+            } catch (Exception e) {
+                System.err.println("휴가 거부 중 오류 발생: " + e.getMessage());
+                showAlert("오류", "서버와의 통신 중 오류가 발생했습니다.", Alert.AlertType.ERROR);
+            }
         }
     }
     

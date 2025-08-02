@@ -6,8 +6,13 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
 import javafx.fxml.Initializable;
+import com.example.companycore.model.dto.AttendanceDto;
+import com.example.companycore.model.entity.Attendance;
+import com.example.companycore.service.ApiClient;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.List;
+import java.util.ArrayList;
 
 public class AttendanceRecordController implements Initializable {
     
@@ -37,11 +42,45 @@ public class AttendanceRecordController implements Initializable {
     
     private int currentPage = 1;
     private int totalPages = 40;
+    private List<AttendanceDto> attendanceRecords = new ArrayList<>();
+    private ApiClient apiClient = ApiClient.getInstance();
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         setupPaginationHandlers();
+        loadAttendanceRecordsFromServer();
         loadPageData(currentPage);
+    }
+    
+    private void loadAttendanceRecordsFromServer() {
+        try {
+            // 실제 API 호출
+            List<Attendance> attendanceList = apiClient.getUserAttendance(1L);
+            
+            // Attendance 엔티티를 AttendanceDto로 변환
+            attendanceRecords.clear();
+            for (Attendance attendance : attendanceList) {
+                AttendanceDto dto = convertToDto(attendance);
+                attendanceRecords.add(dto);
+            }
+            
+            System.out.println("출근 기록 데이터 로드 완료: " + attendanceRecords.size() + "개");
+        } catch (Exception e) {
+            System.err.println("서버에서 출근 기록 데이터를 가져오는 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    private AttendanceDto convertToDto(Attendance attendance) {
+        return new AttendanceDto(
+            attendance.getAttendanceId(),
+            attendance.getUserId(),
+            attendance.getCheckIn(),
+            attendance.getCheckOut(),
+            attendance.getWorkHours(),
+            attendance.getWorkDate(),
+            attendance.getStatus()
+        );
     }
     
     private void setupPaginationHandlers() {
@@ -76,10 +115,79 @@ public class AttendanceRecordController implements Initializable {
         // 테이블 데이터를 클리어
         tableData.getChildren().clear();
         
-        // TODO: 데이터베이스에서 실제 출근 기록 데이터를 가져와서 표시
-        // 현재는 빈 데이터로 초기화
-        for (int i = 0; i < 10; i++) {
+        // 페이지네이션 로직
+        int pageSize = 10;
+        int startIndex = (page - 1) * pageSize;
+        int endIndex = Math.min(startIndex + pageSize, attendanceRecords.size());
+        
+        if (startIndex < attendanceRecords.size()) {
+            List<AttendanceDto> pageData = attendanceRecords.subList(startIndex, endIndex);
+            for (AttendanceDto record : pageData) {
+                addAttendanceRow(record);
+            }
+        }
+        
+        // 빈 행으로 채우기
+        int remainingRows = 10 - (endIndex - startIndex);
+        for (int i = 0; i < remainingRows; i++) {
             addTableRow("", "", "", "", "#f8f9fa", "#6c757d");
+        }
+    }
+    
+    private void addAttendanceRow(AttendanceDto record) {
+        // 날짜 포맷팅: 2023-03-01 → 2023년 3월 1일
+        String date = formatDate(record.getWorkDate());
+        
+        // 시간 포맷팅: 08:30:00 → 오전 8시 30분
+        String clockIn = formatTime(record.getCheckIn());
+        String clockOut = formatTime(record.getCheckOut());
+        
+        // 상태 표시 개선
+        String status = formatStatus(record.getStatus());
+        String buttonColor = getStatusColor(record.getStatus());
+        String textColor = "white";
+        
+        addTableRow(date, clockIn, clockOut, status, buttonColor, textColor);
+    }
+    
+    private String formatDate(java.time.LocalDate date) {
+        if (date == null) return "";
+        return String.format("%d년 %d월 %d일", date.getYear(), date.getMonthValue(), date.getDayOfMonth());
+    }
+    
+    private String formatTime(java.time.LocalDateTime dateTime) {
+        if (dateTime == null) return "";
+        
+        int hour = dateTime.getHour();
+        int minute = dateTime.getMinute();
+        
+        String ampm = hour < 12 ? "오전" : "오후";
+        int displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+        
+        return String.format("%s %d시 %02d분", ampm, displayHour, minute);
+    }
+    
+    private String formatStatus(com.example.companycore.model.entity.Enum.AttendanceStatus status) {
+        if (status == null) return "";
+        
+        switch (status) {
+            case PRESENT: return "정상";
+            case LATE: return "지각";
+            case ABSENT: return "결근";
+            case LEAVE: return "휴가";
+            default: return status.toString();
+        }
+    }
+    
+    private String getStatusColor(com.example.companycore.model.entity.Enum.AttendanceStatus status) {
+        if (status == null) return "#6c757d";
+        
+        switch (status) {
+            case PRESENT: return "#28a745"; // 녹색
+            case LATE: return "#ffc107"; // 노란색
+            case ABSENT: return "#dc3545"; // 빨간색
+            case LEAVE: return "#17a2b8"; // 파란색
+            default: return "#6c757d"; // 회색
         }
     }
     

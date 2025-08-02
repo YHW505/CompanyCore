@@ -1,6 +1,6 @@
 package com.example.companycore.controller.hr;
 
-import com.example.companycore.model.entity.Employee;
+import com.example.companycore.model.entity.User;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -24,6 +24,7 @@ import javafx.scene.control.Pagination;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
+import com.example.companycore.service.ApiClient;
 
 /**
  * 인사관리 컨트롤러 클래스
@@ -43,15 +44,15 @@ public class HRManagementController {
     // ==================== FXML UI 컴포넌트 ====================
     
     /** 사원 목록 테이블 */
-    @FXML private TableView<Employee> employeeTable;
+    @FXML private TableView<User> employeeTable;
     
     /** 테이블 컬럼들 */
-    @FXML private TableColumn<Employee, Integer> idColumn;           // 순서 컬럼
-    @FXML private TableColumn<Employee, String> nameColumn;          // 이름 컬럼
-    @FXML private TableColumn<Employee, String> departmentColumn;    // 부서 컬럼
-    @FXML private TableColumn<Employee, String> employeeIdColumn;    // 사번 컬럼
-    @FXML private TableColumn<Employee, String> emailColumn;         // 이메일 컬럼
-    @FXML private TableColumn<Employee, Void> editColumn;            // 수정 버튼 컬럼
+    @FXML private TableColumn<User, Integer> idColumn;           // 순서 컬럼
+    @FXML private TableColumn<User, String> nameColumn;          // 이름 컬럼
+    @FXML private TableColumn<User, String> departmentColumn;    // 부서 컬럼
+    @FXML private TableColumn<User, String> employeeIdColumn;    // 사번 컬럼
+    @FXML private TableColumn<User, String> emailColumn;         // 이메일 컬럼
+    @FXML private TableColumn<User, Void> editColumn;            // 수정 버튼 컬럼
     
     /** 검색 관련 UI 컴포넌트 */
     @FXML private ComboBox<String> searchConditionComboBox;  // 검색 조건 선택
@@ -69,13 +70,16 @@ public class HRManagementController {
     // ==================== 데이터 관리 ====================
     
     /** 전체 사원 데이터 */
-    private ObservableList<Employee> allEmployees;
+    private ObservableList<User> allEmployees;
     
     /** 필터링된 사원 데이터 (검색 결과) */
-    private ObservableList<Employee> filteredEmployees;
+    private ObservableList<User> filteredEmployees;
     
     /** 한 페이지에 표시할 항목 수 */
     private static final int ITEMS_PER_PAGE = 10;
+    
+    // API 클라이언트
+    private ApiClient apiClient;
     
     // ==================== 초기화 메서드 ====================
     
@@ -85,6 +89,8 @@ public class HRManagementController {
      */
     @FXML
     public void initialize() {
+        apiClient = ApiClient.getInstance();
+        
         initializeData();
         setupTableColumns();
         setupSearchFunctionality();
@@ -98,72 +104,67 @@ public class HRManagementController {
     }
     
     /**
-     * 데이터베이스에서 사원 데이터를 초기화
-     * 실제 구현에서는 데이터베이스에서 데이터를 로드
+     * 샘플 데이터 초기화
      */
     private void initializeData() {
-        // 데이터베이스에서 사원 데이터 로드
         allEmployees = FXCollections.observableArrayList();
         filteredEmployees = FXCollections.observableArrayList();
         
-        // TODO: 데이터베이스에서 사원 목록을 로드하는 로직 구현
-        // loadEmployeesFromDatabase();
+        // 실제 데이터베이스에서 사용자 목록을 가져옴
+        loadUsersFromDatabase();
         
+        // 초기 필터링된 데이터 설정
         filteredEmployees.addAll(allEmployees);
-        employeeTable.setItems(filteredEmployees);
     }
     
-    // ==================== 테이블 설정 메서드 ====================
+    /**
+     * 데이터베이스에서 사용자 목록을 로드합니다.
+     */
+    private void loadUsersFromDatabase() {
+        try {
+            // 실제 API 호출로 사용자 목록을 가져오는 로직 구현
+            List<User> users = apiClient.getUsers();
+            allEmployees.addAll(users);
+            
+            System.out.println("사용자 목록을 데이터베이스에서 로드했습니다. 총 " + users.size() + "명");
+            
+        } catch (Exception e) {
+            showAlert("오류", "사용자 목록을 불러오는 중 오류가 발생했습니다: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
     
     /**
-     * 테이블 컬럼들을 설정하고 바인딩
-     * 컬럼 너비, 정렬, 이벤트 핸들러 등을 설정
+     * 테이블 컬럼 설정
      */
     private void setupTableColumns() {
-        // 테이블 설정 (결재승인 창과 동일)
-        employeeTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
-        employeeTable.setFixedCellSize(40);
-        
-        // 기본 컬럼 설정
-        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-        nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-        departmentColumn.setCellValueFactory(new PropertyValueFactory<>("department"));
-        employeeIdColumn.setCellValueFactory(new PropertyValueFactory<>("employeeId"));
+        // 컬럼별 데이터 바인딩
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("userId"));
+        nameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
+        departmentColumn.setCellValueFactory(cellData -> {
+            User user = cellData.getValue();
+            return new javafx.beans.property.SimpleStringProperty(
+                user.getDepartment() != null ? user.getDepartment().getDepartmentName() : ""
+            );
+        });
+        employeeIdColumn.setCellValueFactory(new PropertyValueFactory<>("employeeCode"));
         emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
-        
-        // 컬럼 너비 설정 (결재승인 창과 동일)
-        idColumn.setPrefWidth(100);
-        nameColumn.setPrefWidth(200);
-        departmentColumn.setPrefWidth(120);
-        employeeIdColumn.setPrefWidth(120);
-        emailColumn.setPrefWidth(140);
-        editColumn.setPrefWidth(160);
-        
-        // 모든 컬럼 중앙 정렬 설정
-        idColumn.setStyle("-fx-alignment: CENTER;");
-        nameColumn.setStyle("-fx-alignment: CENTER;");
-        departmentColumn.setStyle("-fx-alignment: CENTER;");
-        employeeIdColumn.setStyle("-fx-alignment: CENTER;");
-        emailColumn.setStyle("-fx-alignment: CENTER;");
-        editColumn.setStyle("-fx-alignment: CENTER;");
         
         // 수정 버튼 컬럼 설정
         setupEditColumn();
     }
     
     /**
-     * 수정 버튼이 있는 컬럼을 설정
-     * 각 행에 수정 버튼을 추가하고 클릭 시 사원 수정 다이얼로그를 열음
+     * 수정 버튼 컬럼 설정
      */
     private void setupEditColumn() {
-        editColumn.setCellFactory(param -> new TableCell<>() {
+        editColumn.setCellFactory(param -> new TableCell<User, Void>() {
             private final Button editButton = new Button("✏️");
             
             {
-                editButton.setStyle("-fx-background-color: transparent; -fx-border-color: transparent; -fx-cursor: hand;");
+                editButton.setStyle("-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 10; -fx-cursor: hand; -fx-background-radius: 3;");
                 editButton.setOnAction(event -> {
-                    Employee employee = getTableView().getItems().get(getIndex());
-                    openEmployeeEditDialog(employee);
+                    User user = getTableView().getItems().get(getIndex());
+                    openEmployeeEditDialog(user);
                 });
             }
             
@@ -179,202 +180,172 @@ public class HRManagementController {
         });
     }
     
-    // ==================== 검색 기능 메서드 ====================
-    
     /**
-     * 검색 기능을 초기화
-     * 검색 조건 콤보박스 설정 및 기본값 설정
+     * 검색 기능 설정
      */
     private void setupSearchFunctionality() {
-        // 검색 조건 콤보박스 설정
-        searchConditionComboBox.getItems().addAll("이름", "부서", "사번", "이메일");
-        searchConditionComboBox.setValue(null);
+        // 검색 조건 콤보박스 초기화
+        searchConditionComboBox.getItems().addAll("전체", "이름", "사번", "부서", "이메일");
+        searchConditionComboBox.setValue("전체");
         
-        // 검색 버튼 이벤트 설정
-        searchButton.setOnAction(event -> {
-            filterEmployees();
-        });
-        
-        // 검색 텍스트 필드 엔터키 이벤트 설정
-        searchTextField.setOnAction(event -> {
+        // 검색어 입력 시 실시간 필터링
+        searchTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             filterEmployees();
         });
     }
     
     /**
-     * 검색 조건에 따라 사원 목록을 필터링
-     * 검색어가 비어있으면 전체 목록을 표시
+     * 사원 데이터 필터링
      */
     private void filterEmployees() {
         String searchText = searchTextField.getText().toLowerCase();
         String searchCondition = searchConditionComboBox.getValue();
         
-        List<Employee> filtered = allEmployees.stream()
-            .filter(employee -> {
-                if (searchText.isEmpty()) {
-                    return true;
-                }
+        List<User> filtered = allEmployees.stream()
+            .filter(user -> {
+                if (searchText.isEmpty()) return true;
                 
                 switch (searchCondition) {
                     case "이름":
-                        return employee.getName().toLowerCase().contains(searchText);
-                    case "부서":
-                        return employee.getDepartment().toLowerCase().contains(searchText);
+                        return user.getUsername().toLowerCase().contains(searchText);
                     case "사번":
-                        return employee.getEmployeeId().toLowerCase().contains(searchText);
+                        return user.getEmployeeCode().toLowerCase().contains(searchText);
+                    case "부서":
+                        return user.getDepartment() != null && 
+                               user.getDepartment().getDepartmentName().toLowerCase().contains(searchText);
                     case "이메일":
-                        return employee.getEmail().toLowerCase().contains(searchText);
-                    default:
-                        return true;
+                        return user.getEmail().toLowerCase().contains(searchText);
+                    default: // "전체"
+                        return user.getUsername().toLowerCase().contains(searchText) ||
+                               user.getEmployeeCode().toLowerCase().contains(searchText) ||
+                               (user.getDepartment() != null && user.getDepartment().getDepartmentName().toLowerCase().contains(searchText)) ||
+                               user.getEmail().toLowerCase().contains(searchText);
                 }
             })
             .collect(Collectors.toList());
         
         filteredEmployees.clear();
         filteredEmployees.addAll(filtered);
-        
-        // 페이지네이션 업데이트
         updatePagination();
     }
     
-    // ==================== 페이지네이션 메서드 ====================
-    
     /**
-     * 페이지네이션을 설정
-     * 페이지 변경 시 해당 페이지의 데이터만 표시
+     * 페이지네이션 설정
      */
     private void setupPagination() {
+        pagination.setPageCount(1);
+        pagination.setCurrentPageIndex(0);
         updatePagination();
     }
     
     /**
-     * 페이지네이션을 업데이트
-     * 필터링된 데이터에 따라 페이지 수를 재계산
+     * 페이지네이션 업데이트
      */
     private void updatePagination() {
-        int totalPages = (int) Math.ceil((double) filteredEmployees.size() / ITEMS_PER_PAGE);
+        int totalItems = filteredEmployees.size();
+        int totalPages = (int) Math.ceil((double) totalItems / ITEMS_PER_PAGE);
+        
+        if (totalPages == 0) totalPages = 1;
+        
         pagination.setPageCount(totalPages);
         
-        pagination.setPageFactory(pageIndex -> {
-            int fromIndex = pageIndex * ITEMS_PER_PAGE;
-            int toIndex = Math.min(fromIndex + ITEMS_PER_PAGE, filteredEmployees.size());
-            
-            List<Employee> pageData = filteredEmployees.subList(fromIndex, toIndex);
-            ObservableList<Employee> pageObservableList = FXCollections.observableArrayList(pageData);
-            
-            // 테이블 데이터 업데이트
-            employeeTable.setItems(pageObservableList);
-            
-            return new Region(); // 페이지네이션은 테이블을 직접 업데이트하므로 빈 Region 반환
-        });
+        // 현재 페이지의 데이터만 테이블에 표시
+        int currentPage = pagination.getCurrentPageIndex();
+        int startIndex = currentPage * ITEMS_PER_PAGE;
+        int endIndex = Math.min(startIndex + ITEMS_PER_PAGE, totalItems);
         
-        // 첫 페이지 데이터 설정
-        if (!filteredEmployees.isEmpty()) {
-            int endIndex = Math.min(ITEMS_PER_PAGE, filteredEmployees.size());
-            List<Employee> firstPageData = filteredEmployees.subList(0, endIndex);
-            employeeTable.setItems(FXCollections.observableArrayList(firstPageData));
-        }
+        List<User> pageData = filteredEmployees.subList(startIndex, endIndex);
+        employeeTable.getItems().clear();
+        employeeTable.getItems().addAll(pageData);
     }
     
-    // ==================== 버튼 설정 메서드 ====================
-    
     /**
-     * 버튼들의 이벤트 핸들러를 설정
-     * 삭제, 등록 버튼의 클릭 이벤트를 등록
+     * 버튼 이벤트 핸들러 설정
      */
     private void setupButtons() {
-        // 삭제 버튼 설정
-        deleteButton.setOnAction(event -> {
-            // 선택된 사원 삭제 로직
-            showAlert("삭제", "선택된 사원을 삭제하시겠습니까?", Alert.AlertType.CONFIRMATION);
-        });
+        // 사원 등록 버튼
+        registerButton.setOnAction(event -> openEmployeeRegisterDialog());
         
-        // 등록 버튼 설정
-        registerButton.setOnAction(event -> {
-            openEmployeeRegisterDialog();
+        // 삭제 버튼
+        deleteButton.setOnAction(event -> {
+            User selectedUser = employeeTable.getSelectionModel().getSelectedItem();
+            if (selectedUser != null) {
+                // 삭제 확인 다이얼로그
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("삭제 확인");
+                alert.setHeaderText("선택된 사원을 삭제하시겠습니까?");
+                alert.setContentText("이 작업은 되돌릴 수 없습니다.");
+                
+                alert.showAndWait().ifPresent(response -> {
+                    if (response == ButtonType.OK) {
+                        allEmployees.remove(selectedUser);
+                        filterEmployees();
+                        showAlert("완료", "사원이 삭제되었습니다.", Alert.AlertType.INFORMATION);
+                    }
+                });
+            } else {
+                showAlert("알림", "삭제할 사원을 선택해주세요.", Alert.AlertType.WARNING);
+            }
         });
     }
     
-    // ==================== 다이얼로그 메서드 ====================
-    
     /**
-     * 사원 수정 다이얼로그를 열기
-     * 
-     * @param employee 수정할 사원 객체
+     * 사원 수정 다이얼로그 열기
      */
-    private void openEmployeeEditDialog(Employee employee) {
+    private void openEmployeeEditDialog(User user) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/content/hr/employeeEditDialog.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/hr/EmployeeEdit.fxml"));
             Parent root = loader.load();
             
             EmployeeEditController controller = loader.getController();
-            controller.setEmployee(employee);
+            controller.setUser(user);
             
-            Stage dialog = new Stage();
-            dialog.initModality(Modality.APPLICATION_MODAL);
-            dialog.setTitle("사원 정보 수정");
-            dialog.setScene(new Scene(root));
+            Stage stage = new Stage();
+            stage.setTitle("사원 정보 수정");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
             
-            dialog.setOnCloseRequest(event -> {
-                // 다이얼로그가 닫힐 때 테이블 새로고침
-                filterEmployees();
-            });
-            
-            dialog.showAndWait();
+            // 다이얼로그가 닫힌 후 테이블 새로고침
+            filterEmployees();
             
         } catch (Exception e) {
-            e.printStackTrace();
-            showAlert("오류", "사원 정보 수정 창을 열 수 없습니다.", Alert.AlertType.ERROR);
+            showAlert("오류", "사원 수정 다이얼로그를 열 수 없습니다: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
     
     /**
-     * 사원 등록 다이얼로그를 열기
+     * 사원 등록 다이얼로그 열기
      */
     private void openEmployeeRegisterDialog() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/content/hr/employeeRegisterDialog.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/hr/EmployeeRegister.fxml"));
             Parent root = loader.load();
             
-            EmployeeRegisterController controller = loader.getController();
+            Stage stage = new Stage();
+            stage.setTitle("새 사원 등록");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
             
-            Stage dialog = new Stage();
-            dialog.initModality(Modality.APPLICATION_MODAL);
-            dialog.setTitle("사원 등록");
-            dialog.setScene(new Scene(root));
-            
-            dialog.setOnCloseRequest(event -> {
-                // 다이얼로그가 닫힐 때 테이블 새로고침
-                filterEmployees();
-            });
-            
-            dialog.showAndWait();
+            // 다이얼로그가 닫힌 후 테이블 새로고침
+            filterEmployees();
             
         } catch (Exception e) {
-            e.printStackTrace();
-            showAlert("오류", "사원 등록 창을 열 수 없습니다.", Alert.AlertType.ERROR);
+            showAlert("오류", "사원 등록 다이얼로그를 열 수 없습니다: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
     
-    // ==================== 이벤트 핸들러 메서드 ====================
-    
     /**
-     * 검색 버튼 클릭 시 호출되는 메서드
-     * FXML에서 onAction으로 연결됨
+     * 검색 버튼 클릭 이벤트
      */
     @FXML
     private void handleSearch() {
         filterEmployees();
     }
     
-    // ==================== 유틸리티 메서드 ====================
-    
     /**
-     * 알림 다이얼로그를 표시
-     * 
-     * @param title 알림 제목
-     * @param content 알림 내용
-     * @param alertType 알림 타입 (ERROR, WARNING, INFORMATION, CONFIRMATION)
+     * 알림 다이얼로그 표시
      */
     private void showAlert(String title, String content, Alert.AlertType alertType) {
         Alert alert = new Alert(alertType);

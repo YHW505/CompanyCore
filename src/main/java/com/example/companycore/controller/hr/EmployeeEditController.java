@@ -1,6 +1,6 @@
 package com.example.companycore.controller.hr; 
 
-import com.example.companycore.model.entity.Employee;
+import com.example.companycore.model.entity.User;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -58,7 +58,7 @@ public class EmployeeEditController {
     @FXML
     private Button cancelButton;
     
-    private Employee employee;
+    private User user;
     private boolean isPasswordChange = false;
     
     @FXML
@@ -66,24 +66,24 @@ public class EmployeeEditController {
         setupButtons();
     }
     
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
-        loadEmployeeData();
+    public void setUser(User user) {
+        this.user = user;
+        loadUserData();
     }
     
-    private void loadEmployeeData() {
-        if (employee != null) {
+    private void loadUserData() {
+        if (user != null) {
             // 사원 정보를 폼에 로드
-            employeeNameLabel.setText(employee.getName());
+            employeeNameLabel.setText(user.getUsername());
             employeeRoleLabel.setText("사원");
             
-            nameTextField.setText(employee.getName());
-            employeeIdTextField.setText(employee.getEmployeeId());
-            departmentTextField.setText(employee.getDepartment());
-            addressTextField.setText(employee.getAddress());
-            phoneNumberTextField.setText(employee.getPhoneNumber());
-            emailTextField.setText(employee.getEmail());
-            positionTextField.setText(employee.getPosition());
+            nameTextField.setText(user.getUsername());
+            employeeIdTextField.setText(user.getEmployeeCode());
+            departmentTextField.setText(user.getDepartment() != null ? user.getDepartment().getDepartmentName() : "");
+            addressTextField.setText(""); // User Entity에는 address 필드가 없음
+            phoneNumberTextField.setText(user.getPhone());
+            emailTextField.setText(user.getEmail());
+            positionTextField.setText(user.getPosition() != null ? user.getPosition().getPositionName() : "");
             
             // 비밀번호 필드는 비워둠 (보안상)
             passwordField.clear();
@@ -100,34 +100,30 @@ public class EmployeeEditController {
             
             if (isPasswordChange) {
                 modifyPasswordButton.setText("비밀번호 수정 취소");
-                passwordField.setPromptText("새 비밀번호를 입력하세요");
-                confirmPasswordField.setPromptText("새 비밀번호를 다시 입력하세요");
+                passwordField.setPromptText("새 비밀번호 입력");
+                confirmPasswordField.setPromptText("새 비밀번호 확인");
             } else {
                 modifyPasswordButton.setText("비밀번호 수정");
                 passwordField.clear();
                 confirmPasswordField.clear();
-                passwordField.setPromptText("비밀번호 변경입니다?");
-                confirmPasswordField.setPromptText("비밀번호 변경입니다? 2");
+                passwordField.setPromptText("");
+                confirmPasswordField.setPromptText("");
             }
         });
         
         // 저장 버튼
         saveButton.setOnAction(event -> {
-            System.out.println("저장 버튼 클릭됨");
             if (validateInput()) {
-                saveEmployeeData();
+                saveUserData();
                 closeDialog();
             }
         });
         
         // 취소 버튼
         cancelButton.setOnAction(event -> {
-            System.out.println("취소 버튼 클릭됨 (setupButtons에서)");
             closeDialog();
         });
     }
-    
-
     
     private boolean validateInput() {
         // 필수 필드 검증
@@ -151,15 +147,24 @@ public class EmployeeEditController {
             return false;
         }
         
+        // 이메일 형식 검증
+        if (!isValidEmail(emailTextField.getText().trim())) {
+            showAlert("입력 오류", "올바른 이메일 형식을 입력해주세요.", Alert.AlertType.ERROR);
+            return false;
+        }
+        
+        // 전화번호 형식 검증 (선택사항)
+        if (!phoneNumberTextField.getText().trim().isEmpty()) {
+            if (!isValidPhoneNumber(phoneNumberTextField.getText().trim())) {
+                showAlert("입력 오류", "올바른 전화번호 형식을 입력해주세요. (예: 010-1234-5678)", Alert.AlertType.ERROR);
+                return false;
+            }
+        }
+        
         // 비밀번호 변경 시 검증
         if (isPasswordChange) {
             if (passwordField.getText().trim().isEmpty()) {
                 showAlert("입력 오류", "새 비밀번호를 입력해주세요.", Alert.AlertType.ERROR);
-                return false;
-            }
-            
-            if (confirmPasswordField.getText().trim().isEmpty()) {
-                showAlert("입력 오류", "비밀번호 확인을 입력해주세요.", Alert.AlertType.ERROR);
                 return false;
             }
             
@@ -172,55 +177,60 @@ public class EmployeeEditController {
         return true;
     }
     
-    private void saveEmployeeData() {
-        if (employee != null) {
+    private boolean isValidEmail(String email) {    
+        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+        return email.matches(emailRegex);
+    }
+    
+    private boolean isValidPhoneNumber(String phoneNumber) {
+        String phoneRegex = "^01[0-9]-[0-9]{4}-[0-9]{4}$";
+        return phoneNumber.matches(phoneRegex);
+    }
+    
+    private void saveUserData() {
+        try {
             // 사원 정보 업데이트
-            employee.setName(nameTextField.getText().trim());
-            employee.setEmployeeId(employeeIdTextField.getText().trim());
-            employee.setDepartment(departmentTextField.getText().trim());
-            employee.setAddress(addressTextField.getText().trim());
-            employee.setPhoneNumber(phoneNumberTextField.getText().trim());
-            employee.setEmail(emailTextField.getText().trim());
-            employee.setPosition(positionTextField.getText().trim());
+            user.setUsername(nameTextField.getText().trim());
+            user.setEmployeeCode(employeeIdTextField.getText().trim());
+            user.setEmail(emailTextField.getText().trim());
+            user.setPhone(phoneNumberTextField.getText().trim());
             
             // 비밀번호 변경 시
             if (isPasswordChange) {
-                employee.setPassword(passwordField.getText());
+                user.setPassword(passwordField.getText());
             }
             
-            showAlert("성공", "사원 정보가 수정되었습니다.", Alert.AlertType.INFORMATION);
+            // 여기서 실제 데이터베이스에 저장하는 로직을 구현
+            // 현재는 메모리에만 저장하는 예시
+            
+            showAlert("성공", "사원 정보가 성공적으로 수정되었습니다.", Alert.AlertType.INFORMATION);
+            
+        } catch (Exception e) {
+            showAlert("오류", "사원 정보 수정 중 오류가 발생했습니다: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
     
     private void closeDialog() {
-        System.out.println("closeDialog() 호출됨");
-        
         // 여러 방법으로 Stage를 찾아보기
         Stage stage = null;
         
         // 방법 1: contentArea를 통해 찾기
         if (contentArea != null && contentArea.getScene() != null) {
             stage = (Stage) contentArea.getScene().getWindow();
-            System.out.println("contentArea를 통해 Stage 찾음: " + (stage != null));
         }
         
         // 방법 2: 다른 컨트롤을 통해 찾기
         if (stage == null && cancelButton != null && cancelButton.getScene() != null) {
             stage = (Stage) cancelButton.getScene().getWindow();
-            System.out.println("cancelButton을 통해 Stage 찾음: " + (stage != null));
         }
         
         // 방법 3: saveButton을 통해 찾기
         if (stage == null && saveButton != null && saveButton.getScene() != null) {
             stage = (Stage) saveButton.getScene().getWindow();
-            System.out.println("saveButton을 통해 Stage 찾음: " + (stage != null));
         }
         
         if (stage != null) {
-            System.out.println("Stage 닫기 시도");
             stage.close();
-        } else {
-            System.out.println("Stage를 찾을 수 없음");
         }
     }
     

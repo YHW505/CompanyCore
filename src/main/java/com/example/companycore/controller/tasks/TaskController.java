@@ -11,6 +11,10 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
+import com.example.companycore.model.entity.Task;
+import com.example.companycore.model.entity.Enum.TaskType;
+import com.example.companycore.model.entity.Enum.TaskStatus;
+import com.example.companycore.service.ApiClient;
 import java.awt.*;
 import java.awt.Desktop;
 import java.io.File;
@@ -30,6 +34,7 @@ public class TaskController {
 
     // 실제 선택된 파일 보관 리스트
     private final ObservableList<File> attachments = FXCollections.observableArrayList();
+    private ApiClient apiClient = ApiClient.getInstance();
 
     @FXML
     private void initialize() {
@@ -155,13 +160,30 @@ public class TaskController {
             return;
         }
 
-        // TODO: 서버 연동 - attachments 포함해서 전송
-        // 예: approvalService.requestApproval(title, content, attachments);
+        try {
+            // Task 객체 생성
+            Task task = new Task();
+            task.setTitle(title);
+            task.setDescription(content);
+            task.setTaskType(TaskType.TASK); // 기본 타입
+            task.setStatus(TaskStatus.TODO); // 기본 상태
+            task.setAssignedBy(1L); // TODO: 실제 사용자 ID 사용
+            task.setAssignedTo(1L); // TODO: 실제 할당 대상 ID 사용
 
-        showAlert("요청이 제출되었습니다.");
-
-        // 제출 후 초기화
-        onCancel(null);
+            // 서버에 Task 생성 요청
+            Task createdTask = apiClient.createTask(task);
+            
+            if (createdTask != null) {
+                showAlert("작업이 성공적으로 생성되었습니다.");
+                // 제출 후 초기화
+                onCancel(null);
+            } else {
+                showAlert("작업 생성에 실패했습니다.");
+            }
+        } catch (Exception e) {
+            System.err.println("작업 생성 중 오류 발생: " + e.getMessage());
+            showAlert("서버와의 통신 중 오류가 발생했습니다.");
+        }
     }
 
     private void refreshAttachmentListVisibility() {
