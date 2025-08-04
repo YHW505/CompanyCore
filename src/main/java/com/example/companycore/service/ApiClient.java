@@ -14,6 +14,7 @@ public class ApiClient {
     private final AttendanceApiClient attendanceApiClient;
     private final LeaveApiClient leaveApiClient;
     private final MessageApiClient messageApiClient;
+    private final MeetingApiClient meetingApiClient;
 
     private ApiClient() {
         this.userApiClient = UserApiClient.getInstance();
@@ -21,6 +22,7 @@ public class ApiClient {
         this.attendanceApiClient = AttendanceApiClient.getInstance();
         this.leaveApiClient = LeaveApiClient.getInstance();
         this.messageApiClient = MessageApiClient.getInstance();
+        this.meetingApiClient = MeetingApiClient.getInstance();
     }
 
     public static ApiClient getInstance() {
@@ -48,6 +50,7 @@ public class ApiClient {
             attendanceApiClient.setAuthToken(token);
             leaveApiClient.setAuthToken(token);
             messageApiClient.setAuthToken(token);
+            meetingApiClient.setAuthToken(token);
         }
         return result;
     }
@@ -66,6 +69,7 @@ public class ApiClient {
         attendanceApiClient.clearToken();
         leaveApiClient.clearToken();
         messageApiClient.clearToken();
+        meetingApiClient.clearToken();
     }
 
     // User API 관련 메서드들
@@ -307,5 +311,38 @@ public class ApiClient {
 
     public MessageApiClient getMessageApiClient() {
         return messageApiClient;
+    }
+
+    // Meeting API 관련 메서드들
+    public java.util.List<MeetingApiClient.MeetingDto> getAllMeetings() {
+        return meetingApiClient.getAllMeetings();
+    }
+
+    public MeetingApiClient.MeetingDto getMeetingById(Long meetingId) {
+        return meetingApiClient.getMeetingById(meetingId);
+    }
+
+    public MeetingApiClient.MeetingDto createMeeting(MeetingApiClient.MeetingDto meetingDto) {
+        return meetingApiClient.createMeeting(meetingDto);
+    }
+
+    public MeetingApiClient.MeetingDto updateMeeting(Long meetingId, MeetingApiClient.MeetingDto meetingDto) {
+        return meetingApiClient.updateMeeting(meetingId, meetingDto);
+    }
+
+    public boolean deleteMeeting(Long meetingId) {
+        return meetingApiClient.deleteMeeting(meetingId);
+    }
+
+    public java.util.List<MeetingApiClient.MeetingDto> getMeetingsByDate(String date) {
+        return meetingApiClient.getMeetingsByDate(date);
+    }
+
+    public java.util.List<MeetingApiClient.MeetingDto> getMeetingsByLocation(String location) {
+        return meetingApiClient.getMeetingsByLocation(location);
+    }
+
+    public MeetingApiClient getMeetingApiClient() {
+        return meetingApiClient;
     }
 }

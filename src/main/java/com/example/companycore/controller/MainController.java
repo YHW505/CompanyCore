@@ -159,7 +159,7 @@ public class MainController {
                     fxmlPath = "/com/example/companycore/view/content/tasksContent.fxml";
                     break;
                 case "calendar":
-                    fxmlPath = "/com/example/companycore/view/content/calendarContent.fxml";
+                    fxmlPath = "/com/example/companycore/view/content/calendar/calendarContent.fxml";
                     break;
                 case "profile":
                     fxmlPath = "/com/example/companycore/view/content/profileContent.fxml";

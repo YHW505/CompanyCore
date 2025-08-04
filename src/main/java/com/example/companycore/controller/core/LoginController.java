@@ -8,6 +8,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -43,6 +45,29 @@ public class LoginController implements Initializable {
 
         // 초기화 로직
         loadingIndicator.setVisible(false);
+
+        // Enter 키 이벤트 핸들러 추가
+        setupEnterKeyHandlers();
+    }
+
+    /**
+     * Enter 키 이벤트 핸들러 설정
+     * 사용자명 필드와 비밀번호 필드에서 Enter 키를 누르면 로그인 버튼이 클릭됨
+     */
+    private void setupEnterKeyHandlers() {
+        // 사용자명 필드에서 Enter 키 처리
+        usernameField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                handleLogin();
+            }
+        });
+
+        // 비밀번호 필드에서 Enter 키 처리
+        passwordField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                handleLogin();
+            }
+        });
     }
 
     @FXML
