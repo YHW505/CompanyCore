@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 public class Message {
     private final IntegerProperty messageId;
     private final LongProperty senderId;
-    private final LongProperty receiverId;
+    private final StringProperty receiverEmail;
     private final ObjectProperty<MessageType> messageType;
     private final StringProperty title;
     private final StringProperty content;
@@ -17,7 +17,7 @@ public class Message {
     public Message() {
         this.messageId = new SimpleIntegerProperty();
         this.senderId = new SimpleLongProperty();
-        this.receiverId = new SimpleLongProperty();
+        this.receiverEmail = new SimpleStringProperty();
         this.messageType = new SimpleObjectProperty<>();
         this.title = new SimpleStringProperty();
         this.content = new SimpleStringProperty();
@@ -25,11 +25,11 @@ public class Message {
         this.sentAt = new SimpleObjectProperty<>();
     }
 
-    public Message(Integer messageId, Long senderId, Long receiverId, MessageType messageType,
+    public Message(Integer messageId, Long senderId, String receiverEmail, MessageType messageType,
                    String title, String content, Boolean isRead, LocalDateTime sentAt) {
         this.messageId = new SimpleIntegerProperty(messageId);
         this.senderId = new SimpleLongProperty(senderId);
-        this.receiverId = new SimpleLongProperty(receiverId);
+        this.receiverEmail = new SimpleStringProperty(receiverEmail);
         this.messageType = new SimpleObjectProperty<>(messageType);
         this.title = new SimpleStringProperty(title);
         this.content = new SimpleStringProperty(content);
@@ -47,10 +47,10 @@ public class Message {
     public void setSenderId(Long senderId) { this.senderId.set(senderId); }
     public LongProperty senderIdProperty() { return senderId; }
 
-    // ReceiverId
-    public Long getReceiverId() { return receiverId.get(); }
-    public void setReceiverId(Long receiverId) { this.receiverId.set(receiverId); }
-    public LongProperty receiverIdProperty() { return receiverId; }
+    // ReceiverEmail
+    public String getReceiverEmail() { return receiverEmail.get(); }
+    public void setReceiverEmail(String receiverEmail) { this.receiverEmail.set(receiverEmail); }
+    public StringProperty receiverEmailProperty() { return receiverEmail; }
 
     // MessageType
     public MessageType getMessageType() { return messageType.get(); }
@@ -82,7 +82,7 @@ public class Message {
         return "Message{" +
                 "messageId=" + messageId.get() +
                 ", senderId=" + senderId.get() +
-                ", receiverId=" + receiverId.get() +
+                ", receiverEmail=" + receiverEmail.get() +
                 ", messageType=" + messageType.get() +
                 ", title='" + title.get() + '\'' +
                 ", content='" + content.get() + '\'' +
