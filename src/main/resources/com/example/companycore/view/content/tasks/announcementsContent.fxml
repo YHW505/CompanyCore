@@ -2,12 +2,15 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Pagination?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.Region?>
 
 <?import java.net.URL?>
 
@@ -25,6 +28,24 @@
           style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20;
                  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
 
+        <!-- 검색 및 필터 영역 -->
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Region HBox.hgrow="ALWAYS" />
+            <ComboBox fx:id="searchConditionComboBox" prefWidth="100" />
+            <TextField fx:id="searchTextField" promptText="검색어를 입력하세요" prefWidth="200" />
+            <Button fx:id="searchButton" text="검색" 
+                    style="-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" />
+            <Button fx:id="refreshButton" text="새로고침" 
+                    style="-fx-background-color: #7f8c8d; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" />
+        </HBox>
+
+        <!-- 필터 영역 -->
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Region HBox.hgrow="ALWAYS" />
+            <Label text="부서 필터:" />
+            <ComboBox fx:id="departmentFilterComboBox" prefWidth="150" />
+        </HBox>
+
         <TableView fx:id="tableView" prefHeight="437.0" prefWidth="739.0">
             <columns>
                 <TableColumn fx:id="titleColumn" prefWidth="249.0" text="제목" />
@@ -37,10 +58,10 @@
 
         <ButtonBar prefHeight="40.0" prefWidth="200.0">
             <buttons>
-                <Button mnemonicParsing="false" text="삭제"
+                <Button fx:id="deleteButton" mnemonicParsing="false" text="삭제"
                         style="-fx-background-color: #444951; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;"
                         onAction="#handleDelete"/>
-                <Button mnemonicParsing="false" text="등록"
+                <Button fx:id="registerButton" mnemonicParsing="false" text="등록"
                         style="-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;"
                         onAction="#handleRegister"/>
             </buttons>
@@ -49,7 +70,7 @@
         <Pagination fx:id="pagination" prefHeight="45.0" prefWidth="746.0"
                     style="-fx-page-information-visible: false; -fx-arrows-visible: true;">
             <stylesheets>
-                <URL value="@../../content/pagination.css" />
+                <URL value="@../common/pagination.css" />
             </stylesheets>
         </Pagination>
 

@@ -96,7 +96,7 @@ public class MainController {
             String fxmlPath = "";
             switch (contentType) {
                 case "home":
-                    fxmlPath = "/com/example/companycore/view/content/homeContent.fxml";
+                    fxmlPath = "/com/example/companycore/view/content/home/homeContent.fxml";
                     break;
                 case "attendance":
                     fxmlPath = "/com/example/companycore/view/content/attendanceContent.fxml";
@@ -105,16 +105,16 @@ public class MainController {
                     fxmlPath = "/com/example/companycore/view/content/mailContent.fxml";
                     break;
                 case "tasks":
-                    fxmlPath = "/com/example/companycore/view/content/tasksContent.fxml";
+                    fxmlPath = "/com/example/companycore/view/content/tasks/taskListContent.fxml";
                     break;
                 case "calendar":
-                    fxmlPath = "/com/example/companycore/view/content/calendarContent.fxml";
+                    fxmlPath = "/com/example/companycore/view/content/calendar/calendarContent.fxml";
                     break;
                 case "profile":
-                    fxmlPath = "/com/example/companycore/view/content/profileContent.fxml";
+                    fxmlPath = "/com/example/companycore/view/content/profile/profileContent.fxml";
                     break;
                 case "hrManagement":
-                    fxmlPath = "/com/example/companycore/view/content/hrManagementContent.fxml";
+                    fxmlPath = "/com/example/companycore/view/content/hr/hrManagementContent.fxml";
                     break;
                 // 하위 메뉴 콘텐츠들
                 case "attendanceRecord":
@@ -129,7 +129,6 @@ public class MainController {
                 case "allMailbox":
                     fxmlPath = "/com/example/companycore/view/content/mail/allMailboxContent.fxml";
                     break;
-
                 case "inbox":
                     fxmlPath = "/com/example/companycore/view/content/mail/inboxContent.fxml";
                     break;
@@ -152,7 +151,7 @@ public class MainController {
                     fxmlPath = "/com/example/companycore/view/content/tasks/announcementsContent.fxml";
                     break;
                 default:
-                    fxmlPath = "/com/example/companycore/view/content/homeContent.fxml";
+                    fxmlPath = "/com/example/companycore/view/content/home/homeContent.fxml";
                     break;
             }
             
@@ -182,7 +181,7 @@ public class MainController {
             
             // 오류 발생 시 기본 홈 콘텐츠를 로드
             try {
-                javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/com/example/companycore/view/content/homeContent.fxml"));
+                javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/com/example/companycore/view/content/home/homeContent.fxml"));
                 javafx.scene.Parent content = loader.load();
                 if (contentArea != null) {
                     contentArea.getChildren().clear();

@@ -64,7 +64,7 @@
         <Pagination fx:id="pagination" prefHeight="45.0" prefWidth="746.0"
                     style="-fx-page-information-visible: false; -fx-arrows-visible: true;">
             <stylesheets>
-                <URL value="@pagination.css" />
+                <URL value="@../common/pagination.css" />
             </stylesheets>
         </Pagination>
 

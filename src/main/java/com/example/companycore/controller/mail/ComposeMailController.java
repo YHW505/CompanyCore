@@ -1,5 +1,9 @@
 package com.example.companycore.controller.mail;
 
+import com.example.companycore.model.dto.MessageDto;
+import com.example.companycore.model.entity.User;
+import com.example.companycore.service.ApiClient;
+import com.example.companycore.service.MessageApiClient;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -26,24 +30,57 @@ public class ComposeMailController {
     
     private File selectedFile;
     private MailController parentController;
-    
+
+    private ApiClient apiClient;
+
     @FXML
     public void handleSendMail() {
         if (validateMailForm()) {
-            // 메일을 보낸메일함에 저장
-            if (parentController != null) {
-                String attachmentName = attachmentLabel.getText();
-                if (attachmentName == null || attachmentName.isEmpty()) {
-                    attachmentName = "";
-                }
-                parentController.addSentMail(
-                    recipientField.getText(),
-                    subjectField.getText(),
-                    contentArea.getText(),
-                    attachmentName
-                );
+            String recipient = recipientField.getText();
+            String subject = subjectField.getText();
+            String content = contentArea.getText();
+            String attachmentName = attachmentLabel.getText();
+
+            if (attachmentName == null || attachmentName.isEmpty()) {
+                attachmentName = "";
             }
-            
+            apiClient = ApiClient.getInstance();
+
+            User user = apiClient.getCurrentUser();
+
+            Long senderId = user.getUserId();  // 로그인한 유저의 ID
+
+            // ✅ 1. 서버에 메시지 전송
+            MessageDto message = new MessageDto();
+            message.setReceiverEmail(recipient);   // 받는 사람의 이메일
+            message.setTitle(subject);            // 메일 제목
+            message.setContent(content);          // 본문
+            message.setSenderId(senderId);
+            message.getMessageType();
+
+            if (user == null) {
+                System.out.println("❌ 로그인한 사용자 정보를 찾을 수 없습니다.");
+                return;
+            }
+
+
+            MessageApiClient client = MessageApiClient.getInstance();
+            MessageDto sent = client.sendMessage(message, message.getSenderId());  // ← 이 부분이 빠졌었음!!
+
+            if (sent != null) {
+                System.out.println("✅ 서버에 메시지 전송 완료");
+            } else {
+                System.out.println("❌ 서버 메시지 전송 실패");
+                System.out.println(message.getReceiverEmail());
+                System.out.println(message.getSenderId());
+            }
+
+            // ✅ 2. 로컬 보낸메일함에 저장
+            if (parentController != null) {
+                parentController.addSentMail(recipient, subject, content, attachmentName);
+            }
+
+            // ✅ 3. 입력 폼 초기화 및 기본 뷰 복귀
             clearMailForm();
             if (parentController != null) {
                 parentController.showDefaultView();
