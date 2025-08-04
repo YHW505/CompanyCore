@@ -30,6 +30,7 @@ public class User {
     private final ObjectProperty<LocalDate> birthDate;
     private final StringProperty positionName;
     private final StringProperty address;
+    private final StringProperty departmentName;
     
     // 관계 객체들
     private final ObjectProperty<Position> position;
@@ -66,6 +67,7 @@ public class User {
         this.birthDate = new SimpleObjectProperty<>();
         this.positionName = new SimpleStringProperty();
         this.address = new SimpleStringProperty();
+        this.departmentName = new SimpleStringProperty();
         
         // 관계 객체들 초기화
         this.position = new SimpleObjectProperty<>();
@@ -99,6 +101,7 @@ public class User {
         this.birthDate = new SimpleObjectProperty<>(birthDate);
         this.positionName = new SimpleStringProperty();
         this.address = new SimpleStringProperty();
+        this.departmentName = new SimpleStringProperty();
         
         // 관계 객체들 초기화
         this.position = new SimpleObjectProperty<>();
@@ -191,6 +194,11 @@ public class User {
     public String getAddress() { return address.get(); }
     public void setAddress(String address) { this.address.set(address); }
     public StringProperty addressProperty() { return address; }
+
+    // DepartmentName
+    public String getDepartmentName() { return departmentName.get(); }
+    public void setDepartmentName(String departmentName) { this.departmentName.set(departmentName); }
+    public StringProperty departmentNameProperty() { return departmentName; }
 
     // Position
     public Position getPosition() { return position.get(); }
