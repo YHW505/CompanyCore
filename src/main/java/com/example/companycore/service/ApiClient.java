@@ -2,6 +2,9 @@ package com.example.companycore.service;
 
 import com.example.companycore.model.dto.LoginRequest;
 import com.example.companycore.model.dto.LoginResponse;
+import com.example.companycore.model.entity.User;
+
+import java.util.List;
 
 /**
  * 통합 API 클라이언트
