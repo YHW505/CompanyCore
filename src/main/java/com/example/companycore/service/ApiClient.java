@@ -15,6 +15,7 @@ public class ApiClient {
     private final LeaveApiClient leaveApiClient;
     private final MessageApiClient messageApiClient;
     private final MeetingApiClient meetingApiClient;
+    private final ApprovalApiClient approvalApiClient;
 
     private ApiClient() {
         this.userApiClient = UserApiClient.getInstance();
@@ -23,6 +24,7 @@ public class ApiClient {
         this.leaveApiClient = LeaveApiClient.getInstance();
         this.messageApiClient = MessageApiClient.getInstance();
         this.meetingApiClient = MeetingApiClient.getInstance();
+        this.approvalApiClient = ApprovalApiClient.getInstance();
     }
 
     public static ApiClient getInstance() {
@@ -51,6 +53,7 @@ public class ApiClient {
             leaveApiClient.setAuthToken(token);
             messageApiClient.setAuthToken(token);
             meetingApiClient.setAuthToken(token);
+            approvalApiClient.setAuthToken(token);
         }
         return result;
     }
@@ -70,6 +73,7 @@ public class ApiClient {
         leaveApiClient.clearToken();
         messageApiClient.clearToken();
         meetingApiClient.clearToken();
+        approvalApiClient.clearToken();
     }
 
     // User API 관련 메서드들
@@ -119,12 +123,11 @@ public class ApiClient {
     }
 
     public java.util.List<com.example.companycore.model.entity.Task> filterTasks(Long assignedTo, Long assignedBy, 
-                                                                                String status, String taskType,
-                                                                                String startDate, String endDate, 
-                                                                                Integer page, Integer size,
-                                                                                String sortBy, String sortDir) {
-        return taskApiClient.filterTasks(assignedTo, assignedBy, status, taskType, 
-                                       startDate, endDate, page, size, sortBy, sortDir);
+                                                                               String status, String taskType,
+                                                                               String startDate, String endDate, 
+                                                                               Integer page, Integer size,
+                                                                               String sortBy, String sortDir) {
+        return taskApiClient.filterTasks(assignedTo, assignedBy, status, taskType, startDate, endDate, page, size, sortBy, sortDir);
     }
 
     public com.example.companycore.model.entity.Task createTask(com.example.companycore.model.entity.Task task) {
@@ -200,7 +203,7 @@ public class ApiClient {
         return attendanceApiClient.getAttendanceById(attendanceId);
     }
 
-    // 개별 API 클라이언트 접근자
+    // API 클라이언트 접근자들
     public UserApiClient getUserApiClient() {
         return userApiClient;
     }
@@ -247,7 +250,7 @@ public class ApiClient {
     }
 
     public java.util.List<com.example.companycore.model.dto.LeaveRequestDto> searchLeaveRequests(String status, String type, Long userId, 
-                                                                                               String startDate, String endDate) {
+                                                                                              String startDate, String endDate) {
         return leaveApiClient.searchLeaveRequests(status, type, userId, startDate, endDate);
     }
 
@@ -265,7 +268,7 @@ public class ApiClient {
     }
 
     public java.util.List<com.example.companycore.model.dto.MessageDto> getMessages(Long userId, String type, String messageType, 
-                                                                                   String keyword, Boolean unreadOnly) {
+                                                                                  String keyword, Boolean unreadOnly) {
         return messageApiClient.getMessages(userId, type, messageType, keyword, unreadOnly);
     }
 
@@ -344,5 +347,50 @@ public class ApiClient {
 
     public MeetingApiClient getMeetingApiClient() {
         return meetingApiClient;
+    }
+
+    // Approval API 관련 메서드들
+    public ApprovalApiClient.ApprovalDto createApproval(ApprovalApiClient.ApprovalDto approvalDto) {
+        return approvalApiClient.createApproval(approvalDto);
+    }
+
+    public ApprovalApiClient.ApprovalDto approveApproval(Long approvalId) {
+        return approvalApiClient.approveApproval(approvalId);
+    }
+
+    public ApprovalApiClient.ApprovalDto rejectApproval(Long approvalId, String rejectionReason) {
+        return approvalApiClient.rejectApproval(approvalId, rejectionReason);
+    }
+
+    public ApprovalApiClient.ApprovalDto getApprovalById(Long approvalId) {
+        return approvalApiClient.getApprovalById(approvalId);
+    }
+
+    public java.util.List<ApprovalApiClient.ApprovalDto> getMyRequests() {
+        return approvalApiClient.getMyRequests();
+    }
+
+    public java.util.List<ApprovalApiClient.ApprovalDto> getMyApprovals() {
+        return approvalApiClient.getMyApprovals();
+    }
+
+    public java.util.List<ApprovalApiClient.ApprovalDto> getMyPending() {
+        return approvalApiClient.getMyPending();
+    }
+
+    public java.util.List<ApprovalApiClient.ApprovalDto> getAllApprovals() {
+        return approvalApiClient.getAllApprovals();
+    }
+
+    public boolean deleteApproval(Long approvalId) {
+        return approvalApiClient.deleteApproval(approvalId);
+    }
+
+    public java.util.List<ApprovalApiClient.ApprovalDto> searchApprovalsByTitle(String title) {
+        return approvalApiClient.searchApprovalsByTitle(title);
+    }
+
+    public ApprovalApiClient getApprovalApiClient() {
+        return approvalApiClient;
     }
 }
