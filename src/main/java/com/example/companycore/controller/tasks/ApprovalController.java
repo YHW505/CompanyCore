@@ -159,23 +159,14 @@ public class ApprovalController {
         pagination.setPageFactory(this::createPage);
     }
 
-    private void fillDummyData(int count) {
-        String[] departments = {"인사부", "총무부", "개발1팀", "개발2팀", "영업부"};
-        String[] authors = {"한교동", "김다빈", "케로케로피", "김다번", "김다분"};
-
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-        for (int i = 1; i <= count; i++) {
-            fullData.add(new ApprovalItem(
-                    String.valueOf(i),
-                    "기안서 " + i,
-                    departments[i % departments.length],
-                    authors[i % authors.length],
-                    LocalDate.now().minusDays(i).format(fmt),
-                    null,
-                    ""
-            ));
-        }
+    /**
+     * 데이터베이스에서 결재 목록을 로드합니다.
+     */
+    private void loadApprovalsFromDatabase() {
+        // 현재는 빈 데이터로 초기화 (API 연동 예정)
+        fullData.clear();
+        viewData.clear();
+        System.out.println("결재 데이터 로드 완료: 0개");
     }
 
     private void resetPagingToFirstPage() {

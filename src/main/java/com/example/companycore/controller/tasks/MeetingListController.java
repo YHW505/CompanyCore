@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.ArrayList;
 import com.example.companycore.model.dto.MeetingItem;
 import java.util.stream.Collectors;
+import com.example.companycore.service.MeetingApiClient;
 
 /**
  * 회의 목록을 관리하는 컨트롤러 클래스
@@ -87,8 +88,8 @@ public class MeetingListController {
         // 검색 기능 초기화
         setupSearch();
         
-        // TODO: 데이터베이스에서 회의 데이터 로드
-        // loadMeetingsFromDatabase();
+        // 데이터베이스에서 회의 데이터 로드
+        loadMeetingsFromDatabase();
         
         // 페이지네이션 설정
         setupPagination();
@@ -103,7 +104,7 @@ public class MeetingListController {
      */
     private void setupTable() {
         // 테이블 기본 설정
-        meetingTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS); // 너비 자동 조정
+        meetingTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY); // 너비 자동 조정
         meetingTable.setFixedCellSize(40); // 행 높이 고정
 
         // 테이블의 높이에 따라 한 페이지에 표시할 행 개수 계산
@@ -185,16 +186,14 @@ public class MeetingListController {
     // ==================== 데이터 관리 메서드 ====================
     
     /**
-     * 테스트용 더미 데이터를 생성하여 테이블에 로드
-     * 
-     * @param count 생성할 데이터 개수
+     * 데이터베이스에서 회의 목록을 로드합니다.
      */
-    private void loadDummyData() {
+    private void loadMeetingsFromDatabase() {
+        // 현재는 빈 데이터로 초기화 (API 연동 예정)
         fullData.clear();
-        // TODO: 데이터베이스에서 실제 회의 데이터를 가져와서 표시
-        // 현재는 빈 데이터로 초기화
+        viewData.clear();
         viewData.addAll(fullData);
-        meetingTable.setItems(viewData);
+        System.out.println("회의 데이터 로드 완료: 0개");
     }
 
     /**
