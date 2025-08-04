@@ -118,7 +118,7 @@ public class ApiClient {
     }
 
     public com.example.companycore.model.entity.User getUserByEmail(String email) {
-        return userApiClient.getUserByEmail(email);
+        return userApiClient.getUserByEmailAsUser(email);
     }
 
     public com.example.companycore.model.entity.User getUserByEmployeeCode(String employeeCode) {
