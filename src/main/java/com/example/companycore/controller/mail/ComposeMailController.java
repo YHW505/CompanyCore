@@ -1,6 +1,9 @@
 package com.example.companycore.controller.mail;
 
 import com.example.companycore.model.dto.MessageDto;
+import com.example.companycore.model.dto.UserDto;
+import com.example.companycore.model.entity.User;
+import com.example.companycore.service.ApiClient;
 import com.example.companycore.service.MessageApiClient;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -43,15 +46,20 @@ public class ComposeMailController {
 
             // ✅ 1. 서버에 메시지 전송
             MessageDto message = new MessageDto();
-            message.setReceiverName(recipient);  // 받는 사람
-            message.setTitle(subject);            // 메일 제목 (수정된 부분)
-            message.setContent(content);          // 내용
+            message.setReceiverName(recipient);   // 받는 사람
+            message.setTitle(subject);            // 메일 제목
+            message.setContent(content);          // 본문
 
-            // senderId는 로그인한 사용자 정보로부터 얻는 게 일반적
-            Long senderId = 1L; // 예시
+            User user = ApiClient.getInstance().getCurrentUser();
+            if (user == null) {
+                System.out.println("❌ 로그인한 사용자 정보를 찾을 수 없습니다.");
+                return;
+            }
+
+            Long senderId = user.getUserId();  // 로그인한 유저의 ID
 
             MessageApiClient client = MessageApiClient.getInstance();
-            MessageDto sent = client.sendMessage(message, senderId);
+            MessageDto sent = client.sendMessage(message, senderId);  // ← 이 부분이 빠졌었음!!
 
             if (sent != null) {
                 System.out.println("✅ 서버에 메시지 전송 완료");
