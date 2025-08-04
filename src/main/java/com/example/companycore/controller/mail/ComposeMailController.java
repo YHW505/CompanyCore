@@ -1,7 +1,6 @@
 package com.example.companycore.controller.mail;
 
 import com.example.companycore.model.dto.MessageDto;
-import com.example.companycore.model.dto.UserDto;
 import com.example.companycore.model.entity.User;
 import com.example.companycore.service.ApiClient;
 import com.example.companycore.service.MessageApiClient;
@@ -32,6 +31,8 @@ public class ComposeMailController {
     private File selectedFile;
     private MailController parentController;
 
+    private ApiClient apiClient;
+
     @FXML
     public void handleSendMail() {
         if (validateMailForm()) {
@@ -43,28 +44,35 @@ public class ComposeMailController {
             if (attachmentName == null || attachmentName.isEmpty()) {
                 attachmentName = "";
             }
+            apiClient = ApiClient.getInstance();
+
+            User user = apiClient.getCurrentUser();
+
+            Long senderId = user.getUserId();  // 로그인한 유저의 ID
 
             // ✅ 1. 서버에 메시지 전송
             MessageDto message = new MessageDto();
-            message.setReceiverName(recipient);   // 받는 사람
+            message.setReceiverEmail(recipient);   // 받는 사람의 이메일
             message.setTitle(subject);            // 메일 제목
             message.setContent(content);          // 본문
+            message.setSenderId(senderId);
+            message.getMessageType();
 
-            User user = ApiClient.getInstance().getCurrentUser();
             if (user == null) {
                 System.out.println("❌ 로그인한 사용자 정보를 찾을 수 없습니다.");
                 return;
             }
 
-            Long senderId = user.getUserId();  // 로그인한 유저의 ID
 
             MessageApiClient client = MessageApiClient.getInstance();
-            MessageDto sent = client.sendMessage(message, senderId);  // ← 이 부분이 빠졌었음!!
+            MessageDto sent = client.sendMessage(message, message.getSenderId());  // ← 이 부분이 빠졌었음!!
 
             if (sent != null) {
                 System.out.println("✅ 서버에 메시지 전송 완료");
             } else {
                 System.out.println("❌ 서버 메시지 전송 실패");
+                System.out.println(message.getReceiverEmail());
+                System.out.println(message.getSenderId());
             }
 
             // ✅ 2. 로컬 보낸메일함에 저장

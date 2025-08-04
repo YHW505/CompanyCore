@@ -164,7 +164,6 @@ public class UserApiClient extends BaseApiClient {
         }
         return -1;
     }
-
     /**
      * 사용자 목록을 가져옵니다.
      */
@@ -300,7 +299,7 @@ public class UserApiClient extends BaseApiClient {
                 try {
                     // UserUpdateResponse 구조로 파싱 시도
                     JsonNode rootNode = objectMapper.readTree(response.body());
-                    
+
                     // userInfo 필드 확인
                     if (rootNode.has("userInfo")) {
                         System.out.println("✅ UserUpdateResponse에서 userInfo 필드 파싱 성공!");
@@ -431,4 +430,45 @@ public class UserApiClient extends BaseApiClient {
             return null;
         }
     }
+
+    public UserDto getUserByEmail(String recipientEmail) {
+        if (recipientEmail == null || recipientEmail.isBlank()) {
+            System.out.println("❌ 이메일이 비어있습니다.");
+            return null;
+        }
+
+        try {
+            String encodedEmail = java.net.URLEncoder.encode(recipientEmail, java.nio.charset.StandardCharsets.UTF_8);
+            HttpRequest request = createAuthenticatedRequestBuilder("/users/email/" + encodedEmail)
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                String responseBody = response.body();
+                if (responseBody == null || responseBody.isBlank()) {
+                    System.out.println("서버에서 빈 사용자 조회 응답을 받았습니다.");
+                    return null;
+                }
+                try {
+                    UserDto userDto = objectMapper.readValue(responseBody, UserDto.class);
+                    System.out.println("✅ 이메일로 사용자 조회 성공: " + userDto.getEmail());
+                    return userDto;
+                } catch (Exception parseEx) {
+                    System.out.println("❌ 사용자 조회 응답 파싱 실패: " + parseEx.getMessage());
+                    System.out.println("응답 내용: " + responseBody);
+                    return null;
+                }
+            } else {
+                System.out.println("❌ 사용자 조회 실패 - 상태 코드: " + response.statusCode());
+                System.out.println("오류 응답: " + response.body());
+                return null;
+            }
+        } catch (Exception e) {
+            System.out.println("사용자 조회 중 예외 발생: " + e.getMessage());
+            return null;
+        }
+    }
+
 } 

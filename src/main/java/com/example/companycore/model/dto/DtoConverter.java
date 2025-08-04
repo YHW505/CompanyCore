@@ -239,11 +239,11 @@ public class DtoConverter {
      */
     public static MessageDto toMessageDto(Message message) {
         if (message == null) return null;
-        
+
         return new MessageDto(
             message.getMessageId() != null ? message.getMessageId().longValue() : null,
             message.getSenderId(),
-            message.getReceiverId(),
+            message.getReceiverEmail(),
             message.getTitle(),
             message.getContent(),
             message.getMessageType() != null ? message.getMessageType().toString() : null,
@@ -264,7 +264,7 @@ public class DtoConverter {
         Message message = new Message();
         message.setMessageId(messageDto.getMessageId() != null ? messageDto.getMessageId().intValue() : null);
         message.setSenderId(messageDto.getSenderId());
-        message.setReceiverId(messageDto.getReceiverId());
+        message.setReceiverEmail(messageDto.getReceiverEmail());
         if (messageDto.getMessageType() != null) {
             message.setMessageType(com.example.companycore.model.entity.Enum.MessageType.valueOf(messageDto.getMessageType()));
         }

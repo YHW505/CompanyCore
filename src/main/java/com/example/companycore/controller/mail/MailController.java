@@ -1,14 +1,19 @@
 package com.example.companycore.controller.mail;
 
+import com.example.companycore.model.dto.MessageDto;
+import com.example.companycore.service.MessageApiClient;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import com.example.companycore.model.dto.SentMail;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MailController {
     
@@ -17,77 +22,77 @@ public class MailController {
     
     // 메일 제목 라벨들
     @FXML
-    private javafx.scene.control.Label mailTitle1;
+    private Label mailTitle1;
     @FXML
-    private javafx.scene.control.Label mailTitle2;
+    private Label mailTitle2;
     @FXML
-    private javafx.scene.control.Label mailTitle3;
+    private Label mailTitle3;
     @FXML
-    private javafx.scene.control.Label mailTitle4;
+    private Label mailTitle4;
     @FXML
-    private javafx.scene.control.Label mailTitle5;
+    private Label mailTitle5;
     @FXML
-    private javafx.scene.control.Label mailTitle6;
+    private Label mailTitle6;
     @FXML
-    private javafx.scene.control.Label mailTitle7;
+    private Label mailTitle7;
     @FXML
-    private javafx.scene.control.Label mailTitle8;
+    private Label mailTitle8;
     @FXML
-    private javafx.scene.control.Label mailTitle9;
+    private Label mailTitle9;
     @FXML
-    private javafx.scene.control.Label mailTitle10;
+    private Label mailTitle10;
     
     // 메일 행 컨테이너들 (배경색 변경용)
     @FXML
-    private javafx.scene.layout.HBox mailRow1;
+    private HBox mailRow1;
     @FXML
-    private javafx.scene.layout.HBox mailRow2;
+    private HBox mailRow2;
     @FXML
-    private javafx.scene.layout.HBox mailRow3;
+    private HBox mailRow3;
     @FXML
-    private javafx.scene.layout.HBox mailRow4;
+    private HBox mailRow4;
     @FXML
-    private javafx.scene.layout.HBox mailRow5;
+    private HBox mailRow5;
     @FXML
-    private javafx.scene.layout.HBox mailRow6;
+    private HBox mailRow6;
     @FXML
-    private javafx.scene.layout.HBox mailRow7;
+    private HBox mailRow7;
     @FXML
-    private javafx.scene.layout.HBox mailRow8;
+    private HBox mailRow8;
     @FXML
-    private javafx.scene.layout.HBox mailRow9;
+    private HBox mailRow9;
     @FXML
-    private javafx.scene.layout.HBox mailRow10;
+    private HBox mailRow10;
     
     // 체크박스들
     @FXML
-    private javafx.scene.control.CheckBox checkBox1;
+    private CheckBox checkBox1;
     @FXML
-    private javafx.scene.control.CheckBox checkBox2;
+    private CheckBox checkBox2;
     @FXML
-    private javafx.scene.control.CheckBox checkBox3;
+    private CheckBox checkBox3;
     @FXML
-    private javafx.scene.control.CheckBox checkBox4;
+    private CheckBox checkBox4;
     @FXML
-    private javafx.scene.control.CheckBox checkBox5;
+    private CheckBox checkBox5;
     @FXML
-    private javafx.scene.control.CheckBox checkBox6;
+    private CheckBox checkBox6;
     @FXML
-    private javafx.scene.control.CheckBox checkBox7;
+    private CheckBox checkBox7;
     @FXML
-    private javafx.scene.control.CheckBox checkBox8;
+    private CheckBox checkBox8;
     @FXML
-    private javafx.scene.control.CheckBox checkBox9;
+    private CheckBox checkBox9;
     @FXML
-    private javafx.scene.control.CheckBox checkBox10;
+    private CheckBox checkBox10;
     
     // 페이지네이션 관련
     @FXML
-    private javafx.scene.control.Button prevPageButton;
+    private Button prevPageButton;
     @FXML
-    private javafx.scene.control.Button nextPageButton;
+    private Button nextPageButton;
     @FXML
-    private javafx.scene.control.Label pageInfoLabel;
+    private Label pageInfoLabel;
     
     private int currentPage = 1;
     private int itemsPerPage = 10;
@@ -98,12 +103,11 @@ public class MailController {
     private boolean[] mailReadStatus = new boolean[20]; // 최대 20개 메일 (페이지당 10개)
     
     // 보낸 메일 데이터 관리 (임시 메모리 저장)
-    private java.util.List<SentMail> sentMails = new java.util.ArrayList<>();
-    
+    private List<SentMail> sentMails = new ArrayList<>();
 
-    
+    private MessageApiClient messageApiClient = MessageApiClient.getInstance(); // 싱글톤 또는 생성자 주입 방식
 
-    
+
     @FXML
     public void handleMailPreview() {
         // 기본적으로 첫 번째 메일 미리보기 로드
@@ -223,23 +227,27 @@ public class MailController {
             e.printStackTrace();
         }
     }
-    
-    // 전체메일함 데이터 설정
+
+    // 서버에서 받은 메시지 리스트 (예: MessageDto 리스트)
+    private List<MessageDto> serverMessages = new ArrayList<>();
+
+    // 전체메일함 데이터 설정 메서드 수정
     private void setAllMailboxData(DynamicMailPreviewController controller, int mailIndex) {
-        // 실제 보낸 메일이 있는지 확인 (전체메일함에서는 보낸 메일도 포함)
-        if (!sentMails.isEmpty() && mailIndex <= sentMails.size()) {
-            // 실제 보낸 메일 데이터 사용
-            SentMail sentMail = sentMails.get(mailIndex - 1);
+        if (!serverMessages.isEmpty() && mailIndex > 0 && mailIndex <= serverMessages.size()) {
+            MessageDto msg = serverMessages.get(mailIndex - 1);
+
+            SentMail mail = null;
             controller.setMailData(
-                "나", // 보낸 사람은 "나"
-                sentMail.getRecipient(),
-                sentMail.getSubject(),
-                sentMail.getContent(),
-                sentMail.getDate(),
-                sentMail.getAttachment()
+                    msg.getSenderName(),        // 보낸 사람
+                    msg.getReceiverName(),      // 받는 사람
+                    msg.getTitle(),             // 제목
+                    msg.getContent(),           // 내용
+                    msg.getCreatedAt().toString(), // 보낸 날짜 (LocalDateTime 등이라면 toString 또는 포맷 필요)
+
+                    // 수정 해야함
+                    mail.getAttachment() != null ? mail.getAttachment() : "" // 첨부파일명
             );
         } else {
-            // 메일이 없으면 빈 데이터 표시
             controller.setMailData("", "", "메일이 없습니다", "", "", "");
         }
     }
@@ -340,10 +348,10 @@ public class MailController {
     public void showDefaultView() {
         rightContentContainer.getChildren().clear();
         VBox defaultView = new VBox();
-        defaultView.setAlignment(javafx.geometry.Pos.CENTER);
+        defaultView.setAlignment(Pos.CENTER);
         defaultView.setSpacing(20);
         
-        javafx.scene.control.Label iconLabel = new javafx.scene.control.Label("📧");
+        Label iconLabel = new Label("📧");
         iconLabel.setStyle("-fx-font-size: 48px;");
         
         String message = "";
@@ -362,7 +370,7 @@ public class MailController {
                 break;
         }
         
-        javafx.scene.control.Label messageLabel = new javafx.scene.control.Label(message);
+        Label messageLabel = new Label(message);
         messageLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #6c757d;");
         
         defaultView.getChildren().addAll(iconLabel, messageLabel);
@@ -456,7 +464,7 @@ public class MailController {
     
     // 메일 제목 업데이트 (전체메일함용)
     private void updateMailTitle(int index, String subject) {
-        javafx.scene.control.Label titleLabel = null;
+        Label titleLabel = null;
         
         switch (index) {
             case 1:
@@ -554,80 +562,80 @@ public class MailController {
     
     // 보낸메일 제목 업데이트
     private void updateSentMailTitle(int index, String subject, String date, boolean hasAttachment) {
-        javafx.scene.control.Label titleLabel = null;
-        javafx.scene.control.Label dateLabel = null;
-        javafx.scene.control.Label attachmentLabel = null;
+        Label titleLabel = null;
+        Label dateLabel = null;
+        Label attachmentLabel = null;
         
         switch (index) {
             case 1:
                 titleLabel = mailTitle1;
                 // FXML에서 날짜와 첨부파일 라벨을 가져오기 위해 부모 HBox의 자식들 확인
                 if (mailRow1 != null && mailRow1.getChildren().size() >= 4) {
-                    dateLabel = (javafx.scene.control.Label) mailRow1.getChildren().get(2);
-                    attachmentLabel = (javafx.scene.control.Label) mailRow1.getChildren().get(3);
+                    dateLabel = (Label) mailRow1.getChildren().get(2);
+                    attachmentLabel = (Label) mailRow1.getChildren().get(3);
                 }
                 break;
             case 2:
                 titleLabel = mailTitle2;
                 if (mailRow2 != null && mailRow2.getChildren().size() >= 4) {
-                    dateLabel = (javafx.scene.control.Label) mailRow2.getChildren().get(2);
-                    attachmentLabel = (javafx.scene.control.Label) mailRow2.getChildren().get(3);
+                    dateLabel = (Label) mailRow2.getChildren().get(2);
+                    attachmentLabel = (Label) mailRow2.getChildren().get(3);
                 }
                 break;
             case 3:
                 titleLabel = mailTitle3;
                 if (mailRow3 != null && mailRow3.getChildren().size() >= 4) {
-                    dateLabel = (javafx.scene.control.Label) mailRow3.getChildren().get(2);
-                    attachmentLabel = (javafx.scene.control.Label) mailRow3.getChildren().get(3);
+                    dateLabel = (Label) mailRow3.getChildren().get(2);
+                    attachmentLabel = (Label) mailRow3.getChildren().get(3);
                 }
                 break;
             case 4:
                 titleLabel = mailTitle4;
                 if (mailRow4 != null && mailRow4.getChildren().size() >= 4) {
-                    dateLabel = (javafx.scene.control.Label) mailRow4.getChildren().get(2);
-                    attachmentLabel = (javafx.scene.control.Label) mailRow4.getChildren().get(3);
+                    dateLabel = (Label) mailRow4.getChildren().get(2);
+                    attachmentLabel = (Label) mailRow4.getChildren().get(3);
                 }
                 break;
             case 5:
                 titleLabel = mailTitle5;
                 if (mailRow5 != null && mailRow5.getChildren().size() >= 4) {
-                    dateLabel = (javafx.scene.control.Label) mailRow5.getChildren().get(2);
-                    attachmentLabel = (javafx.scene.control.Label) mailRow5.getChildren().get(3);
+                    dateLabel = (Label) mailRow5.getChildren().get(2);
+                    attachmentLabel = (Label) mailRow5.getChildren().get(3);
                 }
                 break;
             case 6:
                 titleLabel = mailTitle6;
                 if (mailRow6 != null && mailRow6.getChildren().size() >= 4) {
-                    dateLabel = (javafx.scene.control.Label) mailRow6.getChildren().get(2);
-                    attachmentLabel = (javafx.scene.control.Label) mailRow6.getChildren().get(3);
+                    dateLabel = (Label) mailRow6.getChildren().get(2);
+                    attachmentLabel = (Label) mailRow6.getChildren().get(3);
                 }
                 break;
             case 7:
                 titleLabel = mailTitle7;
                 if (mailRow7 != null && mailRow7.getChildren().size() >= 4) {
-                    dateLabel = (javafx.scene.control.Label) mailRow7.getChildren().get(2);
-                    attachmentLabel = (javafx.scene.control.Label) mailRow7.getChildren().get(3);
+                    dateLabel = (Label) mailRow7.getChildren().get(2);
+                    attachmentLabel = (Label) mailRow7.getChildren().get(3);
                 }
                 break;
             case 8:
                 titleLabel = mailTitle8;
                 if (mailRow8 != null && mailRow8.getChildren().size() >= 4) {
-                    dateLabel = (javafx.scene.control.Label) mailRow8.getChildren().get(2);
-                    attachmentLabel = (javafx.scene.control.Label) mailRow8.getChildren().get(3);
+                    dateLabel = (Label) mailRow8.getChildren().get(2);
+                    attachmentLabel = (Label) mailRow8.getChildren().get(3);
                 }
                 break;
             case 9:
                 titleLabel = mailTitle9;
                 if (mailRow9 != null && mailRow9.getChildren().size() >= 4) {
-                    dateLabel = (javafx.scene.control.Label) mailRow9.getChildren().get(2);
-                    attachmentLabel = (javafx.scene.control.Label) mailRow9.getChildren().get(3);
+                    dateLabel = (Label) mailRow9.getChildren().get(2);
+                    attachmentLabel = (Label) mailRow9.getChildren().get(3);
                 }
                 break;
             case 10:
                 titleLabel = mailTitle10;
                 if (mailRow10 != null && mailRow10.getChildren().size() >= 4) {
-                    dateLabel = (javafx.scene.control.Label) mailRow10.getChildren().get(2);
-                    attachmentLabel = (javafx.scene.control.Label) mailRow10.getChildren().get(3);
+                    dateLabel = (Label) mailRow10.getChildren().get(2);
+                    attachmentLabel = (Label) mailRow10.getChildren().get(3);
                 }
                 break;
         }
@@ -692,7 +700,7 @@ public class MailController {
     
     // 메일 행 배경색 업데이트
     private void updateMailRowBackground(int mailIndex, boolean isSelected) {
-        javafx.scene.layout.HBox mailRow = null;
+        HBox mailRow = null;
         
         switch (mailIndex) {
             case 1:
@@ -748,7 +756,7 @@ public class MailController {
     
     // 메일 제목 스타일 업데이트
     private void updateMailTitleStyle(int mailIndex, boolean isRead) {
-        javafx.scene.control.Label titleLabel = null;
+        Label titleLabel = null;
         
         switch (mailIndex) {
             case 1:
@@ -803,7 +811,7 @@ public class MailController {
     
     // 체크박스 가시성 업데이트
     private void updateCheckBoxVisibility(int index, boolean visible) {
-        javafx.scene.control.CheckBox checkBox = null;
+        CheckBox checkBox = null;
         
         switch (index) {
             case 1:
