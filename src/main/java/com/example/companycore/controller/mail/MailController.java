@@ -56,7 +56,7 @@ public class MailController {
         long currentUserId = ApiClient.getInstance().getCurrentUser().getUserId();
 
         // 받은 메시지 중 이메일 유형만 가져옴 (필터 조건 있음)
-        receivedMessages = messageApiClient.getReceivedMessages(currentUserId, "EMAIL", null, null);
+        receivedMessages = messageApiClient.getAllMessages(currentUserId, "EMAIL", null);
 
         updateInboxUI(); // UI에 반영
     }

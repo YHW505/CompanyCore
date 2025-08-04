@@ -122,6 +122,57 @@ public class MessageApiClient extends BaseApiClient {
         }
     }
 
+  public List<MessageDto> getReceiveMessagesById(Long userId) {
+        try {
+//            StringBuilder endpoint = new StringBuilder("/messages?");
+//            String type = "received";
+            String endpoint = "/messages?type=received";
+
+
+            HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
+                    .header("User-Id", userId.toString())
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println(response);
+
+            if (response.statusCode() == 200 && response.body() != null && !response.body().trim().isEmpty()) {
+                return objectMapper.readValue(response.body(),
+                        objectMapper.getTypeFactory().constructCollectionType(List.class, MessageDto.class));
+            } else {
+                return new ArrayList<>();
+            }
+        } catch (Exception e) {
+            System.out.println("메시지 목록 요청 실패: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    public List<MessageDto> getSentMessagesById(Long userId) {
+        try {
+            String endpoint = "/messages?type=sent";
+
+            HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
+                    .header("User-Id", userId.toString())
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200 && response.body() != null && !response.body().trim().isEmpty()) {
+                return objectMapper.readValue(response.body(),
+                        objectMapper.getTypeFactory().constructCollectionType(List.class, MessageDto.class));
+            } else {
+                return new ArrayList<>();
+            }
+        } catch (Exception e) {
+            System.out.println("메시지 목록 요청 실패: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+
     // ------------------------------------------------------------------------
 
     /**
