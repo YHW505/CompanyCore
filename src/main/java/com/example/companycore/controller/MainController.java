@@ -147,7 +147,7 @@ public class MainController {
             String fxmlPath = "";
             switch (contentType) {
                 case "home":
-                    fxmlPath = "/com/example/companycore/view/content/homeContent.fxml";
+                    fxmlPath = "/com/example/companycore/view/content/home/homeContent.fxml";
                     break;
                 case "attendance":
                     fxmlPath = "/com/example/companycore/view/content/attendanceContent.fxml";
@@ -156,16 +156,16 @@ public class MainController {
                     fxmlPath = "/com/example/companycore/view/content/mailContent.fxml";
                     break;
                 case "tasks":
-                    fxmlPath = "/com/example/companycore/view/content/tasksContent.fxml";
+                    fxmlPath = "/com/example/companycore/view/content/tasks/taskListContent.fxml";
                     break;
                 case "calendar":
                     fxmlPath = "/com/example/companycore/view/content/calendar/calendarContent.fxml";
                     break;
                 case "profile":
-                    fxmlPath = "/com/example/companycore/view/content/profileContent.fxml";
+                    fxmlPath = "/com/example/companycore/view/content/profile/profileContent.fxml";
                     break;
                 case "hrManagement":
-                    fxmlPath = "/com/example/companycore/view/content/hrManagementContent.fxml";
+                    fxmlPath = "/com/example/companycore/view/content/hr/hrManagementContent.fxml";
                     break;
                 // 하위 메뉴 콘텐츠들
                 case "attendanceRecord":

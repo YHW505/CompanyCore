@@ -63,7 +63,7 @@
     </HBox>
     
     <!-- 하단 - 회의록 -->
-    <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);" style="-fx-min-height: 200;">
+    <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2); -fx-min-height: 200;">
         <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 15 0;">
             <Label text="최신 회의록" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
             <Region HBox.hgrow="ALWAYS"/>

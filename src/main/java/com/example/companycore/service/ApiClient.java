@@ -19,6 +19,7 @@ public class ApiClient {
     private final MessageApiClient messageApiClient;
     private final MeetingApiClient meetingApiClient;
     private final ApprovalApiClient approvalApiClient;
+    private final NoticeApiClient noticeApiClient;
 
     private ApiClient() {
         this.userApiClient = UserApiClient.getInstance();
@@ -28,6 +29,7 @@ public class ApiClient {
         this.messageApiClient = MessageApiClient.getInstance();
         this.meetingApiClient = MeetingApiClient.getInstance();
         this.approvalApiClient = ApprovalApiClient.getInstance();
+        this.noticeApiClient = NoticeApiClient.getInstance();
     }
 
     public static ApiClient getInstance() {
@@ -49,7 +51,7 @@ public class ApiClient {
     public boolean authenticate(String employeeCode, String password) {
         boolean result = userApiClient.authenticate(employeeCode, password);
         if (result) {
-            // 모든 API 클라이언트에 토큰 공유
+            // All API clients share the token
             String token = userApiClient.getAuthToken();
             taskApiClient.setAuthToken(token);
             attendanceApiClient.setAuthToken(token);
@@ -57,6 +59,7 @@ public class ApiClient {
             messageApiClient.setAuthToken(token);
             meetingApiClient.setAuthToken(token);
             approvalApiClient.setAuthToken(token);
+            noticeApiClient.setAuthToken(token);
         }
         return result;
     }
@@ -77,6 +80,7 @@ public class ApiClient {
         messageApiClient.clearToken();
         meetingApiClient.clearToken();
         approvalApiClient.clearToken();
+        noticeApiClient.clearToken();
     }
 
     // User API 관련 메서드들
@@ -100,8 +104,57 @@ public class ApiClient {
         return userApiClient.createUser(user);
     }
 
+    public boolean deleteUser(Long userId) {
+        return userApiClient.deleteUser(userId);
+    }
+
     public java.util.List<com.example.companycore.model.dto.NoticeItem> getNotices() {
-        return userApiClient.getNotices();
+        return noticeApiClient.getAllNotices();
+    }
+
+    // 새로 추가된 User API 메서드들
+    public com.example.companycore.model.entity.User getUserById(Long userId) {
+        return userApiClient.getUserById(userId);
+    }
+
+    public com.example.companycore.model.entity.User getUserByEmail(String email) {
+        return userApiClient.getUserByEmail(email);
+    }
+
+    public com.example.companycore.model.entity.User getUserByEmployeeCode(String employeeCode) {
+        return userApiClient.getUserByEmployeeCode(employeeCode);
+    }
+
+    public java.util.List<com.example.companycore.model.entity.User> getUsersByDepartment(String departmentName) {
+        return userApiClient.getUsersByDepartment(departmentName);
+    }
+
+    public java.util.List<com.example.companycore.model.entity.User> getUsersByRole(String role) {
+        return userApiClient.getUsersByRole(role);
+    }
+
+    public java.util.List<com.example.companycore.model.entity.User> searchUsersByName(String name) {
+        return userApiClient.searchUsersByName(name);
+    }
+
+    public java.util.List<com.example.companycore.model.entity.User> getActiveUsers() {
+        return userApiClient.getActiveUsers();
+    }
+
+    public java.util.List<com.example.companycore.model.entity.User> filterUsers(String department, String role, String status, String position, Integer page, Integer size) {
+        return userApiClient.filterUsers(department, role, status, position, page, size);
+    }
+
+    public boolean updateFirstLoginStatus() {
+        return userApiClient.updateFirstLoginStatus();
+    }
+
+    public boolean checkEmailExists(String email) {
+        return userApiClient.checkEmailExists(email);
+    }
+
+    public boolean checkEmployeeCodeExists(String employeeCode) {
+        return userApiClient.checkEmployeeCodeExists(employeeCode);
     }
 
     // Task API 관련 메서드들
@@ -395,5 +448,30 @@ public class ApiClient {
 
     public ApprovalApiClient getApprovalApiClient() {
         return approvalApiClient;
+    }
+
+    // Notice API 관련 메서드들
+    public java.util.List<com.example.companycore.model.dto.NoticeItem> getAllNotices() {
+        return noticeApiClient.getAllNotices();
+    }
+
+    public com.example.companycore.model.dto.NoticeItem getNoticeById(Long noticeId) {
+        return noticeApiClient.getNoticeById(noticeId);
+    }
+
+    public com.example.companycore.model.dto.NoticeItem createNotice(com.example.companycore.model.dto.NoticeItem notice) {
+        return noticeApiClient.createNotice(notice);
+    }
+
+    public com.example.companycore.model.dto.NoticeItem updateNotice(Long noticeId, com.example.companycore.model.dto.NoticeItem notice) {
+        return noticeApiClient.updateNotice(noticeId, notice);
+    }
+
+    public boolean deleteNotice(Long noticeId) {
+        return noticeApiClient.deleteNotice(noticeId);
+    }
+
+    public NoticeApiClient getNoticeApiClient() {
+        return noticeApiClient;
     }
 }
