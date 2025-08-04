@@ -1,7 +1,6 @@
 package com.example.companycore.controller.hr; 
 
 import com.example.companycore.model.entity.User;
-import com.example.companycore.service.ApiClient;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -61,12 +60,10 @@ public class EmployeeEditController {
     
     private User user;
     private boolean isPasswordChange = false;
-    private ApiClient apiClient;
     
     @FXML
     public void initialize() {
         setupButtons();
-        apiClient = ApiClient.getInstance();
     }
     
     public void setUser(User user) {
@@ -82,34 +79,11 @@ public class EmployeeEditController {
             
             nameTextField.setText(user.getUsername());
             employeeIdTextField.setText(user.getEmployeeCode());
-            
-            // 부서 정보 설정
-            if (user.getDepartment() != null && user.getDepartment().getDepartmentName() != null) {
-                departmentTextField.setText(user.getDepartment().getDepartmentName());
-            } else if (user.getDepartmentName() != null) {
-                departmentTextField.setText(user.getDepartmentName());
-            } else {
-                departmentTextField.setText("미지정");
-            }
-            
-            // 주소 정보 설정
-            if (user.getAddress() != null && !user.getAddress().trim().isEmpty()) {
-                addressTextField.setText(user.getAddress());
-            } else {
-                addressTextField.setText("");
-            }
-            
+            departmentTextField.setText(user.getDepartment() != null ? user.getDepartment().getDepartmentName() : "");
+            addressTextField.setText(""); // User Entity에는 address 필드가 없음
             phoneNumberTextField.setText(user.getPhone());
             emailTextField.setText(user.getEmail());
-            
-            // 직급 정보 설정
-            if (user.getPosition() != null && user.getPosition().getPositionName() != null) {
-                positionTextField.setText(user.getPosition().getPositionName());
-            } else if (user.getPositionName() != null) {
-                positionTextField.setText(user.getPositionName());
-            } else {
-                positionTextField.setText("미지정");
-            }
+            positionTextField.setText(user.getPosition() != null ? user.getPosition().getPositionName() : "");
             
             // 비밀번호 필드는 비워둠 (보안상)
             passwordField.clear();
@@ -226,14 +200,10 @@ public class EmployeeEditController {
                 user.setPassword(passwordField.getText());
             }
             
-            // 실제 API 호출로 사용자 정보 업데이트
-            boolean updateSuccess = apiClient.updateUser(user);
+            // 여기서 실제 데이터베이스에 저장하는 로직을 구현
+            // 현재는 메모리에만 저장하는 예시
             
-            if (updateSuccess) {
-                showAlert("성공", "사원 정보가 성공적으로 수정되었습니다.", Alert.AlertType.INFORMATION);
-            } else {
-                showAlert("오류", "사원 정보 수정에 실패했습니다.", Alert.AlertType.ERROR);
-            }
+            showAlert("성공", "사원 정보가 성공적으로 수정되었습니다.", Alert.AlertType.INFORMATION);
             
         } catch (Exception e) {
             showAlert("오류", "사원 정보 수정 중 오류가 발생했습니다: " + e.getMessage(), Alert.AlertType.ERROR);

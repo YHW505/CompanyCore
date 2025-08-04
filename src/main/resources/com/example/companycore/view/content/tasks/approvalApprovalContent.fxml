@@ -13,6 +13,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
+<?import java.net.URL?>
 <VBox alignment="CENTER" spacing="15" style="-fx-padding: 10;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.companycore.controller.tasks.ApprovalController">
 
     <!-- 상단 헤더 -->
@@ -58,6 +59,9 @@
     <!-- 페이지네이션 -->
     <HBox alignment="CENTER" prefHeight="75.0" prefWidth="594.0" spacing="10" style="-fx-padding: 15 0;">
         <Pagination fx:id="pagination" style="-fx-page-information-visible: false; -fx-arrows-visible: true;">
+            <stylesheets>
+                <URL value="@../../content/pagination.css" />
+            </stylesheets>
         </Pagination>
         <Button fx:id="deleteBtn" onAction="#handleDelete" style="-fx-background-color: #444951; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" text="삭제" />
     </HBox>

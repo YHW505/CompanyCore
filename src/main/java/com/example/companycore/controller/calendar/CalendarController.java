@@ -98,11 +98,13 @@ public class CalendarController implements Initializable {
         // 달력 초기화
         updateMonthDisplay();
         
-        // 회의록 로드
-        loadMeetingNotes();
+        // 샘플 데이터 로드
+        loadSampleSchedules();
+        loadSampleMeetingNotes();
         
         // 다가오는 일정 및 회의록 로드
         loadUpcomingSchedules();
+        loadMeetingNotes();
     }
     
     // ==================== 새로고침 기능 ====================
@@ -570,6 +572,20 @@ public class CalendarController implements Initializable {
     // ==================== 데이터 로드 메서드 ====================
     
     /**
+     * 샘플 일정 데이터 로드
+     */
+    private void loadSampleSchedules() {
+        schedules.add(new Schedule("팀 미팅", LocalDate.of(2025, 1, 20), "14:00", "회의실 A", "회의"));
+        schedules.add(new Schedule("프로젝트 마감", LocalDate.of(2025, 1, 25), "18:00", "온라인", "프로젝트"));
+        schedules.add(new Schedule("고객 미팅", LocalDate.of(2025, 1, 28), "10:00", "회의실 B", "미팅"));
+        schedules.add(new Schedule("월간 회의", LocalDate.of(2025, 2, 5), "09:00", "대회의실", "회의"));
+        schedules.add(new Schedule("교육 세션", LocalDate.of(2025, 2, 10), "15:00", "교육실", "교육"));
+        schedules.add(new Schedule("제품 발표회", LocalDate.of(2025, 2, 15), "13:00", "대강당", "행사"));
+        schedules.add(new Schedule("코드 리뷰", LocalDate.of(2025, 2, 18), "16:00", "온라인", "프로젝트"));
+        schedules.add(new Schedule("고객 만족도 조사", LocalDate.of(2025, 2, 20), "11:00", "회의실 C", "미팅"));
+    }
+    
+    /**
      * API MeetingDto를 MeetingNote로 변환
      */
     private MeetingNote convertToMeetingNote(MeetingApiClient.MeetingDto apiMeeting) {
@@ -589,6 +605,15 @@ public class CalendarController implements Initializable {
         );
     }
 
+    /**
+     * 샘플 회의록 데이터 로드
+     */
+    private void loadSampleMeetingNotes() {
+        meetingNotes.add(new MeetingNote("주간 팀 회의", LocalDate.of(2025, 1, 15), "김팀장, 이사원, 박사원", "이번 주 진행상황 점검 및 다음 주 계획 수립", "meeting_001"));
+        meetingNotes.add(new MeetingNote("프로젝트 킥오프", LocalDate.of(2025, 1, 10), "전체 팀원", "새로운 프로젝트 시작 및 역할 분담", "meeting_002"));
+        meetingNotes.add(new MeetingNote("고객 요구사항 검토", LocalDate.of(2025, 1, 8), "김팀장, 이사원, 고객사 담당자", "고객 요구사항 분석 및 개발 방향 논의", "meeting_003"));
+    }
+    
     // ==================== 유틸리티 메서드 ====================
     
     /**
@@ -605,7 +630,7 @@ public class CalendarController implements Initializable {
         alert.setContentText(content);
         alert.showAndWait();
     }
-
+    
     // ==================== 내부 클래스 ====================
     
     /**
