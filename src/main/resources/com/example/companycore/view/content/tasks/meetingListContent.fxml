@@ -19,12 +19,12 @@
         <!-- 검색용 ComboBox -->
         <ComboBox fx:id="searchComboBox" prefWidth="100" promptText="컬럼 선택" style="-fx-background-radius: 20; -fx-border-color: black; -fx-border-width: 1; -fx-border-radius: 20; -fx-padding: 3 10;">
             <items>
-                <FXCollections fx:factory="observableArrayList">
-                    <String fx:value="전체" />
-                    <String fx:value="제목" />
-                    <String fx:value="부서" />
-                    <String fx:value="작성자" />
-                </FXCollections>
+<!--                <FXCollections fx:factory="observableArrayList">-->
+<!--                    <String fx:value="전체" />-->
+<!--                    <String fx:value="제목" />-->
+<!--                    <String fx:value="부서" />-->
+<!--                    <String fx:value="작성자" />-->
+<!--                </FXCollections>-->
             </items>
         </ComboBox>
 

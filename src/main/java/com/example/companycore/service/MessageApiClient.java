@@ -36,32 +36,43 @@ public class MessageApiClient extends BaseApiClient {
      */
     public MessageDto sendMessage(MessageDto message, Long senderId) {
         try {
+            // 1. 메시지 객체를 JSON으로 변환
             String json = objectMapper.writeValueAsString(message);
             HttpRequest request = createAuthenticatedRequestBuilder("/messages")
+                    .header("Content-Type", "application/json")
                     .header("User-Id", senderId.toString())
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 
+            // 3. 요청 전송 및 응답 수신
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-            if (response.statusCode() == 201 || response.statusCode() == 200) {
-                try {
-                    MessageDto sentMessage = objectMapper.readValue(response.body(), MessageDto.class);
-                    System.out.println("메시지 전송 성공!");
-                    return sentMessage;
-                } catch (Exception e) {
-                    System.out.println("전송된 메시지 파싱 실패: " + e.getMessage());
-                    return null;
+            int statusCode = response.statusCode();
+            String responseBody = response.body();
+
+            if (statusCode == 200 || statusCode == 201) {
+                if (responseBody != null && !responseBody.isBlank()) {
+                    try {
+                        MessageDto sentMessage = objectMapper.readValue(responseBody, MessageDto.class);
+                        System.out.println("✅ 메시지 전송 성공!");
+                        return sentMessage;
+                    } catch (Exception parseEx) {
+                        System.out.println("❌ 전송된 메시지 파싱 실패: " + parseEx.getMessage());
+                        parseEx.printStackTrace();
+                    }
+                } else {
+                    System.out.println("⚠️ 응답 본문이 비어 있습니다.");
                 }
             } else {
-                System.out.println("메시지 전송 실패 - 상태 코드: " + response.statusCode());
-                System.out.println("오류 응답: " + response.body());
-                return null;
+                System.out.println("❌ 메시지 전송 실패 - 상태 코드: " + statusCode);
+                System.out.println("오류 응답 내용: " + responseBody);
             }
         } catch (Exception e) {
-            System.out.println("메시지 전송 중 예외 발생: " + e.getMessage());
-            return null;
+            System.out.println("❌ 메시지 전송 중 예외 발생: " + e.getMessage());
+            e.printStackTrace();
         }
+
+        return null;
     }
 
     /**

@@ -21,7 +21,7 @@
     <TextField fx:id="titleField" promptText="제목" />
 
     <VBox spacing="6">
-        <Label styleClass="field-label" text="첨부파일 추가  📎" />
+        <Label styleClass="field-label" text="첨부파일 추가 📎" />
         <VBox fx:id="dropZone" prefHeight="120" spacing="8" styleClass="dropzone">
             <Label styleClass="dropzone-help" text="여기에 파일을 끌어다 놓거나 클릭하여 추가하세요." />
 
