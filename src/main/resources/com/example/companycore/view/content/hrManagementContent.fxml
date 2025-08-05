@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ButtonBar?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Pagination?>
@@ -37,8 +36,14 @@
                     style="-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" />
         </HBox>
 
-        <!-- 테이블 -->
-        <TableView fx:id="employeeTable" prefHeight="437.0" prefWidth="739.0">
+        <!-- 필터 영역 -->
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Region HBox.hgrow="ALWAYS" />
+            <Label text="부서 필터:" />
+            <ComboBox fx:id="departmentFilterComboBox" prefWidth="150" />
+        </HBox>
+
+        <TableView fx:id="employeeTable" prefHeight="427.0" prefWidth="739.0" maxHeight="427" alignment="CENTER">
             <columns>
                 <TableColumn fx:id="idColumn" prefWidth="60.0" text="번호" />
                 <TableColumn fx:id="nameColumn" prefWidth="100.0" text="이름" />
@@ -48,23 +53,21 @@
                 <TableColumn fx:id="emailColumn" prefWidth="150.0" text="이메일" />
                 <TableColumn fx:id="phoneColumn" prefWidth="100.0" text="연락처" />
                 <TableColumn fx:id="addressColumn" prefWidth="120.0" text="주소" />
-                <TableColumn fx:id="editColumn" prefWidth="80.0" text="관리" />
+                <TableColumn fx:id="editColumn" prefWidth="80.0" text="수정" />
             </columns>
         </TableView>
 
-        <ButtonBar prefHeight="40.0" prefWidth="200.0">
-            <buttons>
-                <Button fx:id="deleteButton" mnemonicParsing="false" text="삭제"
-                        style="-fx-background-color: #444951; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" />
-                <Button fx:id="registerButton" mnemonicParsing="false" text="사원 등록"
-                        style="-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" />
-            </buttons>
-        </ButtonBar>
+        <HBox spacing="10" alignment="CENTER">
+            <Button fx:id="deleteButton" mnemonicParsing="false" text="삭제"
+                    style="-fx-background-color: #444951; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" />
+            <Button fx:id="registerButton" mnemonicParsing="false" text="사원 등록"
+                    style="-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" />
+        </HBox>
 
         <Pagination fx:id="pagination" prefHeight="45.0" prefWidth="746.0"
                     style="-fx-page-information-visible: false; -fx-arrows-visible: true;">
             <stylesheets>
-                <URL value="@pagination.css" />
+                <URL value="@../common/pagination.css" />
             </stylesheets>
         </Pagination>
 

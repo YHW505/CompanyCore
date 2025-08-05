@@ -35,8 +35,6 @@
             <TextField fx:id="searchTextField" promptText="검색어를 입력하세요" prefWidth="200" />
             <Button fx:id="searchButton" text="검색" 
                     style="-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" />
-            <Button fx:id="refreshButton" text="새로고침" 
-                    style="-fx-background-color: #7f8c8d; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" />
         </HBox>
 
         <!-- 필터 영역 -->
@@ -46,7 +44,7 @@
             <ComboBox fx:id="departmentFilterComboBox" prefWidth="150" />
         </HBox>
 
-        <TableView fx:id="tableView" prefHeight="437.0" prefWidth="739.0">
+        <TableView fx:id="tableView" prefHeight="427.0" prefWidth="739.0" maxHeight="427">
             <columns>
                 <TableColumn fx:id="titleColumn" prefWidth="249.0" text="제목" />
                 <TableColumn fx:id="departmentColumn" prefWidth="105.0" text="부서" />
