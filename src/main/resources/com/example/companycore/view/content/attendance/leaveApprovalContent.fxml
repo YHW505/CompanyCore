@@ -28,7 +28,7 @@
         <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
             <!-- 테이블 헤더 -->
             <HBox style="-fx-background-color: #f8f9fa; -fx-padding: 15 25; -fx-border-color: #e9ecef; -fx-border-width: 0 0 1 0;">
-                <CheckBox fx:id="selectAllCheckBox" style="-fx-min-width: 100; -fx-alignment: CENTER;"/>
+                <CheckBox fx:id="selectAllCheckBox" style="-fx-min-width: 50; -fx-alignment: CENTER; -fx-padding: 0 0 0 10;"/>
                 <Label text="휴가 종류" style="-fx-font-weight: bold; -fx-alignment: CENTER; -fx-min-width: 200; -fx-pref-width: 200;"/>
                 <Label text="사번" style="-fx-font-weight: bold; -fx-alignment: CENTER; -fx-min-width: 150; -fx-pref-width: 150;"/>
                 <Label text="사원이름" style="-fx-font-weight: bold; -fx-alignment: CENTER; -fx-min-width: 200; -fx-pref-width: 200;"/>
@@ -42,7 +42,15 @@
             </VBox>
         </VBox>
         
-        <!-- 페이지네이션과 삭제 버튼 -->
+        <!-- 삭제 버튼 -->
+        <HBox spacing="20" alignment="CENTER_RIGHT">
+            <Region HBox.hgrow="ALWAYS" />
+            <Button fx:id="deleteButton" mnemonicParsing="false" text="삭제"
+                    style="-fx-background-color: #444951; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" />
+            <Region prefWidth="80" />
+        </HBox>
+        
+        <!-- 페이지네이션 -->
         <HBox spacing="20" alignment="CENTER">
             <Region HBox.hgrow="ALWAYS" />
             <Pagination fx:id="pagination" prefHeight="45.0" prefWidth="600.0"
@@ -52,9 +60,6 @@
                 </stylesheets>
             </Pagination>
             <Region HBox.hgrow="ALWAYS" />
-            <Button fx:id="deleteButton" mnemonicParsing="false" text="삭제"
-                    style="-fx-background-color: #444951; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" />
-            <Region prefWidth="20" />
         </HBox>
         
     </VBox>

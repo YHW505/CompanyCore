@@ -215,6 +215,7 @@ public class AttendanceRecordController implements Initializable {
     
     private void addTableRow(String date, String clockIn, String clockOut, String status, String buttonColor, String textColor) {
         HBox row = new HBox();
+        row.setAlignment(javafx.geometry.Pos.CENTER); // 세로 중앙 정렬 추가
         row.setStyle("-fx-padding: 10; -fx-border-color: #e9ecef; -fx-border-width: 0 0 1 0; -fx-min-height: 50; -fx-pref-height: 50;");
         
         Label dateLabel = new Label(date);
