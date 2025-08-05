@@ -11,6 +11,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/login/loginView.fxml"));
+
             Scene scene = new Scene(loader.load(), 1400, 800);
 
             primaryStage.setTitle("CompanyCore");
