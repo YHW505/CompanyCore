@@ -1,63 +1,88 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import java.lang.String?>
+<?import java.net.URL?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Pagination?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.example.companycore.controller.tasks.TaskController"
-      spacing="20" style="-fx-padding: 20;">
+<VBox alignment="CENTER" spacing="15" style="-fx-padding: 10;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.companycore.controller.tasks.ApprovalRequestController">
 
     <!-- 상단 헤더 -->
-    <HBox alignment="CENTER_LEFT" spacing="20">
-        <Label text="결재 요청"
-               style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 50 0 15 0; -fx-max-width: 1000;">
+        <Label prefWidth="120.0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="내 결재 요청" />
+        <Region HBox.hgrow="ALWAYS" />
+
+        <!-- 검색용 ComboBox -->
+        <ComboBox fx:id="searchComboBox" prefWidth="100" promptText="컬럼 선택" style="-fx-background-radius: 20; -fx-border-color: black; -fx-border-width: 1; -fx-border-radius: 20; -fx-padding: 3 10;">
+            <items>
+                <FXCollections fx:factory="observableArrayList">
+                    <String fx:value="전체" />
+                    <String fx:value="제목" />
+                    <String fx:value="부서" />
+                    <String fx:value="작성자" />
+                </FXCollections>
+            </items>
+        </ComboBox>
+
+        <TextField fx:id="searchField" prefWidth="200" promptText="검색" style="-fx-background-radius: 20; -fx-background-color: #f3f5fa; -fx-border-color: black; -fx-border-width: 1; -fx-border-radius: 20; -fx-padding: 6 15;" />
+
+        <Button onAction="#handleSearch" style="-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" text="검색" />
     </HBox>
 
-    <!-- 메인 콘텐츠 (폼) -->
-    <VBox spacing="20"
-          style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
-
-        <!-- 폼 전체 -->
-        <VBox spacing="24">
-            <!-- 제목 -->
-            <VBox spacing="6">
-                <Label text="제목" styleClass="field-label"/>
-                <TextField fx:id="titleField" promptText="제목을 입력하세요" styleClass="text-input-lg"/>
-            </VBox>
-
-            <!-- 작성 글 -->
-            <VBox spacing="6">
-                <Label text="작성 글" styleClass="field-label"/>
-                <TextArea fx:id="contentArea" promptText="내용을 입력하세요"
-                          prefRowCount="12" styleClass="textarea-lg"/>
-            </VBox>
-
-            <!-- 첨부파일 -->
-            <VBox spacing="6">
-                <Label text="첨부파일 추가  📎" styleClass="field-label"/>
-                <VBox fx:id="dropZone" spacing="8" styleClass="dropzone" prefHeight="120">
-                    <Label text="여기에 파일을 끌어다 놓거나 클릭하여 추가하세요." styleClass="dropzone-help"/>
-
-                    <HBox spacing="8" alignment="CENTER_LEFT">
-                        <Button fx:id="addFileBtn" text="파일 선택"
-                                styleClass="secondary-btn" maxWidth="120"
-                                onAction="#onAddFile"/>
-                        <Button fx:id="removeFileBtn" text="삭제"
-                                styleClass="ghost-btn" maxWidth="60"
-                                onAction="#onRemoveFile" disable="true"/>
-                    </HBox>
-
-                    <ListView fx:id="attachmentList" visible="false" managed="false"/>
-                </VBox>
-            </VBox>
-
-            <!-- 하단 버튼 -->
-            <HBox alignment="CENTER_RIGHT" spacing="12">
-                <Region HBox.hgrow="ALWAYS"/>
-                <Button fx:id="cancelBtn" text="지우개" styleClass="ghost-btn" onAction="#onCancel"/>
-                <Button fx:id="submitBtn" text="요청하기" styleClass="primary-btn" onAction="#onSubmit"/>
-            </HBox>
-        </VBox>
+    <!-- 테이블 -->
+    <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2); -fx-max-width: 1000;">
+        <TableView fx:id="approvalRequestTable" prefHeight="437.0" prefWidth="842.0" style="-fx-background-color: transparent;">
+            <!-- 데이터 없을 때 메시지 -->
+            <placeholder>
+                <Label style="-fx-text-fill: #999; -fx-font-size: 14px; -fx-padding: 20;" text="데이터가 없습니다." />
+            </placeholder>
+            <columns>
+                <TableColumn fx:id="colNumber" prefWidth="100" text="순서" />
+                <TableColumn fx:id="colTitle" prefWidth="200" text="제목" />
+                <TableColumn fx:id="colDepartment" prefWidth="120" text="부서" />
+                <TableColumn fx:id="colAuthor" prefWidth="120" text="작성자" />
+                <TableColumn fx:id="colDate" prefWidth="140" text="일자" />
+                <TableColumn fx:id="colStatus" prefWidth="160" text="상태" />
+            </columns>
+        </TableView>
     </VBox>
+
+    <!-- 버튼 영역 -->
+    <HBox spacing="20" alignment="CENTER_RIGHT" style="-fx-padding: 15 0;">
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="deleteBtn" mnemonicParsing="false" text="삭제"
+                style="-fx-background-color: #444951; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;"
+                onAction="#handleDelete"/>
+        <Button fx:id="requestButton" mnemonicParsing="false" text="결재 요청"
+                style="-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;"
+                onAction="#handleNewRequest"/>
+        <Region prefWidth="20" />
+    </HBox>
+
+    <!-- 페이지네이션 -->
+    <HBox spacing="20" alignment="CENTER" style="-fx-padding: 15 0;">
+        <Region HBox.hgrow="ALWAYS" />
+        <Pagination fx:id="pagination" prefHeight="45.0" prefWidth="600.0"
+                    style="-fx-page-information-visible: false; -fx-arrows-visible: true; -fx-background-color: transparent;">
+            <stylesheets>
+                <URL value="@../common/pagination.css" />
+            </stylesheets>
+        </Pagination>
+        <Region HBox.hgrow="ALWAYS" />
+    </HBox>
+
+    <!-- 푸터 -->
+    <HBox alignment="CENTER_LEFT" style="-fx-padding: 15 0 0 0;">
+        <Label style="-fx-text-fill: #6c757d; -fx-font-size: 12px;" text="© Company Core" />
+    </HBox>
 </VBox>
