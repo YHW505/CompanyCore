@@ -204,4 +204,13 @@ public class ComposeMailController {
     public void setParentController(MailController parentController) {
         this.parentController = parentController;
     }
+
+    /**
+     * 전달 기능: 수신자 이메일을 외부에서 세팅
+     */
+    public void setRecipientEmail(String email) {
+        if (recipientField != null) {
+            recipientField.setText(email);
+        }
+    }
 }

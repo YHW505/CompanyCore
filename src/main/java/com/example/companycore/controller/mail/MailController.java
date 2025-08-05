@@ -184,12 +184,12 @@ public class MailController {
 
             // 6. 컨트롤러에 메일 데이터를 전달하여 화면에 표시되도록 함
             previewController.setMailData(
-                    selectedMessage.getSenderName(),                    // 발신자
-                    selectedMessage.getReceiverName(),                 // 수신자
-                    selectedMessage.getTitle(),                        // 제목
-                    selectedMessage.getContent(),                      // 본문 내용
-                    selectedMessage.getSentAt(),  // 포맷팅된 문자열 전달
-                    "" // 첨부파일 등은 추후 확장 가능
+                    selectedMessage.getSenderEmail(),           // ✅ 발신자: 실제 보낸 사람
+                    selectedMessage.getReceiverEmail(),         // 수신자: 현재 사용자
+                    selectedMessage.getTitle(),                 // 제목
+                    selectedMessage.getContent(),               // 내용
+                    selectedMessage.getSentAt(),                // 날짜
+                    ""                                          // 첨부파일 (추후 확장)
             );
             System.out.println("CreatedAt: " + selectedMessage.getSentAt());
 
@@ -308,5 +308,27 @@ public class MailController {
         loadMessages();
         // 기본 뷰 표시
         showDefaultView();
+    }
+
+    /**
+     * 전달 기능: 메일쓰기 창을 열고 수신자 필드에 이메일을 자동 입력
+     */
+    public void forwardMessageToCompose(String email) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/content/mail/composeMailPanel.fxml"));
+            Node composeMailPanel = loader.load();
+
+            ComposeMailController composeController = loader.getController();
+            if (composeController != null) {
+                composeController.setParentController(this);
+                composeController.setRecipientEmail(email);
+            }
+
+            rightContentContainer.getChildren().clear();
+            rightContentContainer.getChildren().add(composeMailPanel);
+        } catch (IOException e) {
+            showAlert("오류", "메일쓰기를 로드할 수 없습니다.", Alert.AlertType.ERROR);
+            e.printStackTrace();
+        }
     }
 }

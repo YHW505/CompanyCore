@@ -11,6 +11,7 @@ import java.util.Objects;
 public class MessageDto {
     private Long messageId;
     private Long senderId;
+    private String senderEmail; // ✅ 추가됨
     private String receiverEmail;
     private String title;
     private String content;
@@ -20,18 +21,21 @@ public class MessageDto {
     private LocalDateTime readAt;
     private String senderName;
     private String receiverName;
+
+    // equals & hashCode
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         MessageDto that = (MessageDto) obj;
-        return messageId == that.messageId; // 제목이 아닌 ID 기준
+        return Objects.equals(messageId, that.messageId);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(messageId);
     }
+
     // 기본 생성자
     public MessageDto() {}
 
@@ -44,12 +48,13 @@ public class MessageDto {
         this.isRead = false;
     }
 
-    // 전체 생성자
-    public MessageDto(Long messageId, Long senderId, String receiverEmail, String title, String content,
-                     String messageType, Boolean isRead, LocalDateTime sentAt, LocalDateTime readAt,
-                     String senderName, String receiverName) {
+    // 전체 생성자 (senderEmail 포함)
+    public MessageDto(Long messageId, Long senderId, String senderEmail, String receiverEmail, String title, String content,
+                      String messageType, Boolean isRead, LocalDateTime sentAt, LocalDateTime readAt,
+                      String senderName, String receiverName) {
         this.messageId = messageId;
         this.senderId = senderId;
+        this.senderEmail = senderEmail; // ✅
         this.receiverEmail = receiverEmail;
         this.title = title;
         this.content = content;
@@ -68,6 +73,9 @@ public class MessageDto {
     public Long getSenderId() { return senderId; }
     public void setSenderId(Long senderId) { this.senderId = senderId; }
 
+    public String getSenderEmail() { return senderEmail; } // ✅
+    public void setSenderEmail(String senderEmail) { this.senderEmail = senderEmail; } // ✅
+
     public String getReceiverEmail() { return receiverEmail; }
     public void setReceiverEmail(String receiverEmail) { this.receiverEmail = receiverEmail; }
 
@@ -77,7 +85,7 @@ public class MessageDto {
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
 
-    public String getMessageType() { return "EMAIL"; }
+    public String getMessageType() { return messageType; }
     public void setMessageType(String messageType) { this.messageType = messageType; }
 
     public Boolean getIsRead() { return isRead; }
@@ -100,7 +108,8 @@ public class MessageDto {
         return "MessageDto{" +
                 "messageId=" + messageId +
                 ", senderId=" + senderId +
-                ", receiverId=" + receiverEmail +
+                ", senderEmail='" + senderEmail + '\'' + // ✅
+                ", receiverEmail='" + receiverEmail + '\'' +
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
                 ", messageType='" + messageType + '\'' +
@@ -111,5 +120,4 @@ public class MessageDto {
                 ", receiverName='" + receiverName + '\'' +
                 '}';
     }
-
-} 
+}
