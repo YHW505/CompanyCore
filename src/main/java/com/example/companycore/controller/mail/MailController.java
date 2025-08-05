@@ -25,6 +25,7 @@ public class MailController {
     @FXML
     private StackPane rightContentContainer;
 
+    @FXML private Label selectedLabel;
     // 10개의 메일 제목 Label과 각각의 행 (Row)
     @FXML private Label mailTitle1, mailTitle2, mailTitle3, mailTitle4, mailTitle5, mailTitle6, mailTitle7, mailTitle8, mailTitle9, mailTitle10;
     @FXML private HBox mailRow1, mailRow2, mailRow3, mailRow4, mailRow5, mailRow6, mailRow7, mailRow8, mailRow9, mailRow10;
@@ -93,14 +94,30 @@ public class MailController {
         prevPageButton.setDisable(currentPage <= 1);
         nextPageButton.setDisable(currentPage >= totalPages);
     }
+    private void highlightSelectedLabel(Label clickedLabel) {
+        if (selectedLabel != null) {
+            selectedLabel.getStyleClass().remove("selected-mail-label");
+        }
+
+        // ✅ 항상 스타일 재적용
+        clickedLabel.getStyleClass().remove("selected-mail-label");
+        clickedLabel.getStyleClass().add("selected-mail-label");
+
+        selectedLabel = clickedLabel;
+    }
 
     // 특정 메일을 선택했을 때 호출되는 미리보기 로딩 함수
-    private void handleMailPreview(int mailIndex) {
+    private void handleMailPreview(int mailIndex, Label clickedLabel) {
         int actualIndex = (currentPage - 1) * itemsPerPage + mailIndex;
 
         if (actualIndex < receivedMessages.size()) {
             MessageDto selectedMessage = receivedMessages.get(actualIndex);
+
+            // ✅ 이전과 같은 제목이더라도 항상 메일 미리보기 새로 로드
             loadMailPreviewPanel(selectedMessage);
+
+            // ✅ 스타일도 항상 새로 적용 (같은 Label이라도)
+            highlightSelectedLabel(clickedLabel);
         }
     }
 
@@ -108,17 +125,17 @@ public class MailController {
     @FXML
     public void handleMailPreview1() {
         System.out.println("메일 1 클릭됨");
-        handleMailPreview(0);
+        { handleMailPreview(0, mailTitle1); }
     }
-    @FXML public void handleMailPreview2() { handleMailPreview(1); }
-    @FXML public void handleMailPreview3() { handleMailPreview(2); }
-    @FXML public void handleMailPreview4() { handleMailPreview(3); }
-    @FXML public void handleMailPreview5() { handleMailPreview(4); }
-    @FXML public void handleMailPreview6() { handleMailPreview(5); }
-    @FXML public void handleMailPreview7() { handleMailPreview(6); }
-    @FXML public void handleMailPreview8() { handleMailPreview(7); }
-    @FXML public void handleMailPreview9() { handleMailPreview(8); }
-    @FXML public void handleMailPreview10() { handleMailPreview(9); }
+    @FXML public void handleMailPreview2() { System.out.println("메일 2 클릭됨"); handleMailPreview(1, mailTitle2); }
+    @FXML public void handleMailPreview3() { System.out.println("메일 3 클릭됨"); handleMailPreview(2, mailTitle3); }
+    @FXML public void handleMailPreview4() { System.out.println("메일 4 클릭됨"); handleMailPreview(3, mailTitle4); }
+    @FXML public void handleMailPreview5() { System.out.println("메일 5 클릭됨"); handleMailPreview(4, mailTitle5); }
+    @FXML public void handleMailPreview6() { System.out.println("메일 6 클릭됨"); handleMailPreview(5, mailTitle6); }
+    @FXML public void handleMailPreview7() { System.out.println("메일 7 클릭됨"); handleMailPreview(6, mailTitle7); }
+    @FXML public void handleMailPreview8() { System.out.println("메일 8 클릭됨"); handleMailPreview(7, mailTitle8); }
+    @FXML public void handleMailPreview9() { System.out.println("메일 9 클릭됨"); handleMailPreview(8, mailTitle9); }
+    @FXML public void handleMailPreview10() { System.out.println("메일 10 클릭됨"); handleMailPreview(9, mailTitle10); }
 
     /**
      * 메일 미리보기 패널을 로드하고 우측 컨테이너에 표시하는 메서드

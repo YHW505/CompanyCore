@@ -32,4 +32,10 @@
 
 .toggle-switch.active .toggle-text {
     -fx-text-fill: white;
-} 
+}
+.selected-mail-label {
+    -fx-background-color: #e6f7ff;
+    -fx-border-color: #1890ff;
+    -fx-border-width: 2;
+    -fx-border-radius: 2;
+}

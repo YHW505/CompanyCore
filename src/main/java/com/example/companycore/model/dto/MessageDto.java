@@ -2,6 +2,7 @@ package com.example.companycore.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * 메시지 DTO
@@ -19,7 +20,18 @@ public class MessageDto {
     private LocalDateTime readAt;
     private String senderName;
     private String receiverName;
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        MessageDto that = (MessageDto) obj;
+        return messageId == that.messageId; // 제목이 아닌 ID 기준
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(messageId);
+    }
     // 기본 생성자
     public MessageDto() {}
 
@@ -99,4 +111,5 @@ public class MessageDto {
                 ", receiverName='" + receiverName + '\'' +
                 '}';
     }
+
 } 
