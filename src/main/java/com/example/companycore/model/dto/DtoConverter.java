@@ -240,19 +240,21 @@ public class DtoConverter {
     public static MessageDto toMessageDto(Message message) {
         if (message == null) return null;
 
-        return new MessageDto(
-            message.getMessageId() != null ? message.getMessageId().longValue() : null,
-            message.getSenderId(),
-            message.getReceiverEmail(),
-            message.getTitle(),
-            message.getContent(),
-            message.getMessageType() != null ? message.getMessageType().toString() : null,
-            message.getIsRead(),
-            message.getSentAt(),
-            null, // readAt
-            null, // senderName
-            null  // receiverName
+        MessageDto dto = new MessageDto(
+                message.getMessageId() != null ? message.getMessageId().longValue() : null, // Long messageId
+                message.getSenderId(),                      // Long senderId
+                message.getSenderEmail(),                   // String senderEmail ✅ 순서 변경됨
+                message.getReceiverEmail(),                 // String receiverEmail
+                message.getTitle(),                         // String title
+                message.getContent(),                       // String content
+                message.getMessageType() != null ? message.getMessageType().toString() : null, // String messageType
+                message.getIsRead(),                        // Boolean isRead
+                message.getSentAt(),                        // LocalDateTime sentAt
+                null,                                       // LocalDateTime readAt
+                null,                                       // String senderName
+                null                                        // String receiverName
         );
+        return dto;
     }
 
     /**
@@ -260,11 +262,12 @@ public class DtoConverter {
      */
     public static Message toMessage(MessageDto messageDto) {
         if (messageDto == null) return null;
-        
+
         Message message = new Message();
         message.setMessageId(messageDto.getMessageId() != null ? messageDto.getMessageId().intValue() : null);
         message.setSenderId(messageDto.getSenderId());
         message.setReceiverEmail(messageDto.getReceiverEmail());
+        message.setSenderEmail(messageDto.getSenderEmail()); // ✅ 추가
         if (messageDto.getMessageType() != null) {
             message.setMessageType(com.example.companycore.model.entity.Enum.MessageType.valueOf(messageDto.getMessageType()));
         }
@@ -272,7 +275,7 @@ public class DtoConverter {
         message.setContent(messageDto.getContent());
         message.setIsRead(messageDto.getIsRead());
         message.setSentAt(messageDto.getSentAt());
-        
+
         return message;
     }
 

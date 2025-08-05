@@ -13,10 +13,14 @@ public class Message {
     private final StringProperty content;
     private final BooleanProperty isRead;
     private final ObjectProperty<LocalDateTime> sentAt;
+    private final StringProperty senderEmail;
+
+
 
     public Message() {
         this.messageId = new SimpleIntegerProperty();
         this.senderId = new SimpleLongProperty();
+        this.senderEmail = new SimpleStringProperty(); // senderEmail도 기본 생성
         this.receiverEmail = new SimpleStringProperty();
         this.messageType = new SimpleObjectProperty<>();
         this.title = new SimpleStringProperty();
@@ -26,7 +30,7 @@ public class Message {
     }
 
     public Message(Integer messageId, Long senderId, String receiverEmail, MessageType messageType,
-                   String title, String content, Boolean isRead, LocalDateTime sentAt) {
+                   String title, String content, Boolean isRead, LocalDateTime sentAt, StringProperty senderEmail) {
         this.messageId = new SimpleIntegerProperty(messageId);
         this.senderId = new SimpleLongProperty(senderId);
         this.receiverEmail = new SimpleStringProperty(receiverEmail);
@@ -35,6 +39,7 @@ public class Message {
         this.content = new SimpleStringProperty(content);
         this.isRead = new SimpleBooleanProperty(isRead);
         this.sentAt = new SimpleObjectProperty<>(sentAt);
+        this.senderEmail = senderEmail;
     }
 
     // MessageId
@@ -51,6 +56,11 @@ public class Message {
     public String getReceiverEmail() { return receiverEmail.get(); }
     public void setReceiverEmail(String receiverEmail) { this.receiverEmail.set(receiverEmail); }
     public StringProperty receiverEmailProperty() { return receiverEmail; }
+
+    public String getSenderEmail() {return senderEmail.get();}
+    public void setSenderEmail(String senderEmail) {this.senderEmail.set(senderEmail);}
+    public StringProperty senderEmailProperty() { return senderEmail; }
+
 
     // MessageType
     public MessageType getMessageType() { return messageType.get(); }
@@ -76,6 +86,7 @@ public class Message {
     public LocalDateTime getSentAt() { return sentAt.get(); }
     public void setSentAt(LocalDateTime sentAt) { this.sentAt.set(sentAt); }
     public ObjectProperty<LocalDateTime> sentAtProperty() { return sentAt; }
+
 
     @Override
     public String toString() {
