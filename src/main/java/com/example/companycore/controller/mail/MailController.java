@@ -64,17 +64,23 @@ public class MailController {
 
         switch (currentMailboxType) {
             case "inbox":
-                // 받은 메일함: 현재 사용자가 받은 메일만 조회
+                // 받은 메일함
                 messages = messageApiClient.getReceiveMessagesById(currentUserId);
                 break;
             case "sentMailbox":
-                // 보낸 메일함: 현재 사용자가 보낸 메일만 조회
+                // 보낸 메일함
                 messages = messageApiClient.getSentMessagesById(currentUserId);
                 break;
             case "allMailbox":
             default:
-                // 전체 메일함: 모든 메일 조회 (기존 로직)
-                messages = messageApiClient.getAllMessages(currentUserId, "EMAIL", null);
+                // 전체 메일함: 받은 메일 + 보낸 메일 합치기
+                List<MessageDto> received = messageApiClient.getReceiveMessagesById(currentUserId);
+                List<MessageDto> sent = messageApiClient.getSentMessagesById(currentUserId);
+
+                // 두 리스트를 하나로 병합
+                messages = new ArrayList<>();
+                messages.addAll(received);
+                messages.addAll(sent);
                 break;
         }
 
