@@ -106,6 +106,31 @@ public class DynamicMailPreviewController {
         }
     }
 
+    @FXML
+    public void handleForwardContent() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/content/mail/composeMailPanel.fxml"));
+            Node composeMailPanel = loader.load();
+
+            ComposeMailController composeController = loader.getController();
+            if (composeController != null) {
+                composeController.setRecipientContent(contentTextArea.getText());
+            }
+
+            Node node = contentTextArea;
+            while (node != null && !(node.getParent() instanceof StackPane)) {
+                node = node.getParent();
+            }
+            if (node != null && node.getParent() instanceof StackPane) {
+                StackPane rightContentContainer = (StackPane) node.getParent();
+                rightContentContainer.getChildren().clear();
+                rightContentContainer.getChildren().add(composeMailPanel);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     // ✅ 메시지 삭제 메서드
     @FXML
     public void handleDelete() {
