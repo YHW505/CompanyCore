@@ -46,8 +46,8 @@
     
     <!-- 하단 버튼들 -->
     <HBox alignment="CENTER_RIGHT" spacing="10">
-        <Button style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16; -fx-cursor: hand; -fx-background-radius: 5;" text="답장" />
-        <Button fx:id="forwardButton" style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16; -fx-cursor: hand; -fx-background-radius: 5;" text="전달" onAction="#handleForwardMail" />
-        <Button style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16; -fx-cursor: hand; -fx-background-radius: 5;" text="삭제" />
+        <Button style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16; -fx-cursor: hand; -fx-background-radius: 5;" text="답장" onAction="#handleForwardMail" />
+        <Button fx:id="forwardButton" style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16; -fx-cursor: hand; -fx-background-radius: 5;" text="전달" onAction="#handleForwardContent"/>
+        <Button fx:id="deleteButton" style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16; -fx-cursor: hand; -fx-background-radius: 5;" text="삭제" onAction="#handleDelete" />
     </HBox>
 </VBox>

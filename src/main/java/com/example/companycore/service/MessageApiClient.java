@@ -347,4 +347,31 @@ public class MessageApiClient extends BaseApiClient {
     public List<MessageDto> getUnreadMessages(Long userId) {
         return getMessages(userId, "received", null, null, true);
     }
+
+    /**
+     * ✅ 메시지를 삭제합니다 (DELETE /messages/{messageId}).
+     * @param messageId 삭제할 메시지 ID
+     * @param userId 사용자 ID (헤더로 전달)
+     * @return 삭제 성공 여부
+     */
+    public boolean deleteMessageById(Long messageId, Long userId) {
+        try {
+            HttpRequest request = createAuthenticatedRequestBuilder("/messages/" + messageId)
+                    .header("User-Id", userId.toString())
+                    .DELETE()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200 || response.statusCode() == 204) {
+                System.out.println("✅ 메시지 삭제 성공: ID = " + messageId);
+                return true;
+            } else {
+                System.out.println("❌ 메시지 삭제 실패 - 상태 코드: " + response.statusCode());
+            }
+        } catch (Exception e) {
+            System.out.println("❌ 메시지 삭제 중 예외 발생: " + e.getMessage());
+        }
+        return false;
+    }
 }
