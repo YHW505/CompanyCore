@@ -94,7 +94,32 @@ public class NoticeDetailController {
         if (noticeItem.hasAttachments()) {
             // 실제 첨부파일이 있는 경우
             if (noticeItem.getAttachmentFilename() != null && !noticeItem.getAttachmentFilename().isEmpty()) {
-                attachmentFiles.add(noticeItem.getAttachmentFilename());
+                String filename = noticeItem.getAttachmentFilename();
+                Long attachmentSize = noticeItem.getAttachmentSize();
+                
+                // 디버깅 로그
+                System.out.println("첨부파일 정보: " + filename + ", 크기: " + attachmentSize);
+                
+                String fileSize;
+                if (attachmentSize != null && attachmentSize > 0) {
+                    fileSize = formatFileSize(attachmentSize);
+                } else {
+                    // 크기 정보가 없으면 Base64 내용에서 크기 계산
+                    if (noticeItem.getAttachmentContent() != null && !noticeItem.getAttachmentContent().isEmpty()) {
+                        try {
+                            byte[] fileBytes = java.util.Base64.getDecoder().decode(noticeItem.getAttachmentContent());
+                            fileSize = formatFileSize(fileBytes.length);
+                            System.out.println("Base64에서 계산된 크기: " + fileBytes.length + " bytes");
+                        } catch (Exception e) {
+                            fileSize = "크기 정보 없음";
+                            System.out.println("Base64 디코딩 실패: " + e.getMessage());
+                        }
+                    } else {
+                        fileSize = "크기 정보 없음";
+                    }
+                }
+                
+                attachmentFiles.add(filename + " (" + fileSize + ")");
                 attachmentSection.setVisible(true);
                 downloadButton.setVisible(true);
             }
@@ -123,6 +148,16 @@ public class NoticeDetailController {
             }
         }
     }
+    
+    /**
+     * 파일 크기 포맷팅
+     */
+    private String formatFileSize(long bytes) {
+        if (bytes < 1024) return bytes + " B";
+        if (bytes < 1024 * 1024) return String.format("%.1f KB", bytes / 1024.0);
+        if (bytes < 1024 * 1024 * 1024) return String.format("%.1f MB", bytes / (1024.0 * 1024.0));
+        return String.format("%.1f GB", bytes / (1024.0 * 1024.0 * 1024.0));
+    }
 
     /**
      * 첨부파일 다운로드 버튼 클릭 이벤트
@@ -131,10 +166,22 @@ public class NoticeDetailController {
     private void handleDownloadAttachment() {
         String selectedFile = attachmentListView.getSelectionModel().getSelectedItem();
         if (selectedFile != null) {
-            downloadAttachment(selectedFile);
+            // 파일명에서 크기 정보 제거
+            String filename = extractFilename(selectedFile);
+            downloadAttachment(filename);
         } else {
             showAlert("알림", "다운로드할 파일을 선택해주세요.", Alert.AlertType.WARNING);
         }
+    }
+    
+    /**
+     * 파일명에서 크기 정보 제거
+     */
+    private String extractFilename(String displayText) {
+        if (displayText.contains(" (")) {
+            return displayText.substring(0, displayText.lastIndexOf(" ("));
+        }
+        return displayText;
     }
 
     /**
