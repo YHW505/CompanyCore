@@ -170,13 +170,35 @@ public class HRManagementController {
      * 테이블 컬럼 설정
      */
     private void setupTableColumns() {
-        // 테이블 리사이즈 정책 설정
+        // 테이블 기본 설정
         employeeTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        employeeTable.setFixedCellSize(40); // 행 높이를 40px로 설정
+        
+        // 헤더 높이를 30px로 고정하고 테이블 높이 설정
+        employeeTable.setStyle("-fx-table-header-height: 30px; -fx-scroll-bar-policy: never; -fx-pref-height: 427px; -fx-max-height: 427px; -fx-min-height: 427px; -fx-table-header-background: #f0f0f0;");
+        
+        // 테이블이 정확히 10개 행을 표시할 수 있도록 설정 (40px * 10행 + 헤더 높이 27px)
+        employeeTable.setPrefHeight(427); // 40px * 10행 + 헤더 높이 27px = 427px
+        employeeTable.setMaxHeight(427);
+        
+        // 각 컬럼의 헤더 높이도 고정
+        idColumn.setStyle("-fx-table-header-height: 30px;");
+        nameColumn.setStyle("-fx-table-header-height: 30px;");
+        employeeIdColumn.setStyle("-fx-table-header-height: 30px;");
+        departmentColumn.setStyle("-fx-table-header-height: 30px;");
+        positionColumn.setStyle("-fx-table-header-height: 30px;");
+        emailColumn.setStyle("-fx-table-header-height: 30px;");
+        phoneColumn.setStyle("-fx-table-header-height: 30px;");
+        addressColumn.setStyle("-fx-table-header-height: 30px;");
+        editColumn.setStyle("-fx-table-header-height: 30px;");
         
         // 컬럼별 데이터 바인딩
         idColumn.setCellValueFactory(new PropertyValueFactory<>("userId"));
+        idColumn.setStyle("-fx-alignment: center;");
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
+        nameColumn.setStyle("-fx-alignment: center;");
         employeeIdColumn.setCellValueFactory(new PropertyValueFactory<>("employeeCode"));
+        employeeIdColumn.setStyle("-fx-alignment: center;");
         
         // 부서 컬럼 - Department 객체에서 부서명 가져오기
         departmentColumn.setCellValueFactory(cellData -> {
@@ -189,6 +211,7 @@ public class HRManagementController {
                 return new javafx.beans.property.SimpleStringProperty("미지정");
             }
         });
+        departmentColumn.setStyle("-fx-alignment: center;");
         
         // 직급 컬럼 - Position 객체에서 직급명 가져오기
         positionColumn.setCellValueFactory(cellData -> {
@@ -201,12 +224,17 @@ public class HRManagementController {
                 return new javafx.beans.property.SimpleStringProperty("미지정");
             }
         });
+        positionColumn.setStyle("-fx-alignment: center;");
         
         emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
+        emailColumn.setStyle("-fx-alignment: center;");
         phoneColumn.setCellValueFactory(new PropertyValueFactory<>("phone"));
+        phoneColumn.setStyle("-fx-alignment: center;");
         addressColumn.setCellValueFactory(new PropertyValueFactory<>("address"));
+        addressColumn.setStyle("-fx-alignment: center;");
         
-        // 관리 버튼 컬럼 설정
+        // 수정 버튼 컬럼 설정
+        editColumn.setText("수정");
         setupEditColumn();
     }
     
@@ -215,7 +243,7 @@ public class HRManagementController {
      */
     private void setupEditColumn() {
         editColumn.setCellFactory(param -> new TableCell<User, Void>() {
-            private final Button editButton = new Button("✏️");
+            private final Button editButton = new Button("수정");
             
             {
                 editButton.setStyle("-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 10; -fx-cursor: hand; -fx-background-radius: 3;");
@@ -232,6 +260,7 @@ public class HRManagementController {
                     setGraphic(null);
                 } else {
                     setGraphic(editButton);
+                    setAlignment(Pos.CENTER);
                 }
             }
         });

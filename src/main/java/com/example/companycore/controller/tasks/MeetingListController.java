@@ -58,6 +58,7 @@ public class MeetingListController {
     /** 검색 관련 UI 컴포넌트 */
     @FXML private TextField searchField;        // 검색어 입력 필드
     @FXML private ComboBox<String> searchComboBox; // 검색 조건 선택 콤보박스
+    @FXML private ComboBox<String> departmentFilterComboBox; // 부서 필터 콤보박스
     @FXML private Pagination pagination;        // 페이지네이션 UI
 
     // ==================== 데이터 관리 ====================
@@ -104,21 +105,26 @@ public class MeetingListController {
      */
     private void setupTable() {
         // 테이블 기본 설정
-        meetingTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY); // 너비 자동 조정
-        meetingTable.setFixedCellSize(40); // 행 높이 고정
-
-        // 테이블의 높이에 따라 한 페이지에 표시할 행 개수 계산
-        visibleRowCount = (int) (meetingTable.getHeight() / meetingTable.getFixedCellSize());
-        if (visibleRowCount == 0) visibleRowCount = 10;
-
-        // 테이블 높이가 바뀔 때마다 페이지 수 재계산
-        meetingTable.heightProperty().addListener((obs, oldVal, newVal) -> {
-            int newCount = (int) (newVal.doubleValue() / meetingTable.getFixedCellSize());
-            if (newCount != visibleRowCount && newCount > 0) {
-                visibleRowCount = newCount;
-                resetPagingToFirstPage(); // 페이지 처음으로 리셋
-            }
-        });
+        meetingTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        meetingTable.setFixedCellSize(40); // 행 높이를 40px로 설정
+        
+        // 헤더 높이를 30px로 고정하고 테이블 높이 설정
+        meetingTable.setStyle("-fx-table-header-height: 30px; -fx-scroll-bar-policy: never; -fx-pref-height: 427px; -fx-max-height: 427px; -fx-min-height: 427px; -fx-table-header-background: #f0f0f0;");
+        
+        // 테이블이 정확히 10개 행을 표시할 수 있도록 설정 (40px * 10행 + 헤더 높이 27px)
+        meetingTable.setPrefHeight(427); // 40px * 10행 + 헤더 높이 27px = 427px
+        meetingTable.setMaxHeight(427);
+        
+        // 각 컬럼의 헤더 높이도 고정
+        colNumber.setStyle("-fx-table-header-height: 30px;");
+        colTitle.setStyle("-fx-table-header-height: 30px;");
+        colDepartment.setStyle("-fx-table-header-height: 30px;");
+        colAuthor.setStyle("-fx-table-header-height: 30px;");
+        colDate.setStyle("-fx-table-header-height: 30px;");
+        colAction.setStyle("-fx-table-header-height: 30px;");
+        
+        // 고정된 행 수 설정
+        visibleRowCount = 10;
 
         // 컬럼 바인딩 설정
         setupColumnBindings();
@@ -138,12 +144,21 @@ public class MeetingListController {
                     + pagination.getCurrentPageIndex() * visibleRowCount;
             return new ReadOnlyStringWrapper(String.valueOf(index));
         });
+        colNumber.setStyle("-fx-alignment: center;");
 
         // 나머지 컬럼은 MeetingItem의 프로퍼티를 바인딩
         colTitle.setCellValueFactory(cd -> cd.getValue().titleProperty());
+        colTitle.setStyle("-fx-alignment: center-left;");
         colDepartment.setCellValueFactory(cd -> cd.getValue().departmentProperty());
+        colDepartment.setStyle("-fx-alignment: center;");
         colAuthor.setCellValueFactory(cd -> cd.getValue().authorProperty());
+        colAuthor.setStyle("-fx-alignment: center;");
         colDate.setCellValueFactory(cd -> cd.getValue().dateProperty());
+        colDate.setStyle("-fx-alignment: center;");
+        
+        // 액션 컬럼은 빈 문자열로 설정 (버튼이 표시되므로)
+        colAction.setCellValueFactory(cd -> new ReadOnlyStringWrapper(""));
+        colAction.setStyle("-fx-alignment: center;");
     }
 
     /**
@@ -180,7 +195,11 @@ public class MeetingListController {
     private void setupSearch() {
         // 검색 콤보박스 초기화
         searchComboBox.getItems().addAll("전체", "제목", "부서", "작성자");
-        searchComboBox.setValue(null);
+        searchComboBox.setValue("전체");
+        
+        // 부서 필터 콤보박스 초기화
+        departmentFilterComboBox.getItems().addAll("전체", "인사팀", "개발팀", "마케팅팀", "영업팀");
+        departmentFilterComboBox.setValue("전체");
     }
 
     // ==================== 데이터 관리 메서드 ====================
@@ -193,7 +212,10 @@ public class MeetingListController {
         fullData.clear();
         viewData.clear();
         viewData.addAll(fullData);
-        System.out.println("회의 데이터 로드 완료: 0개");
+        System.out.println("회의 데이터 로드 완료: " + fullData.size() + "개");
+        
+        // 페이지네이션 업데이트
+        updatePagination();
     }
 
     /**
@@ -222,42 +244,61 @@ public class MeetingListController {
      * 페이지네이션 UI를 구성하고 설정
      */
     private void setupPagination() {
-        int totalPages = (int) Math.ceil((double) viewData.size() / visibleRowCount);
-        pagination.setPageCount(totalPages);
-
-        pagination.setPageFactory(pageIndex -> {
-            applyPageItems(pageIndex);
-            return new Region(); // 빈 노드 반환
-        });
-
-        // 첫 페이지 초기화
-        if (!viewData.isEmpty()) {
-            applyPageItems(0);
-        }
-    }
-
-    /**
-     * 페이지네이션을 첫 페이지로 리셋
-     */
-    private void resetPagingToFirstPage() {
+        pagination.setPageCount(1);
         pagination.setCurrentPageIndex(0);
-        applyPageItems(0);
+        pagination.setPageFactory(this::createPage);
+        updatePagination();
     }
-
+    
     /**
-     * 해당 페이지의 데이터만 추려서 테이블에 적용
-     * 
-     * @param pageIndex 페이지 인덱스 (0부터 시작)
+     * 페이지네이션 업데이트
      */
-    private void applyPageItems(int pageIndex) {
-        int fromIndex = pageIndex * visibleRowCount;
-        int toIndex = Math.min(fromIndex + visibleRowCount, viewData.size());
-
-        if (fromIndex < viewData.size()) {
-            List<MeetingItem> pageData = viewData.subList(fromIndex, toIndex);
+    private void updatePagination() {
+        int totalPages = (int) Math.ceil((double) viewData.size() / visibleRowCount);
+        pagination.setPageCount(Math.max(1, totalPages));
+        
+        // 현재 페이지가 총 페이지 수를 초과하면 마지막 페이지로 설정
+        if (pagination.getCurrentPageIndex() >= totalPages) {
+            pagination.setCurrentPageIndex(Math.max(0, totalPages - 1));
+        }
+        
+        // 첫 페이지 데이터 로드
+        if (viewData.size() > 0) {
+            int startIndex = 0;
+            int endIndex = Math.min(visibleRowCount, viewData.size());
+            List<MeetingItem> pageData = viewData.subList(startIndex, endIndex);
             meetingTable.setItems(FXCollections.observableArrayList(pageData));
+            System.out.println("페이지네이션 업데이트: " + pageData.size() + "개 항목 (전체: " + viewData.size() + "개)");
+        } else {
+            meetingTable.setItems(FXCollections.observableArrayList());
+            System.out.println("페이지네이션 업데이트: 빈 목록");
         }
     }
+    
+    /**
+     * 페이지 생성
+     */
+    private Region createPage(int pageIndex) {
+        // 페이지 인덱스가 유효한지 확인
+        int totalPages = (int) Math.ceil((double) viewData.size() / visibleRowCount);
+        if (pageIndex >= totalPages) {
+            return new Region();
+        }
+        
+        // 현재 페이지의 데이터 계산
+        int startIndex = pageIndex * visibleRowCount;
+        int endIndex = Math.min(startIndex + visibleRowCount, viewData.size());
+        
+        // 현재 페이지의 데이터만 테이블에 설정
+        List<MeetingItem> pageData = viewData.subList(startIndex, endIndex);
+        meetingTable.setItems(FXCollections.observableArrayList(pageData));
+        
+        System.out.println("페이지 " + (pageIndex + 1) + " 로드: " + pageData.size() + "개 항목 (전체: " + viewData.size() + "개)");
+        
+        return new Region();
+    }
+
+
 
     // ==================== 이벤트 핸들러 메서드 ====================
     
@@ -293,16 +334,9 @@ public class MeetingListController {
         viewData.clear();
         viewData.addAll(filtered);
 
-        // 페이지네이션 재설정
-        int totalPages = (int) Math.ceil((double) viewData.size() / visibleRowCount);
-        pagination.setPageCount(totalPages);
+        // 페이지네이션 업데이트 및 첫 페이지로 리셋
+        updatePagination();
         pagination.setCurrentPageIndex(0);
-
-        if (!viewData.isEmpty()) {
-            applyPageItems(0);
-        } else {
-            meetingTable.setItems(FXCollections.observableArrayList());
-        }
     }
 
     /**
