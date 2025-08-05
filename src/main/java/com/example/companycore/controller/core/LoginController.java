@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -144,8 +145,39 @@ public class LoginController implements Initializable {
     }
 
     @FXML
-    private void handleEmployeeIdInquiry() {
-        statusLabel.setText("사번 조회 기능은 준비 중입니다.");
-        statusLabel.setStyle("-fx-text-fill: orange;");
+    public String handleEmployeeIdInquiry() {
+//        statusLabel.setText("사번 조회 기능은 준비 중입니다.");
+//        statusLabel.setStyle("-fx-text-fill: orange;");
+        try {
+            // FXML 로드
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/login/searchCodeDialog.fxml"));
+            Parent root = loader.load();
+
+            // Controller 가져오기
+            SearchCodeDialogController controller = loader.getController();
+
+            // Stage 생성 및 설정
+            Stage popupStage = new Stage();
+            popupStage.setTitle("사번 조회");
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.setResizable(false);
+
+            // Controller에 Stage 전달
+            controller.setStage(popupStage);
+
+            // Scene 생성 및 Stage에 설정
+            Scene scene = new Scene(root, 300, 400);
+            popupStage.setScene(scene);
+
+            // 팝업 표시하고 결과 대기
+            popupStage.showAndWait();
+
+            // 결과 반환
+            return controller.getResult();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

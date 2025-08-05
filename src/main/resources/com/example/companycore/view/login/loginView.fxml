@@ -23,7 +23,7 @@
                     <children>
                         <ImageView fitHeight="50.0" fitWidth="50.0">
                             <image>
-                                <Image url="@../images/logo/logo_image.png"/>
+                                <Image url="@../../images/logo/logo_image.png"/>
                             </image>
                         </ImageView>
                         <!-- 회사명 -->
@@ -80,7 +80,7 @@
 
                         <Label fx:id="clickableText"
                                text="사번 조회"
-                               onMouseClicked="#handleLogin"
+                               onMouseClicked="#handleEmployeeIdInquiry"
                                style="-fx-text-fill: #2563eb;
               -fx-cursor: hand;
               -fx-font-size: 14px;
