@@ -31,7 +31,7 @@
                     <HBox fx:id="mailRow1" alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 10; -fx-background-radius: 5; -fx-cursor: hand;">
                         <CheckBox fx:id="checkBox1" style="-fx-min-width: 20;" visible="false"/>
                         <VBox HBox.hgrow="ALWAYS">
-                            <Label fx:id="mailTitle1" text="" style="-fx-font-weight: bold; -fx-font-size: 14px;" onMouseClicked="#handlePrevPage"/>
+                            <Label fx:id="mailTitle1" text="" style="-fx-font-weight: bold; -fx-font-size: 14px;" onMouseClicked="#handleMailPreview1"/>
                         </VBox>
                         <Label text="" style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d;"/>
                         <Label text="" style="-fx-font-size: 12px;"/>
@@ -41,7 +41,7 @@
                     <HBox fx:id="mailRow2" alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 10; -fx-background-radius: 5; -fx-cursor: hand;">
                         <CheckBox fx:id="checkBox2" style="-fx-min-width: 20;" visible="false"/>
                         <VBox HBox.hgrow="ALWAYS">
-                            <Label fx:id="mailTitle2" text="" style="-fx-font-weight: bold; -fx-font-size: 14px;" onMouseClicked="#handlePrevPage"/>
+                            <Label fx:id="mailTitle2" text="" style="-fx-font-weight: bold; -fx-font-size: 14px;" onMouseClicked="#handleMailPreview2"/>
                         </VBox>
                         <Label text="" style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d;"/>
                     </HBox>

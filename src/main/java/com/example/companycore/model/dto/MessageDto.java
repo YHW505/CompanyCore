@@ -15,7 +15,7 @@ public class MessageDto {
     private String content;
     private String messageType; // MESSAGE, EMAIL, NOTICE
     private Boolean isRead;
-    private LocalDateTime createdAt;
+    private LocalDateTime sentAt;
     private LocalDateTime readAt;
     private String senderName;
     private String receiverName;
@@ -34,7 +34,7 @@ public class MessageDto {
 
     // 전체 생성자
     public MessageDto(Long messageId, Long senderId, String receiverEmail, String title, String content,
-                     String messageType, Boolean isRead, LocalDateTime createdAt, LocalDateTime readAt,
+                     String messageType, Boolean isRead, LocalDateTime sentAt, LocalDateTime readAt,
                      String senderName, String receiverName) {
         this.messageId = messageId;
         this.senderId = senderId;
@@ -43,7 +43,7 @@ public class MessageDto {
         this.content = content;
         this.messageType = messageType;
         this.isRead = isRead;
-        this.createdAt = createdAt;
+        this.sentAt = sentAt;
         this.readAt = readAt;
         this.senderName = senderName;
         this.receiverName = receiverName;
@@ -71,8 +71,8 @@ public class MessageDto {
     public Boolean getIsRead() { return isRead; }
     public void setIsRead(Boolean isRead) { this.isRead = isRead; }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getSentAt() { return sentAt; }
+    public void setSentAt(LocalDateTime sentAt) { this.sentAt = sentAt; }
 
     public LocalDateTime getReadAt() { return readAt; }
     public void setReadAt(LocalDateTime readAt) { this.readAt = readAt; }
@@ -93,7 +93,7 @@ public class MessageDto {
                 ", content='" + content + '\'' +
                 ", messageType='" + messageType + '\'' +
                 ", isRead=" + isRead +
-                ", createdAt=" + createdAt +
+                ", sentAt=" + sentAt +
                 ", readAt=" + readAt +
                 ", senderName='" + senderName + '\'' +
                 ", receiverName='" + receiverName + '\'' +
