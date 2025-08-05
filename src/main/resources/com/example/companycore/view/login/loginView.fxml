@@ -18,7 +18,7 @@
                     <children>
                         <ImageView fitHeight="50.0" fitWidth="50.0">
                             <image>
-                                <Image url="@../../../images/logo/logo_image.png"/>
+                                <Image url="@../../images/logo/logo_image.png"/>
                             </image>
                         </ImageView>
                         <Label text="CompanyCore"
