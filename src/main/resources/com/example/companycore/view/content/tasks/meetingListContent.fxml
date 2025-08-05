@@ -54,16 +54,27 @@
             </columns>
         </TableView>
 
-        <HBox spacing="10" alignment="CENTER">
+        <!-- 버튼 영역 -->
+        <HBox spacing="20" alignment="CENTER_RIGHT">
+            <Region HBox.hgrow="ALWAYS" />
             <Button fx:id="deleteBtn" mnemonicParsing="false" text="삭제" onAction="#handleDelete"
                     style="-fx-background-color: #444951; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" />
             <Button fx:id="registerBtn" mnemonicParsing="false" text="등록" onAction="#onRegisterClick"
                     style="-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" />
+            <Region prefWidth="20" />
         </HBox>
 
-        <Pagination fx:id="pagination" prefHeight="45.0" prefWidth="746.0"
-                    style="-fx-page-information-visible: false; -fx-arrows-visible: true;">
-        </Pagination>
+        <!-- 페이지네이션 -->
+        <HBox spacing="20" alignment="CENTER">
+            <Region HBox.hgrow="ALWAYS" />
+            <Pagination fx:id="pagination" prefHeight="45.0" prefWidth="600.0"
+                        style="-fx-page-information-visible: false; -fx-arrows-visible: true; -fx-background-color: transparent;">
+                <stylesheets>
+                    <URL value="@../common/pagination.css" />
+                </stylesheets>
+            </Pagination>
+            <Region HBox.hgrow="ALWAYS" />
+        </HBox>
 
         <Label style="-fx-font-size: 16px; -fx-text-fill: #7f8c8d;" />
 
