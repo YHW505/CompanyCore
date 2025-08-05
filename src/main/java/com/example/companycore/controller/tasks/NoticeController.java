@@ -10,6 +10,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.Region;
+
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.fxml.FXMLLoader;
@@ -52,7 +53,6 @@ public class NoticeController {
     @FXML private TextField searchTextField;
     @FXML private ComboBox<String> searchConditionComboBox;
     @FXML private Button searchButton;
-    @FXML private Button refreshButton;
     
     // 필터 관련 UI
     @FXML private ComboBox<String> departmentFilterComboBox;
@@ -109,16 +109,35 @@ public class NoticeController {
      */
     private void setupTable() {
         tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        tableView.setFixedCellSize(40);
+        tableView.setFixedCellSize(40); // 행 높이를 40px로 설정
+        
+        // 헤더 높이를 30px로 고정하고 테이블 높이 설정
+        tableView.setStyle("-fx-table-header-height: 30px; -fx-scroll-bar-policy: never; -fx-pref-height: 427px; -fx-max-height: 427px; -fx-min-height: 427px; -fx-table-header-background: #f0f0f0;");
+        
+        // 테이블이 정확히 10개 행을 표시할 수 있도록 설정 (40px * 10행 + 헤더 높이 27px)
+        tableView.setPrefHeight(427); // 40px * 10행 + 헤더 높이 27px = 427px
+        tableView.setMaxHeight(427);
+        
+        // 각 컬럼의 헤더 높이도 고정
+        titleColumn.setStyle("-fx-table-header-height: 30px;");
+        departmentColumn.setStyle("-fx-table-header-height: 30px;");
+        authorColumn.setStyle("-fx-table-header-height: 30px;");
+        dateColumn.setStyle("-fx-table-header-height: 30px;");
+        selectColumn.setStyle("-fx-table-header-height: 30px;");
         
         // 기본 컬럼 설정
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
+        titleColumn.setStyle("-fx-alignment: center-left;");
         departmentColumn.setCellValueFactory(new PropertyValueFactory<>("department"));
+        departmentColumn.setStyle("-fx-alignment: center;");
         authorColumn.setCellValueFactory(new PropertyValueFactory<>("author"));
+        authorColumn.setStyle("-fx-alignment: center;");
         dateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
+        dateColumn.setStyle("-fx-alignment: center;");
         
         // 선택 컬럼은 체크박스 셀로 표시
         selectColumn.setCellValueFactory(cellData -> cellData.getValue().selectedProperty());
+        selectColumn.setStyle("-fx-alignment: center;");
         selectColumn.setCellFactory(column -> new TableCell<>() {
             private final CheckBox checkBox = new CheckBox();
 
@@ -187,41 +206,64 @@ public class NoticeController {
     // ==================== 페이지네이션 관련 ====================
 
     /**
-     * 페이지네이션 설정 및 초기 페이지 구성
+     * 페이지네이션 설정
      */
     private void setupPagination() {
+        pagination.setPageCount(1);
+        pagination.setCurrentPageIndex(0);
+        pagination.setPageFactory(this::createPage);
         updatePagination();
     }
-    
+
     /**
      * 페이지네이션 업데이트
      */
     private void updatePagination() {
-        int totalPages = Math.max(1, (int) Math.ceil((double) filteredItems.size() / ROWS_PER_PAGE));
-        pagination.setPageCount(totalPages);
-        pagination.setCurrentPageIndex(0);
-        pagination.setPageFactory(this::createPage);
+        int totalPages = (int) Math.ceil((double) filteredItems.size() / ROWS_PER_PAGE);
+        pagination.setPageCount(Math.max(1, totalPages));
+        
+        // 현재 페이지가 총 페이지 수를 초과하면 마지막 페이지로 설정
+        if (pagination.getCurrentPageIndex() >= totalPages) {
+            pagination.setCurrentPageIndex(Math.max(0, totalPages - 1));
+        }
+        
+        // 첫 페이지 데이터 로드
+        if (filteredItems.size() > 0) {
+            int startIndex = 0;
+            int endIndex = Math.min(ROWS_PER_PAGE, filteredItems.size());
+            List<NoticeItem> pageData = filteredItems.subList(startIndex, endIndex);
+            tableView.setItems(FXCollections.observableArrayList(pageData));
+            System.out.println("페이지네이션 업데이트: " + pageData.size() + "개 항목 (전체: " + filteredItems.size() + "개)");
+        } else {
+            tableView.setItems(FXCollections.observableArrayList());
+            System.out.println("페이지네이션 업데이트: 빈 목록");
+        }
     }
 
     /**
-     * 해당 페이지 인덱스에 맞는 데이터를 테이블에 표시
-     *
-     * @param pageIndex 페이지 인덱스 (0부터 시작)
-     * @return 빈 Region (UI 구성 필요 없음)
+     * 페이지 생성
      */
     private Region createPage(int pageIndex) {
-        int fromIndex = pageIndex * ROWS_PER_PAGE;
-        int toIndex = Math.min(fromIndex + ROWS_PER_PAGE, filteredItems.size());
-
-        ObservableList<NoticeItem> currentPageData = FXCollections.observableArrayList();
-
-        if (fromIndex < toIndex) {
-            currentPageData.addAll(filteredItems.subList(fromIndex, toIndex));
+        // 페이지 인덱스가 유효한지 확인
+        int totalPages = (int) Math.ceil((double) filteredItems.size() / ROWS_PER_PAGE);
+        if (pageIndex >= totalPages) {
+            return new Region();
         }
-
-        tableView.setItems(currentPageData);
+        
+        // 현재 페이지의 데이터 계산
+        int startIndex = pageIndex * ROWS_PER_PAGE;
+        int endIndex = Math.min(startIndex + ROWS_PER_PAGE, filteredItems.size());
+        
+        // 현재 페이지의 데이터만 테이블에 설정
+        List<NoticeItem> pageData = filteredItems.subList(startIndex, endIndex);
+        tableView.setItems(FXCollections.observableArrayList(pageData));
+        
+        System.out.println("페이지 " + (pageIndex + 1) + " 로드: " + pageData.size() + "개 항목 (전체: " + filteredItems.size() + "개)");
+        
         return new Region();
     }
+
+
 
     // ==================== 데이터 로드 ====================
 
@@ -378,13 +420,7 @@ public class NoticeController {
         filterNotices();
     }
     
-    /**
-     * 새로고침 버튼 클릭 이벤트
-     */
-    @FXML
-    private void handleRefresh(ActionEvent event) {
-        loadNoticesFromDatabase();
-    }
+
     
     /**
      * 공지사항 상세 보기 다이얼로그 열기

@@ -35,116 +35,136 @@ public class NoticeApiClient extends BaseApiClient {
     }
 
     /**
-     * 모든 공지사항 조회
+     * 모든 공지사항 조회 (모든 페이지를 순회하여 가져옴)
      * @return 공지사항 목록
      */
     public List<NoticeItem> getAllNotices() {
+        List<NoticeItem> allNotices = new ArrayList<>();
+        int page = 0;
+        int totalPages = 1;
+        
         try {
-            HttpRequest request = createAuthenticatedRequestBuilder("/notices")
-                    .GET()
-                    .build();
+            do {
+                // 페이지별로 공지사항 조회
+                HttpRequest request = createAuthenticatedRequestBuilder("/notices?page=" + page + "&size=10")
+                        .GET()
+                        .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "모든 공지사항 조회");
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                logResponseInfo(response, "공지사항 조회 (페이지 " + page + ")");
 
-            if (response.statusCode() == 200) {
-                String responseBody = getSafeResponseBody(response);
-                if (responseBody != null && !responseBody.trim().isEmpty()) {
-                    // API 응답 구조에 맞게 파싱
-                    JsonNode rootNode = objectMapper.readTree(responseBody);
-                    if (rootNode.has("data")) {
-                        JsonNode dataNode = rootNode.get("data");
-                        List<NoticeItem> notices = new ArrayList<>();
+                if (response.statusCode() == 200) {
+                    String responseBody = getSafeResponseBody(response);
+                    if (responseBody != null && !responseBody.trim().isEmpty()) {
+                        // API 응답 구조에 맞게 파싱
+                        JsonNode rootNode = objectMapper.readTree(responseBody);
                         
-                        for (JsonNode noticeNode : dataNode) {
-                            NoticeItem notice = new NoticeItem();
-                            
-                            // API 응답 필드에 맞게 매핑
-                            if (noticeNode.has("id")) {
-                                notice.setNoticeId(noticeNode.get("id").asLong());
-                            }
-                            if (noticeNode.has("title")) {
-                                notice.setTitle(noticeNode.get("title").asText());
-                            }
-                            if (noticeNode.has("content")) {
-                                notice.setContent(noticeNode.get("content").asText());
-                            }
-                            if (noticeNode.has("authorDepartment")) {
-                                notice.setDepartment(noticeNode.get("authorDepartment").asText());
-                            }
-                            if (noticeNode.has("authorName")) {
-                                notice.setAuthor(noticeNode.get("authorName").asText());
-                            }
-                            if (noticeNode.has("createdAt")) {
-                                String createdAtStr = noticeNode.get("createdAt").asText();
-                                try {
-                                    LocalDateTime createdAt = LocalDateTime.parse(createdAtStr.replace("Z", ""));
-                                    notice.setCreatedAt(createdAt);
-                                    notice.setDate(createdAt.toLocalDate());
-                                } catch (Exception e) {
-                                    System.out.println("날짜 파싱 오류: " + createdAtStr);
-                                    notice.setDate(LocalDate.now());
-                                }
-                            }
-                            if (noticeNode.has("updatedAt")) {
-                                String updatedAtStr = noticeNode.get("updatedAt").asText();
-                                try {
-                                    LocalDateTime updatedAt = LocalDateTime.parse(updatedAtStr.replace("Z", ""));
-                                    notice.setUpdatedAt(updatedAt);
-                                } catch (Exception e) {
-                                    System.out.println("업데이트 날짜 파싱 오류: " + updatedAtStr);
-                                }
-                            }
-                            
-                            // 첨부파일 정보 매핑
-                            if (noticeNode.has("hasAttachments") && noticeNode.get("hasAttachments").asBoolean()) {
-                                notice.setHasAttachments(true);
-                                if (noticeNode.has("attachmentFilename")) {
-                                    notice.setAttachmentFilename(noticeNode.get("attachmentFilename").asText());
-                                }
-                                if (noticeNode.has("attachmentContentType")) {
-                                    notice.setAttachmentContentType(noticeNode.get("attachmentContentType").asText());
-                                }
-                                if (noticeNode.has("attachmentSize")) {
-                                    notice.setAttachmentSize(noticeNode.get("attachmentSize").asLong());
-                                }
-                                // 🆕 첨부파일 내용 파싱
-                                if (noticeNode.has("attachmentContent")) {
-                                    notice.setAttachmentContent(noticeNode.get("attachmentContent").asText());
-                                    System.out.println("첨부파일 내용 파싱: " + notice.getAttachmentFilename() + " (Base64 길이: " + notice.getAttachmentContent().length() + ")");
-                                } else {
-                                    System.out.println("⚠️ attachmentContent 필드가 없습니다. 서버 응답 필드들: " + noticeNode.fieldNames());
-                                }
-                            } else {
-                                notice.setHasAttachments(false);
-                                System.out.println("⚠️ hasAttachments가 false이거나 필드가 없습니다. 서버 응답 필드들: " + noticeNode.fieldNames());
-                            }
-                            
-                            // 기본값 설정
-                            notice.setSelected(false);
-                            notice.setImportant(false); // API에서 중요도 정보가 없으므로 기본값
-                            
-                            notices.add(notice);
+                        // 첫 페이지에서 전체 페이지 수 확인
+                        if (page == 0 && rootNode.has("totalPages")) {
+                            totalPages = rootNode.get("totalPages").asInt();
+                            System.out.println("전체 페이지 수: " + totalPages);
                         }
                         
-                        System.out.println("공지사항 파싱 완료: " + notices.size() + "개");
-                        return notices;
+                        if (rootNode.has("data")) {
+                            JsonNode dataNode = rootNode.get("data");
+                            List<NoticeItem> pageNotices = new ArrayList<>();
+                            
+                            for (JsonNode noticeNode : dataNode) {
+                                NoticeItem notice = new NoticeItem();
+                                
+                                // API 응답 필드에 맞게 매핑
+                                if (noticeNode.has("id")) {
+                                    notice.setNoticeId(noticeNode.get("id").asLong());
+                                }
+                                if (noticeNode.has("title")) {
+                                    notice.setTitle(noticeNode.get("title").asText());
+                                }
+                                if (noticeNode.has("content")) {
+                                    notice.setContent(noticeNode.get("content").asText());
+                                }
+                                if (noticeNode.has("authorDepartment")) {
+                                    notice.setDepartment(noticeNode.get("authorDepartment").asText());
+                                }
+                                if (noticeNode.has("authorName")) {
+                                    notice.setAuthor(noticeNode.get("authorName").asText());
+                                }
+                                if (noticeNode.has("createdAt")) {
+                                    String createdAtStr = noticeNode.get("createdAt").asText();
+                                    try {
+                                        LocalDateTime createdAt = LocalDateTime.parse(createdAtStr.replace("Z", ""));
+                                        notice.setCreatedAt(createdAt);
+                                        notice.setDate(createdAt.toLocalDate());
+                                    } catch (Exception e) {
+                                        System.out.println("날짜 파싱 오류: " + createdAtStr);
+                                        notice.setDate(LocalDate.now());
+                                    }
+                                }
+                                if (noticeNode.has("updatedAt")) {
+                                    String updatedAtStr = noticeNode.get("updatedAt").asText();
+                                    try {
+                                        LocalDateTime updatedAt = LocalDateTime.parse(updatedAtStr.replace("Z", ""));
+                                        notice.setUpdatedAt(updatedAt);
+                                    } catch (Exception e) {
+                                        System.out.println("업데이트 날짜 파싱 오류: " + updatedAtStr);
+                                    }
+                                }
+                                
+                                // 첨부파일 정보 매핑
+                                if (noticeNode.has("hasAttachments") && noticeNode.get("hasAttachments").asBoolean()) {
+                                    notice.setHasAttachments(true);
+                                    if (noticeNode.has("attachmentFilename")) {
+                                        notice.setAttachmentFilename(noticeNode.get("attachmentFilename").asText());
+                                    }
+                                    if (noticeNode.has("attachmentContentType")) {
+                                        notice.setAttachmentContentType(noticeNode.get("attachmentContentType").asText());
+                                    }
+                                    if (noticeNode.has("attachmentSize")) {
+                                        notice.setAttachmentSize(noticeNode.get("attachmentSize").asLong());
+                                    }
+                                    // 🆕 첨부파일 내용 파싱
+                                    if (noticeNode.has("attachmentContent")) {
+                                        notice.setAttachmentContent(noticeNode.get("attachmentContent").asText());
+                                        System.out.println("첨부파일 내용 파싱: " + notice.getAttachmentFilename() + " (Base64 길이: " + notice.getAttachmentContent().length() + ")");
+                                    } else {
+                                        System.out.println("⚠️ attachmentContent 필드가 없습니다. 서버 응답 필드들: " + noticeNode.fieldNames());
+                                    }
+                                } else {
+                                    notice.setHasAttachments(false);
+                                    System.out.println("⚠️ hasAttachments가 false이거나 필드가 없습니다. 서버 응답 필드들: " + noticeNode.fieldNames());
+                                }
+                                
+                                // 기본값 설정
+                                notice.setSelected(false);
+                                notice.setImportant(false); // API에서 중요도 정보가 없으므로 기본값
+                                
+                                pageNotices.add(notice);
+                            }
+                            
+                            allNotices.addAll(pageNotices);
+                            System.out.println("페이지 " + (page + 1) + " 파싱 완료: " + pageNotices.size() + "개");
+                        } else {
+                            System.out.println("응답에 'data' 필드가 없습니다: " + responseBody);
+                            break;
+                        }
                     } else {
-                        System.out.println("응답에 'data' 필드가 없습니다: " + responseBody);
-                        return new ArrayList<>();
+                        System.out.println("빈 응답을 받았습니다.");
+                        break;
                     }
                 } else {
-                    System.out.println("빈 응답을 받았습니다.");
-                    return new ArrayList<>();
+                    System.out.println("공지사항 조회 실패 - 상태 코드: " + response.statusCode());
+                    break;
                 }
-            } else {
-                System.out.println("공지사항 조회 실패 - 상태 코드: " + response.statusCode());
-                return new ArrayList<>();
-            }
+                
+                page++;
+            } while (page < totalPages);
+            
+            System.out.println("전체 공지사항 파싱 완료: " + allNotices.size() + "개");
+            return allNotices;
+            
         } catch (Exception e) {
             System.out.println("공지사항 조회 중 예외 발생: " + e.getMessage());
             e.printStackTrace();
-            return new ArrayList<>();
+            return allNotices; // 지금까지 가져온 데이터라도 반환
         }
     }
 
