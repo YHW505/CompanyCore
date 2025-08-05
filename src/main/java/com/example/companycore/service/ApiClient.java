@@ -2,6 +2,7 @@ package com.example.companycore.service;
 
 import com.example.companycore.model.dto.LoginRequest;
 import com.example.companycore.model.dto.LoginResponse;
+import com.example.companycore.model.dto.ApprovalDto;
 import com.example.companycore.model.entity.User;
 
 import java.util.List;
@@ -406,35 +407,35 @@ public class ApiClient {
     }
 
     // Approval API 관련 메서드들
-    public ApprovalApiClient.ApprovalDto createApproval(ApprovalApiClient.ApprovalDto approvalDto) {
+    public ApprovalDto createApproval(ApprovalDto approvalDto) {
         return approvalApiClient.createApproval(approvalDto);
     }
 
-    public ApprovalApiClient.ApprovalDto approveApproval(Long approvalId) {
+    public ApprovalDto approveApproval(Long approvalId) {
         return approvalApiClient.approveApproval(approvalId);
     }
 
-    public ApprovalApiClient.ApprovalDto rejectApproval(Long approvalId, String rejectionReason) {
+    public ApprovalDto rejectApproval(Long approvalId, String rejectionReason) {
         return approvalApiClient.rejectApproval(approvalId, rejectionReason);
     }
 
-    public ApprovalApiClient.ApprovalDto getApprovalById(Long approvalId) {
+    public ApprovalDto getApprovalById(Long approvalId) {
         return approvalApiClient.getApprovalById(approvalId);
     }
 
-    public java.util.List<ApprovalApiClient.ApprovalDto> getMyRequests() {
+    public java.util.List<ApprovalDto> getMyRequests() {
         return approvalApiClient.getMyRequests();
     }
 
-    public java.util.List<ApprovalApiClient.ApprovalDto> getMyApprovals() {
+    public java.util.List<ApprovalDto> getMyApprovals() {
         return approvalApiClient.getMyApprovals();
     }
 
-    public java.util.List<ApprovalApiClient.ApprovalDto> getMyPending() {
+    public java.util.List<ApprovalDto> getMyPending() {
         return approvalApiClient.getMyPending();
     }
 
-    public java.util.List<ApprovalApiClient.ApprovalDto> getAllApprovals() {
+    public java.util.List<ApprovalDto> getAllApprovals() {
         return approvalApiClient.getAllApprovals();
     }
 
@@ -442,7 +443,7 @@ public class ApiClient {
         return approvalApiClient.deleteApproval(approvalId);
     }
 
-    public java.util.List<ApprovalApiClient.ApprovalDto> searchApprovalsByTitle(String title) {
+    public java.util.List<ApprovalDto> searchApprovalsByTitle(String title) {
         return approvalApiClient.searchApprovalsByTitle(title);
     }
 

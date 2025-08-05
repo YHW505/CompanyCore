@@ -1,5 +1,7 @@
 package com.example.companycore.service;
 
+import com.example.companycore.model.dto.ApprovalDto;
+import com.example.companycore.model.dto.UserDto;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,8 +44,14 @@ public class ApprovalApiClient extends BaseApiClient {
     public ApprovalDto createApproval(ApprovalDto approvalDto) {
         try {
             String requestBody = objectMapper.writeValueAsString(approvalDto);
+            // Base64 인코딩된 첨부파일 내용은 로그에서 제외
+            String logRequestBody = requestBody;
+            if (approvalDto.getAttachmentContent() != null && !approvalDto.getAttachmentContent().isEmpty()) {
+                logRequestBody = requestBody.replace(approvalDto.getAttachmentContent(), "[Base64 첨부파일 내용 생략]");
+            }
+            System.out.println("🔍 결재 요청 생성 - 요청 본문: " + logRequestBody);
             
-            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/approvals");
+            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/approvals/create");
             HttpRequest request = builder
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                     .header("Content-Type", "application/json")
@@ -54,14 +62,21 @@ public class ApprovalApiClient extends BaseApiClient {
 
             if (response.statusCode() == 200 || response.statusCode() == 201) {
                 String responseBody = getSafeResponseBody(response);
+                System.out.println("✅ 결재 요청 생성 성공 - 응답 본문: " + responseBody);
                 if (responseBody != null && !responseBody.trim().isEmpty()) {
                     JsonNode jsonNode = objectMapper.readTree(responseBody);
                     if (jsonNode.has("data")) {
                         return objectMapper.treeToValue(jsonNode.get("data"), ApprovalDto.class);
                     }
                 }
+            } else {
+                System.err.println("❌ 결재 요청 생성 실패 - 상태 코드: " + response.statusCode());
+                String responseBody = getSafeResponseBody(response);
+                System.err.println("❌ 오류 응답: " + responseBody);
             }
         } catch (Exception e) {
+            System.err.println("❌ 결재 요청 생성 중 예외 발생: " + e.getMessage());
+            e.printStackTrace();
             handleChunkedTransferError(e, "결재 요청 생성");
         }
         return null;
@@ -139,6 +154,7 @@ public class ApprovalApiClient extends BaseApiClient {
      */
     public ApprovalDto getApprovalById(Long approvalId) {
         try {
+            System.out.println("🔍 결재 상세 조회 시도 - ID: " + approvalId);
             HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/approvals/" + approvalId);
             HttpRequest request = builder.GET().build();
 
@@ -147,14 +163,67 @@ public class ApprovalApiClient extends BaseApiClient {
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
-                if (responseBody != null && !responseBody.trim().isEmpty()) {
-                    JsonNode jsonNode = objectMapper.readTree(responseBody);
-                    if (jsonNode.has("data")) {
-                        return objectMapper.treeToValue(jsonNode.get("data"), ApprovalDto.class);
+                // Base64 인코딩된 첨부파일 내용은 로그에서 제외
+                String logResponseBody = responseBody;
+                if (responseBody != null && responseBody.contains("attachmentContent")) {
+                    try {
+                        JsonNode jsonNode = objectMapper.readTree(responseBody);
+                        if (jsonNode.has("attachmentContent") && jsonNode.get("attachmentContent").asText() != null) {
+                            String attachmentContent = jsonNode.get("attachmentContent").asText();
+                            if (!attachmentContent.isEmpty()) {
+                                logResponseBody = responseBody.replace(attachmentContent, "[Base64 첨부파일 내용 생략]");
+                            }
+                        }
+                    } catch (Exception e) {
+                        // JSON 파싱 실패 시 원본 사용
+                        logResponseBody = responseBody;
                     }
                 }
+                System.out.println("📋 상세 조회 응답 본문: " + logResponseBody);
+                
+                if (responseBody != null && !responseBody.trim().isEmpty()) {
+                    JsonNode jsonNode = objectMapper.readTree(responseBody);
+                    
+                    // 서버 응답 구조 확인
+                    System.out.println("📋 응답 구조 분석:");
+                    System.out.println("  - data 필드 존재: " + jsonNode.has("data"));
+                    System.out.println("  - 직접 객체 응답: " + (jsonNode.has("id") && jsonNode.has("title")));
+                    
+                    ApprovalDto result;
+                    if (jsonNode.has("data")) {
+                        // data 필드가 있는 경우
+                        result = objectMapper.treeToValue(jsonNode.get("data"), ApprovalDto.class);
+                    } else {
+                        // 직접 JSON 객체로 응답하는 경우
+                        result = objectMapper.treeToValue(jsonNode, ApprovalDto.class);
+                    }
+                    
+                    System.out.println("✅ 상세 조회 파싱 성공");
+                    System.out.println("📋 파싱된 데이터:");
+                    System.out.println("  - ID: " + result.getId());
+                    System.out.println("  - 제목: " + result.getTitle());
+                    System.out.println("  - 첨부파일명: " + result.getAttachmentFilename());
+                    System.out.println("  - 첨부파일 크기: " + result.getAttachmentSize());
+                    System.out.println("  - 첨부파일 내용 존재: " + (result.getAttachmentContent() != null));
+                    
+                    if (result.getAttachmentContent() == null) {
+                        System.err.println("⚠️ 서버 응답에 attachmentContent 필드가 없습니다");
+                        System.err.println("📋 서버 응답 필드들:");
+                        jsonNode.fieldNames().forEachRemaining(field -> {
+                            System.err.println("    - " + field + ": " + jsonNode.get(field));
+                        });
+                    }
+                    
+                    return result;
+                } else {
+                    System.err.println("❌ 응답 본문이 비어있습니다");
+                }
+            } else {
+                System.err.println("❌ 상세 조회 실패 - 상태 코드: " + response.statusCode());
             }
         } catch (Exception e) {
+            System.err.println("❌ 결재 상세 조회 중 오류: " + e.getMessage());
+            e.printStackTrace();
             handleChunkedTransferError(e, "결재 상세 조회");
         }
         return null;
@@ -166,7 +235,14 @@ public class ApprovalApiClient extends BaseApiClient {
      */
     public List<ApprovalDto> getMyRequests() {
         try {
-            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/approvals/my-requests");
+            // 현재 사용자 정보 가져오기
+            var currentUser = ApiClient.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                System.err.println("현재 사용자 정보를 가져올 수 없습니다.");
+                return null;
+            }
+
+            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/approvals/my-requests/" + currentUser.getUserId());
             HttpRequest request = builder.GET().build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -175,10 +251,8 @@ public class ApprovalApiClient extends BaseApiClient {
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
                 if (responseBody != null && !responseBody.trim().isEmpty()) {
-                    JsonNode jsonNode = objectMapper.readTree(responseBody);
-                    if (jsonNode.has("data")) {
-                        return objectMapper.convertValue(jsonNode.get("data"), new TypeReference<List<ApprovalDto>>() {});
-                    }
+                    // 서버에서 직접 배열로 응답하므로 data 필드 없이 직접 파싱
+                    return objectMapper.convertValue(objectMapper.readTree(responseBody), new TypeReference<List<ApprovalDto>>() {});
                 }
             }
         } catch (Exception e) {
@@ -193,7 +267,14 @@ public class ApprovalApiClient extends BaseApiClient {
      */
     public List<ApprovalDto> getMyApprovals() {
         try {
-            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/approvals/my-approvals");
+            // 현재 사용자 정보 가져오기
+            var currentUser = ApiClient.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                System.err.println("현재 사용자 정보를 가져올 수 없습니다.");
+                return null;
+            }
+
+            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/approvals/my-approvals/" + currentUser.getUserId());
             HttpRequest request = builder.GET().build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -202,10 +283,8 @@ public class ApprovalApiClient extends BaseApiClient {
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
                 if (responseBody != null && !responseBody.trim().isEmpty()) {
-                    JsonNode jsonNode = objectMapper.readTree(responseBody);
-                    if (jsonNode.has("data")) {
-                        return objectMapper.convertValue(jsonNode.get("data"), new TypeReference<List<ApprovalDto>>() {});
-                    }
+                    // 서버에서 직접 배열로 응답하므로 data 필드 없이 직접 파싱
+                    return objectMapper.convertValue(objectMapper.readTree(responseBody), new TypeReference<List<ApprovalDto>>() {});
                 }
             }
         } catch (Exception e) {
@@ -317,96 +396,4 @@ public class ApprovalApiClient extends BaseApiClient {
         return null;
     }
 
-    /**
-     * 결재 DTO 클래스
-     */
-    public static class ApprovalDto {
-        private Long id;
-        private String title;
-        private String content;
-        private UserDto requester;
-        private UserDto approver;
-        private LocalDateTime requestDate;
-        private String status; // PENDING, APPROVED, REJECTED
-        private String rejectionReason;
-        private LocalDateTime processedDate;
-        private String attachmentPath;
-        private LocalDateTime createdAt;
-        private LocalDateTime updatedAt;
-
-        // Constructors
-        public ApprovalDto() {}
-
-        public ApprovalDto(String title, String content, Long approverId, String attachmentPath) {
-            this.title = title;
-            this.content = content;
-            this.approver = new UserDto();
-            this.approver.setId(approverId);
-            this.attachmentPath = attachmentPath;
-        }
-
-        // Getters and Setters
-        public Long getId() { return id; }
-        public void setId(Long id) { this.id = id; }
-
-        public String getTitle() { return title; }
-        public void setTitle(String title) { this.title = title; }
-
-        public String getContent() { return content; }
-        public void setContent(String content) { this.content = content; }
-
-        public UserDto getRequester() { return requester; }
-        public void setRequester(UserDto requester) { this.requester = requester; }
-
-        public UserDto getApprover() { return approver; }
-        public void setApprover(UserDto approver) { this.approver = approver; }
-
-        public LocalDateTime getRequestDate() { return requestDate; }
-        public void setRequestDate(LocalDateTime requestDate) { this.requestDate = requestDate; }
-
-        public String getStatus() { return status; }
-        public void setStatus(String status) { this.status = status; }
-
-        public String getRejectionReason() { return rejectionReason; }
-        public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
-
-        public LocalDateTime getProcessedDate() { return processedDate; }
-        public void setProcessedDate(LocalDateTime processedDate) { this.processedDate = processedDate; }
-
-        public String getAttachmentPath() { return attachmentPath; }
-        public void setAttachmentPath(String attachmentPath) { this.attachmentPath = attachmentPath; }
-
-        public LocalDateTime getCreatedAt() { return createdAt; }
-        public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-        public LocalDateTime getUpdatedAt() { return updatedAt; }
-        public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-    }
-
-    /**
-     * 사용자 DTO 클래스
-     */
-    public static class UserDto {
-        private Long id;
-        private String name;
-        private String email;
-
-        // Constructors
-        public UserDto() {}
-
-        public UserDto(Long id, String name) {
-            this.id = id;
-            this.name = name;
-        }
-
-        // Getters and Setters
-        public Long getId() { return id; }
-        public void setId(Long id) { this.id = id; }
-
-        public String getName() { return name; }
-        public void setName(String name) { this.name = name; }
-
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-    }
 } 

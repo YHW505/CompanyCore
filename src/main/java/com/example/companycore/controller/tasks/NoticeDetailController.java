@@ -217,7 +217,7 @@ public class NoticeDetailController {
                 // Base64 디코딩
                 byte[] fileBytes = java.util.Base64.getDecoder().decode(noticeItem.getAttachmentContent());
                 Files.write(targetPath, fileBytes);
-                System.out.println("파일 다운로드 완료: " + filename + " (" + fileBytes.length + " bytes)");
+                System.out.println("파일 다운로드 완료: " + filename + " (" + fileBytes.length + " bytes) - Base64 내용 생략");
             } catch (Exception e) {
                 System.out.println("Base64 디코딩 오류: " + e.getMessage());
                 // 오류 발생 시 샘플 파일 생성

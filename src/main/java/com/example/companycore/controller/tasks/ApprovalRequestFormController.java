@@ -1,6 +1,10 @@
 package com.example.companycore.controller.tasks;
 
+import com.example.companycore.model.dto.ApprovalDto;
+import com.example.companycore.model.dto.ApprovalItem;
+import com.example.companycore.model.dto.UserDto;
 import com.example.companycore.service.ApiClient;
+import com.example.companycore.service.ApprovalApiClient;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -14,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
@@ -33,6 +38,7 @@ public class ApprovalRequestFormController {
     private String attachmentContent;
     private Long attachmentSize;
     private ApiClient apiClient;
+    private ApprovalRequestController parentController; // 부모 컨트롤러 참조
 
     @FXML
     public void initialize() {
@@ -45,6 +51,13 @@ public class ApprovalRequestFormController {
         // 첨부파일 관련 초기화
         attachmentList.setVisible(false);
         attachmentList.setManaged(false);
+    }
+
+    /**
+     * 부모 컨트롤러를 설정합니다.
+     */
+    public void setParentController(ApprovalRequestController parentController) {
+        this.parentController = parentController;
     }
     
     /**
@@ -130,22 +143,94 @@ public class ApprovalRequestFormController {
             return;
         }
 
-        // 부서는 현재 사용자 정보에서 자동으로 설정되므로 검증 불필요
-
         if (contentArea.getText() == null || contentArea.getText().trim().isEmpty()) {
             new Alert(Alert.AlertType.WARNING, "내용을 입력해주세요.").showAndWait();
             return;
         }
 
-        // 결재 요청 데이터 생성
         try {
-            // 여기서 서버로 데이터를 전송하는 로직을 구현할 수 있습니다
-            // 현재는 성공 메시지만 표시
-            new Alert(Alert.AlertType.INFORMATION, "결재 요청이 성공적으로 제출되었습니다.").showAndWait();
+            // 현재 사용자 정보 가져오기
+            var currentUser = apiClient.getCurrentUser();
+            String author = currentUser != null ? currentUser.getUsername() : "Unknown";
+            String department = currentUser != null ? currentUser.getDepartmentName() : "Unknown";
+
+            // 통합 DTO를 사용하여 생성
+            ApprovalItem approvalItem = new ApprovalItem();
+            approvalItem.setTitle(titleField.getText().trim());
+            approvalItem.setContent(contentArea.getText().trim());
+            approvalItem.setStatus("PENDING");
+            approvalItem.setRequestDate(LocalDateTime.now());
             
-            // 창 닫기
-            Stage stage = (Stage) submitBtn.getScene().getWindow();
-            stage.close();
+            // 요청자 ID와 승인자 ID 설정 (서버 요구사항)
+            if (currentUser != null) {
+                approvalItem.setRequesterId(currentUser.getUserId());
+                // 임시로 요청자와 동일한 사람을 승인자로 설정 (실제로는 다른 로직 필요)
+                approvalItem.setApproverId(currentUser.getUserId());
+                
+                // requester와 approver 객체 설정
+                UserDto requester = new UserDto();
+                requester.setUserId(currentUser.getUserId());
+                requester.setUsername(currentUser.getUsername());
+                requester.setDepartmentName(currentUser.getDepartmentName());
+                approvalItem.setRequester(requester);
+                
+                UserDto approver = new UserDto();
+                approver.setUserId(currentUser.getUserId());
+                approver.setUsername(currentUser.getUsername());
+                approver.setDepartmentName(currentUser.getDepartmentName());
+                approvalItem.setApprover(approver);
+            }
+            
+            // 첨부파일 정보 설정 (서버 응답 구조에 맞게 수정)
+            if (selectedFile != null) {
+                approvalItem.setAttachmentFilename(selectedFile.getName());
+                approvalItem.setAttachmentSize(selectedFile.length());
+                // Base64 인코딩된 첨부파일 내용 설정
+                approvalItem.setAttachmentContent(attachmentContent);
+                // Content-Type은 파일 확장자에 따라 설정
+                String fileName = selectedFile.getName().toLowerCase();
+                if (fileName.endsWith(".pdf")) {
+                    approvalItem.setAttachmentContentType("application/pdf");
+                } else if (fileName.endsWith(".doc") || fileName.endsWith(".docx")) {
+                    approvalItem.setAttachmentContentType("application/msword");
+                } else if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
+                    approvalItem.setAttachmentContentType("image/jpeg");
+                } else if (fileName.endsWith(".png")) {
+                    approvalItem.setAttachmentContentType("image/png");
+                } else {
+                    approvalItem.setAttachmentContentType("application/octet-stream");
+                }
+            }
+
+            // ApprovalDto로 변환하여 서버에 전송
+            ApprovalDto approvalDto = approvalItem.toApprovalDto();
+            System.out.println("🔍 결재 요청 제출 - ApprovalDto: " + approvalDto);
+            
+
+            try {
+                ApprovalDto createdApproval = apiClient.createApproval(approvalDto);
+                System.out.println("✅ 결재 요청 제출 성공: " + createdApproval);
+                new Alert(Alert.AlertType.INFORMATION, "결재 요청이 성공적으로 제출되었습니다.").showAndWait();
+
+                // 부모 컨트롤러가 있으면 목록 새로고침
+                if (parentController != null) {
+                    parentController.refreshApprovalRequests();
+                    System.out.println("🔄 결재 요청 목록 새로고침 완료");
+                }
+
+                // 창 닫기
+                Stage stage = (Stage) submitBtn.getScene().getWindow();
+                stage.close();
+            } catch(Exception e) {
+                System.err.println("❌ 결재 요청 제출 실패: " + e.getMessage());
+                e.printStackTrace();
+                new Alert(Alert.AlertType.ERROR, "결재 요청 제출에 실패했습니다: " + e.getMessage()).showAndWait();
+            }
+//            if (createdApproval != null) {
+//
+//            } else {
+//
+//            }
 
         } catch (Exception e) {
             e.printStackTrace();
