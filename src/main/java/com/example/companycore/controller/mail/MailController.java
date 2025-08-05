@@ -173,6 +173,8 @@ public class MailController {
 
             // 3. 해당 FXML의 컨트롤러를 가져옴
             DynamicMailPreviewController previewController = loader.getController();
+            previewController.setMailController(this);
+            previewController.setSelectedMessage(message);
 
             // 4. 현재 로그인한 사용자 정보 불러오기
             ApiClient apiClient = ApiClient.getInstance();
