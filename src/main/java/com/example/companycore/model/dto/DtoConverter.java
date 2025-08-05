@@ -271,7 +271,7 @@ public class DtoConverter {
         message.setTitle(messageDto.getTitle());
         message.setContent(messageDto.getContent());
         message.setIsRead(messageDto.getIsRead());
-        message.setSentAt(messageDto.getCreatedAt());
+        message.setSentAt(messageDto.getSentAt());
         
         return message;
     }
