@@ -8,6 +8,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.Pagination;
+import javafx.scene.layout.Region;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import com.example.companycore.model.dto.LeaveRequestDto;
@@ -26,23 +28,25 @@ public class LeaveApprovalController implements Initializable {
     @FXML private VBox tableData;
     @FXML private CheckBox selectAllCheckBox;
     @FXML private Button deleteButton;
-    @FXML private Button prevButton;
-    @FXML private Button nextButton;
-    @FXML private Button page1Button, page2Button, page3Button, page4Button, page5Button;
-    @FXML private Button page6Button, page7Button, page8Button, page9Button, page10Button, page20Button;
+    @FXML private Pagination pagination;
     
     private int currentPage = 1;
-    private int totalPages = 20;
+    private int totalPages = 1;
+    private int visibleRowCount = 10;
     private List<LeaveRequestDto> leaveRequests = new ArrayList<>();
+    private ObservableList<LeaveRequestDto> viewData = FXCollections.observableArrayList();
     private ObservableList<CheckBox> rowCheckBoxes = FXCollections.observableArrayList();
     private ApiClient apiClient = ApiClient.getInstance();
     private Map<Long, User> userCache = new HashMap<>(); // 사용자 정보 캐시
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        System.out.println("=== LeaveApprovalController 초기화 시작 ===");
         setupEventHandlers();
+        setupPagination();
         setupInitialData();
-        loadPage(1);
+        updatePagination();
+        System.out.println("=== LeaveApprovalController 초기화 완료 ===");
     }
     
     private void setupEventHandlers() {
@@ -56,26 +60,70 @@ public class LeaveApprovalController implements Initializable {
         
         // 삭제 버튼
         deleteButton.setOnAction(e -> handleDelete());
-        
-        // 페이지네이션 버튼들
-        setupPaginationHandlers();
     }
     
-    private void setupPaginationHandlers() {
-        prevButton.setOnAction(e -> loadPage(Math.max(1, currentPage - 1)));
-        nextButton.setOnAction(e -> loadPage(Math.min(totalPages, currentPage + 1)));
+    /**
+     * 페이지네이션 UI를 구성하고 설정
+     */
+    private void setupPagination() {
+        System.out.println("=== 페이지네이션 설정 시작 ===");
+        pagination.setVisible(true);
+        pagination.setPageCount(1);
+        pagination.setCurrentPageIndex(0);
+        pagination.setPageFactory(this::createPage);
+        System.out.println("페이지네이션 설정 완료 - visible: " + pagination.isVisible() + ", pageCount: " + pagination.getPageCount());
+        updatePagination();
+    }
+    
+    /**
+     * 페이지네이션 업데이트
+     */
+    private void updatePagination() {
+        int totalPages = (int) Math.ceil((double) viewData.size() / visibleRowCount);
+        pagination.setPageCount(Math.max(1, totalPages));
         
-        page1Button.setOnAction(e -> loadPage(1));
-        page2Button.setOnAction(e -> loadPage(2));
-        page3Button.setOnAction(e -> loadPage(3));
-        page4Button.setOnAction(e -> loadPage(4));
-        page5Button.setOnAction(e -> loadPage(5));
-        page6Button.setOnAction(e -> loadPage(6));
-        page7Button.setOnAction(e -> loadPage(7));
-        page8Button.setOnAction(e -> loadPage(8));
-        page9Button.setOnAction(e -> loadPage(9));
-        page10Button.setOnAction(e -> loadPage(10));
-        page20Button.setOnAction(e -> loadPage(20));
+        // 페이지네이션을 명시적으로 보이도록 설정
+        pagination.setVisible(true);
+        
+        // 현재 페이지가 총 페이지 수를 초과하면 마지막 페이지로 설정
+        if (pagination.getCurrentPageIndex() >= totalPages) {
+            pagination.setCurrentPageIndex(Math.max(0, totalPages - 1));
+        }
+        
+        // 첫 페이지 데이터 로드
+        if (viewData.size() > 0) {
+            int startIndex = 0;
+            int endIndex = Math.min(visibleRowCount, viewData.size());
+            List<LeaveRequestDto> pageData = viewData.subList(startIndex, endIndex);
+            loadPageData(pageData);
+            System.out.println("페이지네이션 업데이트: " + pageData.size() + "개 항목 (전체: " + viewData.size() + "개)");
+        } else {
+            tableData.getChildren().clear();
+            System.out.println("페이지네이션 업데이트: 빈 목록");
+        }
+    }
+    
+    /**
+     * 페이지 생성
+     */
+    private Region createPage(int pageIndex) {
+        // 페이지 인덱스가 유효한지 확인
+        int totalPages = (int) Math.ceil((double) viewData.size() / visibleRowCount);
+        if (pageIndex >= totalPages) {
+            return new Region();
+        }
+        
+        // 현재 페이지의 데이터 계산
+        int startIndex = pageIndex * visibleRowCount;
+        int endIndex = Math.min(startIndex + visibleRowCount, viewData.size());
+        
+        // 현재 페이지의 데이터만 테이블에 설정
+        List<LeaveRequestDto> pageData = viewData.subList(startIndex, endIndex);
+        loadPageData(pageData);
+        
+        System.out.println("페이지 " + (pageIndex + 1) + " 로드: " + pageData.size() + "개 항목 (전체: " + viewData.size() + "개)");
+        
+        return new Region();
     }
     
     private void setupInitialData() {
@@ -88,6 +136,9 @@ public class LeaveApprovalController implements Initializable {
             // 서버에서 모든 휴가 신청을 가져옴
             leaveRequests = apiClient.getAllLeaveRequests();
             System.out.println("서버에서 " + leaveRequests.size() + "개의 휴가 신청을 가져왔습니다.");
+            
+            viewData.clear();
+            viewData.addAll(leaveRequests);
             
             // 사용자 정보 캐시 로드
             loadUserCache();
@@ -170,39 +221,21 @@ public class LeaveApprovalController implements Initializable {
         }
     }
     
-    private void loadPage(int page) {
-        currentPage = page;
-        loadPageData();
-        updatePaginationUI();
-    }
-    
-    private void loadPageData() {
+    private void loadPageData(List<LeaveRequestDto> pageData) {
+        // 테이블 데이터를 클리어
         tableData.getChildren().clear();
         rowCheckBoxes.clear();
         
-        // 현재 페이지의 데이터만 표시 (실제로는 데이터베이스에서 가져옴)
-        List<LeaveRequestDto> pageData = getPageData(currentPage);
-        
-        for (int i = 0; i < 10; i++) {
-            if (i < pageData.size()) {
-                addTableRow(pageData.get(i), i);
-            } else {
-                addEmptyRow(i);
-            }
-        }
-    }
-    
-    private List<LeaveRequestDto> getPageData(int page) {
-        // 페이지네이션 로직 구현
-        int pageSize = 10;
-        int startIndex = (page - 1) * pageSize;
-        int endIndex = Math.min(startIndex + pageSize, leaveRequests.size());
-        
-        if (startIndex >= leaveRequests.size()) {
-            return new ArrayList<>();
+        // 현재 페이지의 데이터만 표시
+        for (int i = 0; i < pageData.size(); i++) {
+            addTableRow(pageData.get(i), i);
         }
         
-        return leaveRequests.subList(startIndex, endIndex);
+        // 빈 행으로 채우기 (10개 행 고정)
+        int remainingRows = visibleRowCount - pageData.size();
+        for (int i = 0; i < remainingRows; i++) {
+            addEmptyRow(pageData.size() + i);
+        }
     }
     
     /**
@@ -237,7 +270,7 @@ public class LeaveApprovalController implements Initializable {
         // 체크박스
         VBox checkBoxContainer = new VBox();
         checkBoxContainer.setAlignment(javafx.geometry.Pos.CENTER);
-        checkBoxContainer.setStyle("-fx-min-width: 50; -fx-pref-width: 50; -fx-min-height: 50; -fx-pref-height: 50;");
+        checkBoxContainer.setStyle("-fx-min-width: 65; -fx-pref-width: 65; -fx-min-height: 50; -fx-pref-height: 50;");
         CheckBox checkBox = new CheckBox();
         checkBoxContainer.getChildren().add(checkBox);
         rowCheckBoxes.add(checkBox);
@@ -340,12 +373,13 @@ public class LeaveApprovalController implements Initializable {
         row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         row.setStyle("-fx-padding: 10; -fx-border-color: #e9ecef; -fx-border-width: 0 0 1 0; -fx-min-height: 50; -fx-pref-height: 50;");
         
-        // 빈 체크박스
+        // 빈 체크박스 (숨김)
         VBox checkBoxContainer = new VBox();
         checkBoxContainer.setAlignment(javafx.geometry.Pos.CENTER);
         checkBoxContainer.setStyle("-fx-min-width: 50; -fx-pref-width: 50; -fx-min-height: 50; -fx-pref-height: 50;");
         CheckBox checkBox = new CheckBox();
         checkBox.setDisable(true);
+        checkBox.setVisible(false); // 체크박스 숨김
         checkBoxContainer.getChildren().add(checkBox);
         rowCheckBoxes.add(checkBox);
         
@@ -366,14 +400,14 @@ public class LeaveApprovalController implements Initializable {
     }
     
     private void handleApprove(int rowIndex) {
-        if (rowIndex < leaveRequests.size()) {
-            LeaveRequestDto request = leaveRequests.get(rowIndex);
+        if (rowIndex < viewData.size()) {
+            LeaveRequestDto request = viewData.get(rowIndex);
             try {
                 // 서버에 승인 요청
                 boolean success = apiClient.approveLeaveRequest(request.getLeaveId(), 1L); // TODO: 실제 승인자 ID 사용
                 if (success) {
                     request.setStatus("APPROVED");
-                    loadPageData(); // 테이블 새로고침
+                    updatePagination(); // 테이블 새로고침
                     showAlert("성공", "휴가 신청이 승인되었습니다.", Alert.AlertType.INFORMATION);
                 } else {
                     showAlert("오류", "휴가 신청 승인에 실패했습니다.", Alert.AlertType.ERROR);
@@ -386,14 +420,14 @@ public class LeaveApprovalController implements Initializable {
     }
     
     private void handleReject(int rowIndex) {
-        if (rowIndex < leaveRequests.size()) {
-            LeaveRequestDto request = leaveRequests.get(rowIndex);
+        if (rowIndex < viewData.size()) {
+            LeaveRequestDto request = viewData.get(rowIndex);
             try {
                 // 서버에 거부 요청
                 boolean success = apiClient.rejectLeaveRequest(request.getLeaveId(), 1L, "관리자에 의해 거부됨"); // TODO: 실제 거부자 ID 사용
                 if (success) {
                     request.setStatus("REJECTED");
-                    loadPageData(); // 테이블 새로고침
+                    updatePagination(); // 테이블 새로고침
                     showAlert("성공", "휴가 신청이 거부되었습니다.", Alert.AlertType.INFORMATION);
                 } else {
                     showAlert("오류", "휴가 신청 거부에 실패했습니다.", Alert.AlertType.ERROR);
@@ -430,33 +464,16 @@ public class LeaveApprovalController implements Initializable {
                 // 선택된 항목들 삭제 (실제로는 데이터베이스에서 삭제)
                 for (int i = selectedIndices.size() - 1; i >= 0; i--) {
                     int index = selectedIndices.get(i);
-                    if (index < leaveRequests.size()) {
-                        leaveRequests.remove(index);
+                    if (index < viewData.size()) {
+                        viewData.remove(index);
                     }
                 }
                 
-                loadPageData(); // 테이블 새로고침
+                updatePagination(); // 테이블 새로고침
                 selectAllCheckBox.setSelected(false);
                 showAlert("완료", "선택된 항목이 삭제되었습니다.", Alert.AlertType.INFORMATION);
             }
         });
-    }
-    
-    private void updatePaginationUI() {
-        // 모든 페이지 버튼 스타일 초기화
-        Button[] pageButtons = {page1Button, page2Button, page3Button, page4Button, page5Button,
-                               page6Button, page7Button, page8Button, page9Button, page10Button, page20Button};
-        
-        for (Button button : pageButtons) {
-            button.setStyle("-fx-background-color: #f8f9fa; -fx-text-fill: #495057; -fx-font-weight: bold; -fx-min-width: 35; -fx-padding: 8 12; -fx-cursor: hand; -fx-background-radius: 5;");
-        }
-        
-        // 현재 페이지 버튼 하이라이트
-        if (currentPage >= 1 && currentPage <= 10) {
-            pageButtons[currentPage - 1].setStyle("-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-weight: bold; -fx-min-width: 35; -fx-padding: 8 12; -fx-cursor: hand; -fx-background-radius: 5;");
-        } else if (currentPage == 20) {
-            page20Button.setStyle("-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-weight: bold; -fx-min-width: 35; -fx-padding: 8 12; -fx-cursor: hand; -fx-background-radius: 5;");
-        }
     }
     
     private void showAlert(String title, String content, Alert.AlertType alertType) {

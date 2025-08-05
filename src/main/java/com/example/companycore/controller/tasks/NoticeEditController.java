@@ -419,6 +419,7 @@ public class NoticeEditController {
             } else {
                 // 등록 모드
                 NoticeItem createdNotice = apiClient.createNotice(notice);
+                System.out.println(createdNotice);
                 if (createdNotice != null) {
                     success = true;
                     message = "공지사항이 성공적으로 등록되었습니다.";

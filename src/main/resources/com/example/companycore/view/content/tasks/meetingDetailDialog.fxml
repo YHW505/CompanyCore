@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.companycore.controller.tasks.MeetingDetailController"
+      spacing="15" style="-fx-padding: 20; -fx-min-width: 600; -fx-min-height: 500;">
+
+    <!-- 헤더 -->
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="회의 상세보기" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="closeBtn" text="닫기" 
+                style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;"
+                onAction="#handleClose"/>
+    </HBox>
+
+    <!-- 메인 콘텐츠 -->
+    <VBox spacing="15" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+
+        <!-- 제목 -->
+        <VBox spacing="5">
+            <Label text="제목" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+            <Label fx:id="titleLabel" style="-fx-background-color: #f8f9fa; -fx-background-radius: 6; -fx-padding: 10; -fx-border-color: #ddd; -fx-border-width: 1; -fx-border-radius: 6; -fx-text-fill: #2c3e50;"/>
+        </VBox>
+
+        <!-- 메타 정보 -->
+        <HBox spacing="20">
+            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                <Label text="부서" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <Label fx:id="departmentLabel" style="-fx-background-color: #f8f9fa; -fx-background-radius: 6; -fx-padding: 8; -fx-border-color: #ddd; -fx-border-width: 1; -fx-border-radius: 6; -fx-text-fill: #2c3e50;"/>
+            </VBox>
+            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                <Label text="작성자" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <Label fx:id="authorLabel" style="-fx-background-color: #f8f9fa; -fx-background-radius: 6; -fx-padding: 8; -fx-border-color: #ddd; -fx-border-width: 1; -fx-border-radius: 6; -fx-text-fill: #2c3e50;"/>
+            </VBox>
+            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                <Label text="일자" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <Label fx:id="dateLabel" style="-fx-background-color: #f8f9fa; -fx-background-radius: 6; -fx-padding: 8; -fx-border-color: #ddd; -fx-border-width: 1; -fx-border-radius: 6; -fx-text-fill: #2c3e50;"/>
+            </VBox>
+        </HBox>
+
+        <!-- 내용 -->
+        <VBox spacing="5">
+            <Label text="내용" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+            <ScrollPane fitToWidth="true" fitToHeight="true" style="-fx-background-color: transparent; -fx-border-color: #ddd; -fx-border-width: 1; -fx-border-radius: 6;">
+                <Text fx:id="contentText" style="-fx-padding: 10; -fx-text-fill: #2c3e50;" wrappingWidth="550"/>
+            </ScrollPane>
+        </VBox>
+
+        <!-- 첨부파일 -->
+        <VBox spacing="5" fx:id="attachmentContainer" visible="false">
+            <Label text="첨부파일" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+            <VBox fx:id="attachmentList" spacing="5" style="-fx-background-color: #f8f9fa; -fx-background-radius: 6; -fx-padding: 10; -fx-border-color: #ddd; -fx-border-width: 1; -fx-border-radius: 6;">
+                <!-- 첨부파일 항목들이 여기에 동적으로 추가됩니다 -->
+            </VBox>
+        </VBox>
+
+    </VBox>
+
+</VBox> 

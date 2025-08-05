@@ -1,134 +1,226 @@
 package com.example.companycore.controller.tasks;
 
+import com.example.companycore.model.dto.MeetingItem;
+import com.example.companycore.service.ApiClient;
+import com.example.companycore.service.MeetingApiClient;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.scene.layout.GridPane;
 
 import java.io.File;
 import java.time.LocalDate;
-import java.time.YearMonth;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 
+/**
+ * 회의 등록 폼 컨트롤러
+ */
 public class MeetingFormController {
 
-    @FXML private TextField titleField;
-    @FXML private GridPane calendarGrid;
-    @FXML private Button addFileBtn;
     @FXML private DatePicker datePicker;
+    @FXML private TextField titleField;
+    @FXML private VBox dropZone;
+    @FXML private Button addFileBtn;
+    @FXML private Button removeFileBtn;
     @FXML private ListView<String> attachmentList;
+    @FXML private Button submitBtn;
+    @FXML private Button cancelBtn;
 
-    private YearMonth currentMonth = YearMonth.now();
+    private ApiClient apiClient;
+    private File selectedFile;
+    private String attachmentContent;
+    private Long attachmentSize;
+    private MeetingListController parentController;
 
     @FXML
     public void initialize() {
-        drawCalendar(currentMonth);
+        apiClient = ApiClient.getInstance();
+        setupForm();
+        setupFileHandling();
+    }
+
+    /**
+     * 폼 초기 설정
+     */
+    private void setupForm() {
+        // 오늘 날짜로 초기화
+        datePicker.setValue(LocalDate.now());
+        
+        // 입력 검증
+        titleField.textProperty().addListener((observable, oldValue, newValue) -> {
+            validateFormForUI();
+        });
+        
+        datePicker.valueProperty().addListener((observable, oldValue, newValue) -> {
+            validateFormForUI();
+        });
+    }
+
+    /**
+     * 파일 처리 설정
+     */
+    private void setupFileHandling() {
         attachmentList.setVisible(false);
         attachmentList.setManaged(false);
+        removeFileBtn.setDisable(true);
     }
 
-    private void drawCalendar(YearMonth month) {
-        calendarGrid.getChildren().clear();
-
-        LocalDate firstDay = month.atDay(1);
-        int daysInMonth = month.lengthOfMonth();
-        int startDayOfWeek = firstDay.getDayOfWeek().getValue() % 7; // 일요일 = 0
-
-        int row = 1;
-        int col = startDayOfWeek;
-
-        for (int day = 1; day <= daysInMonth; day++) {
-            Label dayLabel = new Label(String.valueOf(day));
-            dayLabel.setStyle("-fx-padding: 8; -fx-border-color: #ccc; -fx-alignment: center;");
-            dayLabel.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-
-            calendarGrid.add(dayLabel, col, row);
-
-            col++;
-            if (col > 6) {
-                col = 0;
-                row++;
-            }
+    /**
+     * 폼 검증 (UI 업데이트용)
+     */
+    private void validateFormForUI() {
+        if (submitBtn == null) {
+            return; // submitBtn이 아직 초기화되지 않았으면 무시
         }
+        boolean isValid = !titleField.getText().trim().isEmpty() && 
+                         datePicker.getValue() != null;
+        submitBtn.setDisable(!isValid);
     }
 
+    /**
+     * 파일 추가 버튼 클릭
+     */
     @FXML
-    private void onSubmit() {
-        LocalDate date = datePicker.getValue();
-
-        if (date == null) {
-            showAlert("날짜를 선택하세요.");
-            return;
-        }
-
-        System.out.println("제목: " + titleField.getText());
-        System.out.println("선택된 날짜: " + date);
-        System.out.println("첨부파일: " + attachmentList.getItems());
-
-        closeWindow();
-    }
-
-    private void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("입력 오류");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-    @FXML
-    private void onCancel() {
-        closeWindow();
-    }
-
-    private void closeWindow() {
-        Stage stage = (Stage) titleField.getScene().getWindow();
-        if (stage != null) stage.close();
-    }
-
-    @FXML
-    public void onAddFile(ActionEvent actionEvent) {
+    private void onAddFile() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("첨부파일 선택");
-        List<File> selectedFiles = fileChooser.showOpenMultipleDialog(
-                addFileBtn.getScene().getWindow()
+        fileChooser.getExtensionFilters().addAll(
+            new FileChooser.ExtensionFilter("모든 파일", "*.*"),
+            new FileChooser.ExtensionFilter("문서 파일", "*.pdf", "*.doc", "*.docx"),
+            new FileChooser.ExtensionFilter("이미지 파일", "*.jpg", "*.jpeg", "*.png", "*.gif")
         );
 
-        if (selectedFiles != null) {
-            ObservableList<String> items = attachmentList.getItems();
-            for (File file : selectedFiles) {
-                items.add(file.getName());
+        Stage stage = (Stage) addFileBtn.getScene().getWindow();
+        selectedFile = fileChooser.showOpenDialog(stage);
+
+        if (selectedFile != null) {
+            try {
+                // 파일 내용을 Base64로 인코딩
+                byte[] fileContent = java.nio.file.Files.readAllBytes(selectedFile.toPath());
+                attachmentContent = Base64.getEncoder().encodeToString(fileContent);
+                attachmentSize = selectedFile.length();
+
+                // ListView에 파일명 표시
+                attachmentList.setVisible(true);
+                attachmentList.setManaged(true);
+                attachmentList.setItems(FXCollections.observableArrayList(selectedFile.getName()));
+
+                // 버튼 상태 변경
+                removeFileBtn.setDisable(false);
+                addFileBtn.setText("파일 변경");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                new Alert(Alert.AlertType.ERROR, "파일 읽기 실패: " + e.getMessage()).showAndWait();
             }
-            attachmentList.setVisible(true);
-            attachmentList.setManaged(true);
         }
     }
 
+    /**
+     * 파일 제거 버튼 클릭
+     */
     @FXML
-    public void onRemoveFile(ActionEvent actionEvent) {
-        // ListView에서 선택된 항목 가져오기
-        String selectedFile = attachmentList.getSelectionModel().getSelectedItem();
+    private void onRemoveFile() {
+        selectedFile = null;
+        attachmentContent = null;
+        attachmentSize = null;
 
-        if (selectedFile == null) {
-            // 선택된 항목 없으면 경고창 띄우기
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("삭제 오류");
-            alert.setHeaderText(null);
-            alert.setContentText("삭제할 파일을 선택하세요.");
-            alert.showAndWait();
+        // ListView 숨기기
+        attachmentList.setVisible(false);
+        attachmentList.setManaged(false);
+        attachmentList.getItems().clear();
+
+        // 버튼 상태 변경
+        removeFileBtn.setDisable(true);
+        addFileBtn.setText("파일 선택");
+    }
+
+    /**
+     * 등록 버튼 클릭
+     */
+    @FXML
+    private void onSubmit() {
+        if (!validateForm()) {
+            new Alert(Alert.AlertType.WARNING, "필수 항목을 모두 입력해주세요.").showAndWait();
             return;
         }
 
-        // 선택된 항목 삭제
-        attachmentList.getItems().remove(selectedFile);
+        try {
+            // 현재 사용자 정보 가져오기
+            var currentUser = apiClient.getCurrentUser();
+            String author = currentUser != null ? currentUser.getUsername() : "Unknown";
+            String department = currentUser != null ? currentUser.getDepartmentName() : "Unknown";
 
-        // 삭제 후 리스트가 비면 숨기기 (선택 사항)
-        if (attachmentList.getItems().isEmpty()) {
-            attachmentList.setVisible(false);
-            attachmentList.setManaged(false);
+            // MeetingDto 생성
+            MeetingApiClient.MeetingDto meetingDto = new MeetingApiClient.MeetingDto();
+            meetingDto.setTitle(titleField.getText().trim());
+            meetingDto.setDescription("회의 내용"); // 기본값 설정
+            meetingDto.setStartTime(LocalDateTime.now()); // 기본값 설정
+            meetingDto.setEndTime(LocalDateTime.now().plusHours(1)); // 기본값 설정
+            meetingDto.setLocation("회의실"); // 기본값 설정
+            meetingDto.setDepartment(department);
+            meetingDto.setAuthor(author);
+            
+            // 첨부파일 정보 설정 (MeetingDto에는 attachmentPath만 있음)
+            if (selectedFile != null) {
+                meetingDto.setAttachmentPath(selectedFile.getName());
+            }
+
+            // API 호출하여 회의 등록
+            MeetingApiClient.MeetingDto createdMeeting = apiClient.createMeeting(meetingDto);
+
+            if (createdMeeting != null) {
+                new Alert(Alert.AlertType.INFORMATION, "회의가 성공적으로 등록되었습니다.").showAndWait();
+                
+                // 부모 컨트롤러에 새로고침 요청
+                if (parentController != null) {
+                    parentController.loadMeetingsFromDatabase();
+                }
+                
+                closeDialog();
+            } else {
+                new Alert(Alert.AlertType.ERROR, "회의 등록에 실패했습니다.").showAndWait();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            new Alert(Alert.AlertType.ERROR, "회의 등록 중 오류가 발생했습니다: " + e.getMessage()).showAndWait();
         }
+    }
+
+    /**
+     * 취소 버튼 클릭
+     */
+    @FXML
+    private void onCancel() {
+        closeDialog();
+    }
+
+    /**
+     * 부모 컨트롤러 설정
+     */
+    public void setParentController(MeetingListController parentController) {
+        this.parentController = parentController;
+    }
+
+    /**
+     * 다이얼로그 닫기
+     */
+    private void closeDialog() {
+        Stage stage = (Stage) submitBtn.getScene().getWindow();
+        stage.close();
+    }
+
+    /**
+     * 폼 검증
+     */
+    private boolean validateForm() {
+        return !titleField.getText().trim().isEmpty() && 
+               datePicker.getValue() != null;
     }
 }
