@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Pagination?>
@@ -54,15 +55,16 @@
             </columns>
         </TableView>
 
-        <!-- 버튼 영역 -->
-        <HBox spacing="20" alignment="CENTER_RIGHT">
-            <Region HBox.hgrow="ALWAYS" />
-            <Button fx:id="deleteBtn" mnemonicParsing="false" text="삭제" onAction="#handleDelete"
-                    style="-fx-background-color: #444951; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" />
-            <Button fx:id="registerBtn" mnemonicParsing="false" text="등록" onAction="#onRegisterClick"
-                    style="-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" />
-            <Region prefWidth="20" />
-        </HBox>
+        <ButtonBar prefHeight="40.0" prefWidth="200.0">
+            <buttons>
+                <Button fx:id="deleteBtn" mnemonicParsing="false" text="삭제"
+                        style="-fx-background-color: #444951; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;"
+                        onAction="#handleDelete"/>
+                <Button fx:id="registerBtn" mnemonicParsing="false" text="등록"
+                        style="-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;"
+                        onAction="#onRegisterClick"/>
+            </buttons>
+        </ButtonBar>
 
         <!-- 페이지네이션 -->
         <HBox spacing="20" alignment="CENTER">
