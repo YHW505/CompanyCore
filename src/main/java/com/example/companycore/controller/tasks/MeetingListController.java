@@ -27,6 +27,8 @@ import com.example.companycore.model.dto.MeetingItem;
 import java.util.stream.Collectors;
 import com.example.companycore.service.MeetingApiClient;
 import com.example.companycore.service.ApiClient;
+import com.example.companycore.util.FileUtil;
+import java.io.File;
 
 /**
  * 회의 목록을 관리하는 컨트롤러 클래스
@@ -54,6 +56,7 @@ public class MeetingListController {
     @FXML private TableColumn<MeetingItem, String> colDepartment;  // 부서 컬럼
     @FXML private TableColumn<MeetingItem, String> colAuthor;      // 작성자 컬럼
     @FXML private TableColumn<MeetingItem, String> colDate;        // 날짜 컬럼
+    @FXML private TableColumn<MeetingItem, String> colAttachment;  // 첨부파일 컬럼
     @FXML private TableColumn<MeetingItem, String> colAction;      // 액션 컬럼 (상세보기 버튼)
 
     /** 검색 관련 UI 컴포넌트 */
@@ -122,6 +125,7 @@ public class MeetingListController {
         colDepartment.setStyle("-fx-table-header-height: 30px;");
         colAuthor.setStyle("-fx-table-header-height: 30px;");
         colDate.setStyle("-fx-table-header-height: 30px;");
+        colAttachment.setStyle("-fx-table-header-height: 30px;");
         colAction.setStyle("-fx-table-header-height: 30px;");
         
         // 고정된 행 수 설정
@@ -157,6 +161,52 @@ public class MeetingListController {
         colDate.setCellValueFactory(cd -> cd.getValue().dateProperty());
         colDate.setStyle("-fx-alignment: center;");
         
+        // 첨부파일 컬럼: 첨부파일 존재 여부 표시
+        colAttachment.setCellValueFactory(cellData -> {
+            MeetingItem item = cellData.getValue();
+            String attachmentFilename = item.getAttachmentFilename();
+            if (attachmentFilename != null && !attachmentFilename.isEmpty()) {
+                return new ReadOnlyStringWrapper("📎");
+            } else {
+                return new ReadOnlyStringWrapper("");
+            }
+        });
+        colAttachment.setStyle("-fx-alignment: center;");
+        
+        // 첨부파일 컬럼에 툴팁 추가
+        colAttachment.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null || item.isEmpty()) {
+                    setText(null);
+                    setTooltip(null);
+                    setOnMouseClicked(null);
+                } else {
+                    setText(item);
+                    MeetingItem meetingItem = getTableView().getItems().get(getIndex());
+                    if (meetingItem != null && meetingItem.getAttachmentFilename() != null) {
+                        String tooltipText = String.format("첨부파일: %s\n크기: %s\n타입: %s\n클릭하여 다운로드",
+                            meetingItem.getAttachmentFilename(),
+                            FileUtil.formatFileSize(meetingItem.getAttachmentSize() != null ? meetingItem.getAttachmentSize() : 0),
+                            meetingItem.getAttachmentContentType() != null ? meetingItem.getAttachmentContentType() : "알 수 없음"
+                        );
+                        setTooltip(new Tooltip(tooltipText));
+                        
+                        // 클릭 시 다운로드 기능 추가
+                        setOnMouseClicked(event -> {
+                            if (event.getClickCount() == 2) { // 더블클릭
+                                downloadAttachment(meetingItem);
+                            }
+                        });
+                        
+                        // 마우스 커서 변경
+                        setStyle("-fx-cursor: hand; -fx-alignment: center;");
+                    }
+                }
+            }
+        });
+        
         // 액션 컬럼은 빈 문자열로 설정 (버튼이 표시되므로)
         colAction.setCellValueFactory(cd -> new ReadOnlyStringWrapper(""));
         colAction.setStyle("-fx-alignment: center;");
@@ -167,15 +217,26 @@ public class MeetingListController {
      */
     private void setupActionColumn() {
         colAction.setCellFactory(col -> new TableCell<>() {
+            private final HBox buttonContainer = new HBox(5);
             private final Button detailBtn = new Button("상세보기");
+            private final Button editBtn = new Button("수정");
 
             {
                 // 버튼 스타일 지정 및 클릭 이벤트 핸들링
                 detailBtn.setStyle("-fx-background-color: #007bff; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 4 8;");
+                editBtn.setStyle("-fx-background-color: #28a745; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 4 8;");
+                
                 detailBtn.setOnAction(e -> {
                     MeetingItem item = getTableView().getItems().get(getIndex());
                     showMeetingDetail(item); // 상세보기 팝업 호출
                 });
+                
+                editBtn.setOnAction(e -> {
+                    MeetingItem item = getTableView().getItems().get(getIndex());
+                    showMeetingEdit(item); // 수정 팝업 호출
+                });
+                
+                buttonContainer.getChildren().addAll(detailBtn, editBtn);
             }
 
             @Override
@@ -184,7 +245,7 @@ public class MeetingListController {
                 if (empty) {
                     setGraphic(null); // 비어있으면 버튼 없음
                 } else {
-                    setGraphic(detailBtn); // 버튼 표시
+                    setGraphic(buttonContainer); // 버튼들 표시
                 }
             }
         });
@@ -233,8 +294,8 @@ public class MeetingListController {
      */
     private void loadDataFromServer() {
         try {
-            ApiClient apiClient = ApiClient.getInstance();
-            List<MeetingApiClient.MeetingDto> meetings = apiClient.getAllMeetings();
+            MeetingApiClient meetingApiClient = MeetingApiClient.getInstance();
+            List<MeetingApiClient.MeetingDto> meetings = meetingApiClient.getAllMeetings();
             
             fullData.clear();
             viewData.clear();
@@ -248,14 +309,25 @@ public class MeetingListController {
                     String date = meetingDto.getStartTime() != null ? 
                         meetingDto.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) : "Unknown";
                     
+                    // 첨부파일 정보 추출
+                    String attachmentContent = meetingDto.getAttachmentContent() != null ? meetingDto.getAttachmentContent() : "";
+                    String attachmentPath = meetingDto.getAttachmentPath() != null ? meetingDto.getAttachmentPath() : "";
+                    Long attachmentSize = meetingDto.getAttachmentSize();
+                    String attachmentFilename = meetingDto.getAttachmentFilename() != null ? meetingDto.getAttachmentFilename() : "";
+                    String attachmentContentType = meetingDto.getAttachmentContentType() != null ? meetingDto.getAttachmentContentType() : "";
+                    
                     MeetingItem item = new MeetingItem(
                         title,
                         department,
                         author,
                         date,
-                        "", // attachmentContent는 MeetingDto에 없음
-                        meetingDto.getAttachmentPath(), // attachmentPath 사용
-                        null // attachmentSize는 MeetingDto에 없음
+                        meetingDto.getDescription() != null ? meetingDto.getDescription() : "",
+                        meetingDto.getLocation() != null ? meetingDto.getLocation() : "",
+                        attachmentContent,
+                        attachmentPath,
+                        attachmentSize,
+                        attachmentFilename,
+                        attachmentContentType
                     );
                     fullData.add(item);
                 }
@@ -485,4 +557,76 @@ public class MeetingListController {
         }
     }
 
+    /**
+     * 회의 수정 팝업을 표시
+     * 
+     * @param item 수정할 회의 아이템
+     */
+    private void showMeetingEdit(MeetingItem item) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/content/tasks/meetingForm.fxml"));
+            Parent root = loader.load();
+
+            MeetingFormController formController = loader.getController();
+            formController.setParentController(this);
+            formController.setMeetingItem(item); // 수정할 회의 아이템 설정
+
+            Stage stage = new Stage();
+            stage.setTitle("회의록 수정");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("오류");
+            alert.setHeaderText(null);
+            alert.setContentText("수정 창을 열 수 없습니다: " + e.getMessage());
+            alert.showAndWait();
+        }
+    }
+
+    /**
+     * 첨부파일을 다운로드합니다.
+     * 
+     * @param item 다운로드할 회의 아이템
+     */
+    private void downloadAttachment(MeetingItem item) {
+        if (item.getAttachmentContent() == null || item.getAttachmentFilename() == null) {
+            new Alert(Alert.AlertType.WARNING, "다운로드할 첨부파일이 없습니다.").showAndWait();
+            return;
+        }
+
+        try {
+            javafx.stage.DirectoryChooser directoryChooser = new javafx.stage.DirectoryChooser();
+            directoryChooser.setTitle("다운로드 위치 선택");
+            File selectedDirectory = directoryChooser.showDialog(getStage());
+
+            if (selectedDirectory != null) {
+                String outputPath = selectedDirectory.getAbsolutePath() + File.separator + item.getAttachmentFilename();
+                FileUtil.saveBase64ToFile(item.getAttachmentContent(), outputPath);
+                
+                new Alert(Alert.AlertType.INFORMATION, 
+                    "첨부파일이 성공적으로 다운로드되었습니다.\n위치: " + outputPath).showAndWait();
+            }
+        } catch (Exception e) {
+            System.err.println("첨부파일 다운로드 실패: " + e.getMessage());
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("오류");
+            alert.setHeaderText(null);
+            alert.setContentText("첨부파일 다운로드 중 오류가 발생했습니다: " + e.getMessage());
+            alert.showAndWait();
+        }
+    }
+
+    /**
+     * 현재 Stage를 가져옵니다.
+     * 
+     * @return 현재 Stage
+     */
+    private Stage getStage() {
+        return (Stage) meetingTable.getScene().getWindow();
+    }
 }

@@ -1,6 +1,7 @@
 package com.example.companycore.controller.tasks;
 
 import com.example.companycore.model.dto.MeetingItem;
+import com.example.companycore.util.FileUtil;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
@@ -67,15 +68,16 @@ public class MeetingDetailController {
     private void processAttachments() {
         if (meetingItem == null) return;
 
-        String attachmentPath = meetingItem.getAttachmentPath();
+        String attachmentFilename = meetingItem.getAttachmentFilename();
+        String attachmentContentType = meetingItem.getAttachmentContentType();
         Long attachmentSize = meetingItem.getAttachmentSize();
 
-        if (attachmentPath != null && !attachmentPath.isEmpty()) {
+        if (attachmentFilename != null && !attachmentFilename.isEmpty()) {
             attachmentContainer.setVisible(true);
             attachmentList.getChildren().clear();
 
             // 첨부파일 항목 생성
-            HBox attachmentItem = createAttachmentItem(attachmentPath, attachmentSize);
+            HBox attachmentItem = createAttachmentItem(attachmentFilename, attachmentContentType, attachmentSize);
             attachmentList.getChildren().add(attachmentItem);
         } else {
             attachmentContainer.setVisible(false);
@@ -86,10 +88,11 @@ public class MeetingDetailController {
      * 첨부파일 항목을 생성합니다.
      * 
      * @param filename 파일명
+     * @param contentType 파일 타입
      * @param fileSize 파일 크기
      * @return 첨부파일 항목 HBox
      */
-    private HBox createAttachmentItem(String filename, Long fileSize) {
+    private HBox createAttachmentItem(String filename, String contentType, Long fileSize) {
         HBox item = new HBox(10);
         item.setStyle("-fx-padding: 8; -fx-background-color: white; -fx-background-radius: 4;");
 
@@ -102,11 +105,15 @@ public class MeetingDetailController {
         Label nameLabel = new Label(filename);
         nameLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #2c3e50;");
         
-        String sizeText = formatFileSize(fileSize != null ? fileSize : 0);
+        String sizeText = FileUtil.formatFileSize(fileSize != null ? fileSize : 0);
         Label sizeLabel = new Label(sizeText);
         sizeLabel.setStyle("-fx-text-fill: #6c757d; -fx-font-size: 12px;");
         
-        fileInfo.getChildren().addAll(nameLabel, sizeLabel);
+        String typeText = contentType != null ? contentType : "알 수 없는 타입";
+        Label typeLabel = new Label(typeText);
+        typeLabel.setStyle("-fx-text-fill: #6c757d; -fx-font-size: 12px;");
+        
+        fileInfo.getChildren().addAll(nameLabel, sizeLabel, typeLabel);
 
         // 다운로드 버튼
         Button downloadBtn = new Button("다운로드");
@@ -135,30 +142,16 @@ public class MeetingDetailController {
 
             if (selectedDirectory != null) {
                 String attachmentContent = meetingItem.getAttachmentContent();
-                byte[] fileContent = Base64.getDecoder().decode(attachmentContent);
                 
-                File outputFile = new File(selectedDirectory, filename);
-                Files.write(Paths.get(outputFile.getAbsolutePath()), fileContent);
+                // Base64 디코딩 및 파일 저장
+                FileUtil.saveBase64ToFile(attachmentContent, selectedDirectory.getAbsolutePath() + File.separator + filename);
                 
-                showAlert("성공", "파일이 성공적으로 다운로드되었습니다.\n위치: " + outputFile.getAbsolutePath());
+                showAlert("성공", "파일이 성공적으로 다운로드되었습니다.\n위치: " + selectedDirectory.getAbsolutePath() + File.separator + filename);
             }
         } catch (Exception e) {
             e.printStackTrace();
             showAlert("오류", "파일 다운로드 중 오류가 발생했습니다: " + e.getMessage());
         }
-    }
-
-    /**
-     * 파일 크기를 포맷팅합니다.
-     * 
-     * @param bytes 파일 크기 (바이트)
-     * @return 포맷팅된 파일 크기 문자열
-     */
-    private String formatFileSize(long bytes) {
-        if (bytes < 1024) return bytes + " B";
-        int exp = (int) (Math.log(bytes) / Math.log(1024));
-        String pre = "KMGTPE".charAt(exp-1) + "";
-        return String.format("%.1f %sB", bytes / Math.pow(1024, exp), pre);
     }
 
     /**
