@@ -128,7 +128,8 @@ public abstract class BaseApiClient {
         String responseBody = getSafeResponseBody(response);
         if (!responseBody.isEmpty()) {
             System.out.println(operation + " 응답 본문 길이: " + responseBody.length());
-            System.out.println(operation + " 응답 본문: '" + responseBody + "'");
+            // 응답 본문을 출력하는걸 없애서 pdf의 인코딩 문자가 로그에 안뜨게 함.
+//            System.out.println(operation + " 응답 본문: '" + responseBody + "'");
         } else {
             System.out.println(operation + " 응답 본문이 비어있습니다.");
         }
