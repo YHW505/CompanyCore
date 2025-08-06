@@ -20,9 +20,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
 /**
- * 회의 등록 폼 컨트롤러
+ * 회의 수정 폼 컨트롤러
  */
-public class MeetingFormController {
+public class MeetingEditController {
 
     @FXML private DatePicker datePicker;
     @FXML private TextField titleField;
@@ -45,7 +45,6 @@ public class MeetingFormController {
     private Long attachmentSize;
     private MeetingItem originalMeeting;
     private MeetingListController parentController;
-    private boolean isEditMode = false;
 
     @FXML
     public void initialize() {
@@ -59,9 +58,6 @@ public class MeetingFormController {
      * 폼 초기 설정
      */
     private void setupForm() {
-        // 오늘 날짜로 초기화
-        datePicker.setValue(LocalDate.now());
-        
         // 입력 검증
         titleField.textProperty().addListener((observable, oldValue, newValue) -> {
             validateFormForUI();
@@ -70,10 +66,6 @@ public class MeetingFormController {
         datePicker.valueProperty().addListener((observable, oldValue, newValue) -> {
             validateFormForUI();
         });
-
-        // 기본값 설정
-        locationField.setText("회의실");
-        descriptionField.setPromptText("회의 내용을 입력하세요...");
     }
 
     /**
@@ -97,6 +89,44 @@ public class MeetingFormController {
         boolean isValid = !titleField.getText().trim().isEmpty() && 
                          datePicker.getValue() != null;
         submitBtn.setDisable(!isValid);
+    }
+
+    /**
+     * 기존 회의 데이터로 폼을 초기화합니다.
+     * 
+     * @param meeting 수정할 회의 데이터
+     */
+    public void setMeetingData(MeetingItem meeting) {
+        this.originalMeeting = meeting;
+        
+        // 기존 데이터로 폼 초기화
+        titleField.setText(meeting.getTitle());
+        descriptionField.setText("회의 내용"); // 기본값
+        locationField.setText("회의실"); // 기본값
+        datePicker.setValue(LocalDate.parse(meeting.getDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        
+        // 기존 첨부파일이 있으면 표시
+        if (meeting.getAttachmentFilename() != null && !meeting.getAttachmentFilename().isEmpty()) {
+            attachmentFilename = meeting.getAttachmentFilename();
+            attachmentContentType = meeting.getAttachmentContentType();
+            attachmentSize = meeting.getAttachmentSize();
+            attachmentContent = meeting.getAttachmentContent();
+            
+            // UI 업데이트
+            attachmentList.setVisible(true);
+            attachmentList.setManaged(true);
+            attachmentList.setItems(FXCollections.observableArrayList(attachmentFilename));
+            
+            fileInfoLabel.setVisible(true);
+            fileInfoLabel.setManaged(true);
+            fileInfoLabel.setText(String.format("기존 파일: %s | 크기: %s | 타입: %s", 
+                attachmentFilename, 
+                FileUtil.formatFileSize(attachmentSize != null ? attachmentSize : 0), 
+                attachmentContentType != null ? attachmentContentType : "알 수 없음"));
+            
+            removeFileBtn.setDisable(false);
+            addFileBtn.setText("파일 변경");
+        }
     }
 
     /**
@@ -143,7 +173,7 @@ public class MeetingFormController {
                 // 파일 정보 표시
                 fileInfoLabel.setVisible(true);
                 fileInfoLabel.setManaged(true);
-                fileInfoLabel.setText(String.format("파일명: %s | 크기: %s | 타입: %s", 
+                fileInfoLabel.setText(String.format("새 파일: %s | 크기: %s | 타입: %s", 
                     attachmentFilename, 
                     FileUtil.formatFileSize(attachmentSize), 
                     attachmentContentType));
@@ -188,7 +218,7 @@ public class MeetingFormController {
     }
 
     /**
-     * 등록 버튼 클릭
+     * 수정 버튼 클릭
      */
     @FXML
     private void onSubmit() {
@@ -198,72 +228,41 @@ public class MeetingFormController {
         }
 
         try {
-            // 현재 사용자 정보 가져오기
-            var currentUser = apiClient.getCurrentUser();
-            String author = currentUser != null ? currentUser.getUsername() : "Unknown";
-            String department = currentUser != null ? currentUser.getDepartmentName() : "Unknown";
-
             // 회의 시간 설정
             LocalDate selectedDate = datePicker.getValue();
             LocalDateTime startTime = selectedDate.atStartOfDay().plusHours(9); // 오전 9시
             LocalDateTime endTime = startTime.plusHours(1); // 1시간 회의
 
-            MeetingApiClient.MeetingDto createdMeeting;
+            MeetingApiClient.MeetingDto updatedMeeting;
 
-            if (isEditMode) {
-                // 수정 모드
+            if (selectedFile != null) {
+                // 새 첨부파일이 있는 경우 - 기존 메서드 사용
                 MeetingApiClient.MeetingDto meetingDto = new MeetingApiClient.MeetingDto();
                 meetingDto.setTitle(titleField.getText().trim());
                 meetingDto.setDescription(descriptionField.getText().trim());
                 meetingDto.setStartTime(startTime);
                 meetingDto.setEndTime(endTime);
                 meetingDto.setLocation(locationField.getText().trim());
-                meetingDto.setDepartment(department);
-                meetingDto.setAuthor(author);
-                
-                if (selectedFile != null) {
-                    meetingDto.setAttachmentFilename(attachmentFilename);
-                    meetingDto.setAttachmentContentType(attachmentContentType);
-                    meetingDto.setAttachmentSize(attachmentSize);
-                    meetingDto.setAttachmentContent(attachmentContent);
-                }
+                meetingDto.setAttachmentFilename(attachmentFilename);
+                meetingDto.setAttachmentContentType(attachmentContentType);
+                meetingDto.setAttachmentSize(attachmentSize);
+                meetingDto.setAttachmentContent(attachmentContent);
 
-                createdMeeting = meetingApiClient.updateMeeting(1L, meetingDto); // 임시로 1L 사용
+                updatedMeeting = meetingApiClient.updateMeeting(1L, meetingDto); // 임시로 1L 사용
             } else {
-                // 생성 모드
-                if (selectedFile != null) {
-                    // 첨부파일이 있는 경우 새로운 메서드 사용
-                    createdMeeting = meetingApiClient.createMeetingWithAttachment(
-                        titleField.getText().trim(),
-                        descriptionField.getText().trim(),
-                        startTime,
-                        endTime,
-                        locationField.getText().trim(),
-                        department,
-                        author,
-                        attachmentFilename,
-                        attachmentContentType,
-                        attachmentSize,
-                        attachmentContent
-                    );
-                } else {
-                    // 첨부파일이 없는 경우 기존 메서드 사용
-                    MeetingApiClient.MeetingDto meetingDto = new MeetingApiClient.MeetingDto();
-                    meetingDto.setTitle(titleField.getText().trim());
-                    meetingDto.setDescription(descriptionField.getText().trim());
-                    meetingDto.setStartTime(startTime);
-                    meetingDto.setEndTime(endTime);
-                    meetingDto.setLocation(locationField.getText().trim());
-                    meetingDto.setDepartment(department);
-                    meetingDto.setAuthor(author);
+                // 첨부파일이 없는 경우 기존 메서드 사용
+                MeetingApiClient.MeetingDto meetingDto = new MeetingApiClient.MeetingDto();
+                meetingDto.setTitle(titleField.getText().trim());
+                meetingDto.setDescription(descriptionField.getText().trim());
+                meetingDto.setStartTime(startTime);
+                meetingDto.setEndTime(endTime);
+                meetingDto.setLocation(locationField.getText().trim());
 
-                    createdMeeting = meetingApiClient.createMeeting(meetingDto);
-                }
+                updatedMeeting = meetingApiClient.updateMeeting(1L, meetingDto); // 임시로 1L 사용
             }
 
-            if (createdMeeting != null) {
-                String message = isEditMode ? "회의가 성공적으로 수정되었습니다." : "회의가 성공적으로 등록되었습니다.";
-                new Alert(Alert.AlertType.INFORMATION, message).showAndWait();
+            if (updatedMeeting != null) {
+                new Alert(Alert.AlertType.INFORMATION, "회의가 성공적으로 수정되었습니다.").showAndWait();
                 
                 // 부모 컨트롤러에 새로고침 요청
                 if (parentController != null) {
@@ -272,14 +271,12 @@ public class MeetingFormController {
                 
                 closeDialog();
             } else {
-                String message = isEditMode ? "회의 수정에 실패했습니다." : "회의 등록에 실패했습니다.";
-                new Alert(Alert.AlertType.ERROR, message).showAndWait();
+                new Alert(Alert.AlertType.ERROR, "회의 수정에 실패했습니다.").showAndWait();
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            String message = isEditMode ? "회의 수정 중 오류가 발생했습니다: " : "회의 등록 중 오류가 발생했습니다: ";
-            new Alert(Alert.AlertType.ERROR, message + e.getMessage()).showAndWait();
+            new Alert(Alert.AlertType.ERROR, "회의 수정 중 오류가 발생했습니다: " + e.getMessage()).showAndWait();
         }
     }
 
@@ -299,48 +296,6 @@ public class MeetingFormController {
     }
 
     /**
-     * 기존 회의 데이터로 폼을 초기화합니다.
-     * 
-     * @param item 수정할 회의 아이템
-     */
-    public void setMeetingItem(MeetingItem item) {
-        this.originalMeeting = item;
-        this.isEditMode = true;
-        
-        // 기존 데이터로 폼 초기화
-        titleField.setText(item.getTitle());
-        descriptionField.setText(item.getDescription() != null ? item.getDescription() : "");
-        locationField.setText(item.getLocation() != null ? item.getLocation() : "");
-        datePicker.setValue(LocalDate.parse(item.getDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-        
-        // 제출 버튼 텍스트 변경
-        submitBtn.setText("수정");
-        
-        // 기존 첨부파일이 있으면 표시
-        if (item.getAttachmentFilename() != null && !item.getAttachmentFilename().isEmpty()) {
-            attachmentFilename = item.getAttachmentFilename();
-            attachmentContentType = item.getAttachmentContentType();
-            attachmentSize = item.getAttachmentSize();
-            attachmentContent = item.getAttachmentContent();
-            
-            // UI 업데이트
-            attachmentList.setVisible(true);
-            attachmentList.setManaged(true);
-            attachmentList.setItems(FXCollections.observableArrayList(attachmentFilename));
-            
-            fileInfoLabel.setVisible(true);
-            fileInfoLabel.setManaged(true);
-            fileInfoLabel.setText(String.format("기존 파일: %s | 크기: %s | 타입: %s", 
-                attachmentFilename, 
-                FileUtil.formatFileSize(attachmentSize != null ? attachmentSize : 0), 
-                attachmentContentType != null ? attachmentContentType : "알 수 없음"));
-            
-            removeFileBtn.setDisable(false);
-            addFileBtn.setText("파일 변경");
-        }
-    }
-
-    /**
      * 다이얼로그 닫기
      */
     private void closeDialog() {
@@ -355,4 +310,4 @@ public class MeetingFormController {
         return !titleField.getText().trim().isEmpty() && 
                datePicker.getValue() != null;
     }
-}
+} 

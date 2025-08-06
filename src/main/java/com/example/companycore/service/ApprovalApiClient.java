@@ -262,6 +262,44 @@ public class ApprovalApiClient extends BaseApiClient {
     }
 
     /**
+     * 내가 요청한 결재 목록 조회 (페이지네이션 포함)
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @param sortBy 정렬 필드
+     * @param sortDir 정렬 방향 (asc/desc)
+     * @return 페이지네이션된 결재 목록
+     */
+    public Map<String, Object> getMyRequestsWithPagination(int page, int size, String sortBy, String sortDir) {
+        try {
+            // 현재 사용자 정보 가져오기
+            var currentUser = ApiClient.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                System.err.println("현재 사용자 정보를 가져올 수 없습니다.");
+                return null;
+            }
+
+            String endpoint = String.format("/approvals/my-requests/%d/page?page=%d&size=%d&sortBy=%s&sortDir=%s",
+                    currentUser.getUserId(), page, size, sortBy, sortDir);
+
+            HttpRequest.Builder builder = createAuthenticatedRequestBuilder(endpoint);
+            HttpRequest request = builder.GET().build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            logResponseInfo(response, "내가 요청한 결재 목록 조회 (페이지네이션)");
+
+            if (response.statusCode() == 200) {
+                String responseBody = getSafeResponseBody(response);
+                if (responseBody != null && !responseBody.trim().isEmpty()) {
+                    return objectMapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {});
+                }
+            }
+        } catch (Exception e) {
+            handleChunkedTransferError(e, "내가 요청한 결재 목록 조회 (페이지네이션)");
+        }
+        return null;
+    }
+
+    /**
      * 내가 결재해야 할 목록 조회
      * @return 내가 결재해야 할 목록
      */
@@ -294,6 +332,44 @@ public class ApprovalApiClient extends BaseApiClient {
     }
 
     /**
+     * 내가 결재해야 할 목록 조회 (페이지네이션 포함)
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @param sortBy 정렬 필드
+     * @param sortDir 정렬 방향 (asc/desc)
+     * @return 페이지네이션된 결재 목록
+     */
+    public Map<String, Object> getMyApprovalsWithPagination(int page, int size, String sortBy, String sortDir) {
+        try {
+            // 현재 사용자 정보 가져오기
+            var currentUser = ApiClient.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                System.err.println("현재 사용자 정보를 가져올 수 없습니다.");
+                return null;
+            }
+
+            String endpoint = String.format("/approvals/my-approvals/%d/page?page=%d&size=%d&sortBy=%s&sortDir=%s",
+                    currentUser.getUserId(), page, size, sortBy, sortDir);
+
+            HttpRequest.Builder builder = createAuthenticatedRequestBuilder(endpoint);
+            HttpRequest request = builder.GET().build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            logResponseInfo(response, "내가 결재해야 할 목록 조회 (페이지네이션)");
+
+            if (response.statusCode() == 200) {
+                String responseBody = getSafeResponseBody(response);
+                if (responseBody != null && !responseBody.trim().isEmpty()) {
+                    return objectMapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {});
+                }
+            }
+        } catch (Exception e) {
+            handleChunkedTransferError(e, "내가 결재해야 할 목록 조회 (페이지네이션)");
+        }
+        return null;
+    }
+
+    /**
      * 내가 결재해야 할 대기중인 목록 조회
      * @return 내가 결재해야 할 대기중인 목록
      */
@@ -316,6 +392,44 @@ public class ApprovalApiClient extends BaseApiClient {
             }
         } catch (Exception e) {
             handleChunkedTransferError(e, "내가 결재해야 할 대기중인 목록 조회");
+        }
+        return null;
+    }
+
+    /**
+     * 내가 결재해야 할 대기중인 목록 조회 (페이지네이션 포함)
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @param sortBy 정렬 필드
+     * @param sortDir 정렬 방향 (asc/desc)
+     * @return 페이지네이션된 대기중인 결재 목록
+     */
+    public Map<String, Object> getMyPendingWithPagination(int page, int size, String sortBy, String sortDir) {
+        try {
+            // 현재 사용자 정보 가져오기
+            var currentUser = ApiClient.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                System.err.println("현재 사용자 정보를 가져올 수 없습니다.");
+                return null;
+            }
+
+            String endpoint = String.format("/approvals/pending/%d/page?page=%d&size=%d&sortBy=%s&sortDir=%s",
+                    currentUser.getUserId(), page, size, sortBy, sortDir);
+
+            HttpRequest.Builder builder = createAuthenticatedRequestBuilder(endpoint);
+            HttpRequest request = builder.GET().build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            logResponseInfo(response, "내가 결재해야 할 대기중인 목록 조회 (페이지네이션)");
+
+            if (response.statusCode() == 200) {
+                String responseBody = getSafeResponseBody(response);
+                if (responseBody != null && !responseBody.trim().isEmpty()) {
+                    return objectMapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {});
+                }
+            }
+        } catch (Exception e) {
+            handleChunkedTransferError(e, "내가 결재해야 할 대기중인 목록 조회 (페이지네이션)");
         }
         return null;
     }

@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 /**
@@ -220,27 +219,12 @@ public class NoticeDetailController {
                 System.out.println("파일 다운로드 완료: " + filename + " (" + fileBytes.length + " bytes) - Base64 내용 생략");
             } catch (Exception e) {
                 System.out.println("Base64 디코딩 오류: " + e.getMessage());
-                // 오류 발생 시 샘플 파일 생성
-                createSampleFile(directory, filename);
+                throw new IOException("파일 내용을 디코딩할 수 없습니다: " + e.getMessage());
             }
         } else {
-            // 파일 내용이 없는 경우 샘플 파일 생성
-            createSampleFile(directory, filename);
+            // 파일 내용이 없는 경우
+            throw new IOException("첨부파일 내용이 없습니다.");
         }
-    }
-    
-    /**
-     * 샘플 파일 생성 (실제 구현에서는 서버에서 파일을 다운로드)
-     */
-    private void createSampleFile(File directory, String filename) throws IOException {
-        Path targetPath = Paths.get(directory.getAbsolutePath(), filename);
-        
-        // 샘플 파일 내용 생성
-        String content = "이것은 " + filename + " 파일의 샘플 내용입니다.\n";
-        content += "실제 구현에서는 서버에서 파일을 다운로드합니다.\n";
-        content += "생성 시간: " + java.time.LocalDateTime.now();
-        
-        Files.write(targetPath, content.getBytes());
     }
 
     /**

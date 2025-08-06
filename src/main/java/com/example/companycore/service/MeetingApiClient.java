@@ -110,6 +110,58 @@ public class MeetingApiClient extends BaseApiClient {
     }
 
     /**
+     * 첨부파일이 포함된 회의 생성
+     * @param title 회의 제목
+     * @param description 회의 설명
+     * @param startTime 시작 시간
+     * @param endTime 종료 시간
+     * @param location 회의실
+     * @param department 부서
+     * @param author 작성자
+     * @param attachmentFilename 첨부파일명
+     * @param attachmentContentType 첨부파일 타입
+     * @param attachmentSize 첨부파일 크기
+     * @param attachmentContent Base64 인코딩된 첨부파일 내용
+     * @return 생성된 회의 정보
+     */
+    public MeetingDto createMeetingWithAttachment(String title, String description, LocalDateTime startTime, 
+                                                LocalDateTime endTime, String location, String department, 
+                                                String author, String attachmentFilename, String attachmentContentType, 
+                                                Long attachmentSize, String attachmentContent) {
+        try {
+            MeetingDto meetingDto = new MeetingDto();
+            meetingDto.setTitle(title);
+            meetingDto.setDescription(description);
+            meetingDto.setStartTime(startTime);
+            meetingDto.setEndTime(endTime);
+            meetingDto.setLocation(location);
+            meetingDto.setDepartment(department);
+            meetingDto.setAuthor(author);
+            meetingDto.setAttachmentFilename(attachmentFilename);
+            meetingDto.setAttachmentContentType(attachmentContentType);
+            meetingDto.setAttachmentSize(attachmentSize);
+            meetingDto.setAttachmentContent(attachmentContent);
+
+            String json = objectMapper.writeValueAsString(meetingDto);
+            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/meetings");
+            HttpRequest request = builder.POST(HttpRequest.BodyPublishers.ofString(json)).build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            logResponseInfo(response, "첨부파일이 포함된 회의 생성");
+
+            if (response.statusCode() == 201 || response.statusCode() == 200) {
+                String responseBody = getSafeResponseBody(response);
+                if (responseBody != null && !responseBody.trim().isEmpty()) {
+                    return objectMapper.readValue(responseBody, MeetingDto.class);
+                }
+            }
+        } catch (Exception e) {
+            handleChunkedTransferError(e, "첨부파일이 포함된 회의 생성");
+        }
+        return null;
+    }
+
+    /**
      * 회의 수정
      * @param meetingId 회의 ID
      * @param meetingDto 수정할 회의 정보
@@ -207,6 +259,64 @@ public class MeetingApiClient extends BaseApiClient {
     }
 
     /**
+     * 회의록 첨부파일 다운로드
+     * @param meetingId 회의 ID
+     * @return 첨부파일 정보 (Base64 인코딩된 내용 포함)
+     */
+    public MeetingDto downloadMeetingAttachment(Long meetingId) {
+        try {
+            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/meetings/" + meetingId + "/attachment");
+            HttpRequest request = builder.GET().build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            logResponseInfo(response, "회의록 첨부파일 다운로드");
+
+            if (response.statusCode() == 200) {
+                String responseBody = getSafeResponseBody(response);
+                if (responseBody != null && !responseBody.trim().isEmpty()) {
+                    return objectMapper.readValue(responseBody, MeetingDto.class);
+                }
+            }
+        } catch (Exception e) {
+            handleChunkedTransferError(e, "회의록 첨부파일 다운로드");
+        }
+        return null;
+    }
+
+    /**
+     * 회의록 첨부파일 업로드
+     * @param meetingId 회의 ID
+     * @param attachmentFilename 첨부파일명
+     * @param attachmentContentType 첨부파일 타입
+     * @param attachmentSize 첨부파일 크기
+     * @param attachmentContent Base64 인코딩된 첨부파일 내용
+     * @return 업로드 성공 여부
+     */
+    public boolean uploadMeetingAttachment(Long meetingId, String attachmentFilename, 
+                                        String attachmentContentType, Long attachmentSize, 
+                                        String attachmentContent) {
+        try {
+            MeetingDto meetingDto = new MeetingDto();
+            meetingDto.setAttachmentFilename(attachmentFilename);
+            meetingDto.setAttachmentContentType(attachmentContentType);
+            meetingDto.setAttachmentSize(attachmentSize);
+            meetingDto.setAttachmentContent(attachmentContent);
+
+            String json = objectMapper.writeValueAsString(meetingDto);
+            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/meetings/" + meetingId + "/attachment");
+            HttpRequest request = builder.PUT(HttpRequest.BodyPublishers.ofString(json)).build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            logResponseInfo(response, "회의록 첨부파일 업로드");
+
+            return response.statusCode() == 200 || response.statusCode() == 201;
+        } catch (Exception e) {
+            handleChunkedTransferError(e, "회의록 첨부파일 업로드");
+        }
+        return false;
+    }
+
+    /**
      * 회의 DTO 클래스
      */
     public static class MeetingDto {
@@ -219,6 +329,11 @@ public class MeetingApiClient extends BaseApiClient {
         private String department;
         private String author;
         private String attachmentPath;
+        // 첨부파일 필드를 서버와 일치시킴
+        private String attachmentFilename;
+        private String attachmentContentType;
+        private Long attachmentSize;
+        private String attachmentContent; // Base64 인코딩된 첨부파일 내용
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
 
@@ -267,6 +382,19 @@ public class MeetingApiClient extends BaseApiClient {
         public String getAttachmentPath() { return attachmentPath; }
         public void setAttachmentPath(String attachmentPath) { this.attachmentPath = attachmentPath; }
 
+        // 첨부파일 관련 getter/setter 수정
+        public String getAttachmentFilename() { return attachmentFilename; }
+        public void setAttachmentFilename(String attachmentFilename) { this.attachmentFilename = attachmentFilename; }
+
+        public String getAttachmentContentType() { return attachmentContentType; }
+        public void setAttachmentContentType(String attachmentContentType) { this.attachmentContentType = attachmentContentType; }
+
+        public Long getAttachmentSize() { return attachmentSize; }
+        public void setAttachmentSize(Long attachmentSize) { this.attachmentSize = attachmentSize; }
+
+        public String getAttachmentContent() { return attachmentContent; }
+        public void setAttachmentContent(String attachmentContent) { this.attachmentContent = attachmentContent; }
+
         public LocalDateTime getCreatedAt() { return createdAt; }
         public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
@@ -285,6 +413,9 @@ public class MeetingApiClient extends BaseApiClient {
                     ", department='" + department + '\'' +
                     ", author='" + author + '\'' +
                     ", attachmentPath='" + attachmentPath + '\'' +
+                    ", attachmentFilename='" + attachmentFilename + '\'' +
+                    ", attachmentContentType='" + attachmentContentType + '\'' +
+                    ", attachmentSize=" + attachmentSize +
                     ", createdAt=" + createdAt +
                     ", updatedAt=" + updatedAt +
                     '}';
