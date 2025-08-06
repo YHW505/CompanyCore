@@ -5,6 +5,7 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Pagination?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
@@ -44,17 +45,24 @@
             <ComboBox fx:id="departmentFilterComboBox" prefWidth="150" />
         </HBox>
 
-        <TableView fx:id="meetingTable" prefHeight="427.0" prefWidth="739.0" maxHeight="427">
-            <columns>
-                <TableColumn fx:id="colNumber" prefWidth="80.0" text="순서" />
-                <TableColumn fx:id="colTitle" prefWidth="200.0" text="회의 제목" />
-                <TableColumn fx:id="colDepartment" prefWidth="120.0" text="부서" />
-                <TableColumn fx:id="colAuthor" prefWidth="120.0" text="작성자" />
-                <TableColumn fx:id="colDate" prefWidth="140.0" text="일자" />
-                <TableColumn fx:id="colAttachment" prefWidth="60.0" text="첨부" />
-                <TableColumn fx:id="colAction" prefWidth="80.0" text="관리" />
-            </columns>
-        </TableView>
+        <!-- 테이블과 로딩 인디케이터를 겹치게 배치 -->
+        <VBox alignment="CENTER" prefHeight="427.0" prefWidth="739.0">
+            <TableView fx:id="meetingTable" prefHeight="427.0" prefWidth="739.0" maxHeight="427">
+                <columns>
+                    <TableColumn fx:id="colNumber" prefWidth="80.0" text="순서" />
+                    <TableColumn fx:id="colTitle" prefWidth="200.0" text="회의 제목" />
+                    <TableColumn fx:id="colDepartment" prefWidth="120.0" text="부서" />
+                    <TableColumn fx:id="colAuthor" prefWidth="120.0" text="작성자" />
+                    <TableColumn fx:id="colDate" prefWidth="140.0" text="일자" />
+                    <TableColumn fx:id="colAttachment" prefWidth="60.0" text="첨부" />
+                    <TableColumn fx:id="colAction" prefWidth="80.0" text="관리" />
+                </columns>
+            </TableView>
+            
+            <!-- 로딩 인디케이터 -->
+            <ProgressIndicator fx:id="loadingIndicator" visible="false" managed="false" 
+                             style="-fx-progress-color: #5932EA;" />
+        </VBox>
 
         <ButtonBar prefHeight="40.0" prefWidth="200.0">
             <buttons>

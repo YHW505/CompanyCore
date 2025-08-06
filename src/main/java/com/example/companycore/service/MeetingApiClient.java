@@ -44,7 +44,7 @@ public class MeetingApiClient extends BaseApiClient {
             HttpRequest request = builder.GET().build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "모든 회의 조회");
+            // logResponseInfo(response, "모든 회의 조회");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -69,7 +69,7 @@ public class MeetingApiClient extends BaseApiClient {
             HttpRequest request = builder.GET().build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "특정 회의 조회");
+            // logResponseInfo(response, "특정 회의 조회");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -95,7 +95,7 @@ public class MeetingApiClient extends BaseApiClient {
             HttpRequest request = builder.POST(HttpRequest.BodyPublishers.ofString(json)).build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "회의 생성");
+            // logResponseInfo(response, "회의 생성");
 
             if (response.statusCode() == 201 || response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -147,7 +147,7 @@ public class MeetingApiClient extends BaseApiClient {
             HttpRequest request = builder.POST(HttpRequest.BodyPublishers.ofString(json)).build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "첨부파일이 포함된 회의 생성");
+            // logResponseInfo(response, "첨부파일이 포함된 회의 생성");
 
             if (response.statusCode() == 201 || response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -170,19 +170,33 @@ public class MeetingApiClient extends BaseApiClient {
     public MeetingDto updateMeeting(Long meetingId, MeetingDto meetingDto) {
         try {
             String json = objectMapper.writeValueAsString(meetingDto);
+            System.out.println("📡 회의 수정 요청 - ID: " + meetingId);
+            System.out.println("📄 첨부파일 정보: " + (meetingDto.getAttachmentFilename() != null ? meetingDto.getAttachmentFilename() : "null"));
+            
             HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/meetings/" + meetingId);
             HttpRequest request = builder.PUT(HttpRequest.BodyPublishers.ofString(json)).build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "회의 수정");
+            // logResponseInfo(response, "회의 수정");
 
+            System.out.println("📡 회의 수정 응답 - 상태 코드: " + response.statusCode());
+            
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
                 if (responseBody != null && !responseBody.trim().isEmpty()) {
-                    return objectMapper.readValue(responseBody, MeetingDto.class);
+                    MeetingDto result = objectMapper.readValue(responseBody, MeetingDto.class);
+                    System.out.println("✅ 회의 수정 성공");
+                    return result;
+                }
+            } else {
+                System.err.println("❌ 회의 수정 실패 - 상태 코드: " + response.statusCode());
+                String errorBody = getSafeResponseBody(response);
+                if (errorBody != null) {
+                    System.err.println("❌ 오류 응답: " + errorBody);
                 }
             }
         } catch (Exception e) {
+            System.err.println("❌ 회의 수정 중 예외 발생: " + e.getMessage());
             handleChunkedTransferError(e, "회의 수정");
         }
         return null;
@@ -199,7 +213,7 @@ public class MeetingApiClient extends BaseApiClient {
             HttpRequest request = builder.DELETE().build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "회의 삭제");
+            // logResponseInfo(response, "회의 삭제");
 
             return response.statusCode() == 200 || response.statusCode() == 204;
         } catch (Exception e) {
@@ -219,7 +233,7 @@ public class MeetingApiClient extends BaseApiClient {
             HttpRequest request = builder.GET().build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "날짜별 회의 조회");
+            // logResponseInfo(response, "날짜별 회의 조회");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -244,7 +258,7 @@ public class MeetingApiClient extends BaseApiClient {
             HttpRequest request = builder.GET().build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "회의실별 회의 조회");
+            // logResponseInfo(response, "회의실별 회의 조회");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -269,7 +283,7 @@ public class MeetingApiClient extends BaseApiClient {
             HttpRequest request = builder.GET().build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "회의록 첨부파일 다운로드");
+            // logResponseInfo(response, "회의록 첨부파일 다운로드");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -307,7 +321,7 @@ public class MeetingApiClient extends BaseApiClient {
             HttpRequest request = builder.PUT(HttpRequest.BodyPublishers.ofString(json)).build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "회의록 첨부파일 업로드");
+            // logResponseInfo(response, "회의록 첨부파일 업로드");
 
             return response.statusCode() == 200 || response.statusCode() == 201;
         } catch (Exception e) {

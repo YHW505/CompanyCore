@@ -124,8 +124,8 @@ public class MeetingFormController {
                     return;
                 }
 
-                if (!FileUtil.isFileSizeValid(selectedFile, 10)) {
-                    new Alert(Alert.AlertType.ERROR, "파일 크기가 너무 큽니다. (최대 10MB)").showAndWait();
+                if (!FileUtil.isFileSizeValid(selectedFile, 50)) {
+                    new Alert(Alert.AlertType.ERROR, "파일 크기가 너무 큽니다. (최대 50MB)").showAndWait();
                     return;
                 }
 

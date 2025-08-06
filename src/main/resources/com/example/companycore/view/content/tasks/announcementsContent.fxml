@@ -8,6 +8,7 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.Region?>
@@ -44,15 +45,22 @@
             <ComboBox fx:id="departmentFilterComboBox" prefWidth="150" />
         </HBox>
 
-        <TableView fx:id="tableView" prefHeight="427.0" prefWidth="739.0" maxHeight="427">
-            <columns>
-                <TableColumn fx:id="titleColumn" prefWidth="249.0" text="제목" />
-                <TableColumn fx:id="departmentColumn" prefWidth="105.0" text="부서" />
-                <TableColumn fx:id="authorColumn" prefWidth="134.0" text="작성자" />
-                <TableColumn fx:id="dateColumn" prefWidth="160.0" text="일자" />
-                <TableColumn fx:id="selectColumn" prefWidth="90.0" text="선택" />
-            </columns>
-        </TableView>
+        <!-- 테이블과 로딩 인디케이터를 겹치게 배치 -->
+        <VBox alignment="CENTER" prefHeight="427.0" prefWidth="739.0">
+            <TableView fx:id="tableView" prefHeight="427.0" prefWidth="739.0" maxHeight="427">
+                <columns>
+                    <TableColumn fx:id="titleColumn" prefWidth="249.0" text="제목" />
+                    <TableColumn fx:id="departmentColumn" prefWidth="105.0" text="부서" />
+                    <TableColumn fx:id="authorColumn" prefWidth="134.0" text="작성자" />
+                    <TableColumn fx:id="dateColumn" prefWidth="160.0" text="일자" />
+                    <TableColumn fx:id="selectColumn" prefWidth="90.0" text="선택" />
+                </columns>
+            </TableView>
+            
+            <!-- 로딩 인디케이터 -->
+            <ProgressIndicator fx:id="loadingIndicator" visible="false" managed="false" 
+                             style="-fx-progress-color: #5932EA;" />
+        </VBox>
 
         <ButtonBar prefHeight="40.0" prefWidth="200.0">
             <buttons>

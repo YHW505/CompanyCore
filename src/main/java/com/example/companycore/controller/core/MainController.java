@@ -29,10 +29,6 @@ public class MainController {
         });
     }
     
-
-    
-
-    
     private void setupNavigationHandlers() {
         // 네비게이션 메뉴 클릭 이벤트 처리
         // 실제 구현에서는 각 메뉴에 대한 이벤트 핸들러를 추가
@@ -45,10 +41,6 @@ public class MainController {
             contentArea.getScene().setUserData(this);
         }
     }
-    
-
-    
-
     
     // 사이드바에서 호출되는 콘텐츠 로드 메서드들
     public void loadHomeContent() {
@@ -79,8 +71,6 @@ public class MainController {
     public void loadHRManagementContent() {
         loadContent("hrManagement");
     }
-    
-
     
     public void loadContent(String contentType) {
         // 콘텐츠 타입에 따라 메인 영역의 콘텐츠를 변경
@@ -187,7 +177,5 @@ public class MainController {
             }
         }
     }
-    
-
 }
 
