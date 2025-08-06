@@ -118,8 +118,13 @@ public class NoticeItem {
     public StringProperty attachmentContentTypeProperty() { return attachmentContentType; }
     
     public Long getAttachmentSize() { return attachmentSize.get(); }
-    public void setAttachmentSize(Long value) { attachmentSize.set(value); }
-    public LongProperty attachmentSizeProperty() { return attachmentSize; }
+    public void setAttachmentSize(Long value) {
+        if (value != null) {
+            attachmentSize.set(value);
+        } else {
+            attachmentSize.set(0L); // 기본값 또는 원하는 처리
+        }
+    }    public LongProperty attachmentSizeProperty() { return attachmentSize; }
     
     public boolean hasAttachments() { return hasAttachments.get(); }
     public void setHasAttachments(boolean value) { hasAttachments.set(value); }

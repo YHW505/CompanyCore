@@ -1,80 +1,67 @@
 package com.example.companycore.controller.mail;
 
+import com.example.companycore.model.dto.MessageDto;
+import com.example.companycore.model.entity.User;
+import com.example.companycore.service.ApiClient;
+import com.example.companycore.service.MessageApiClient;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.StackPane;
 
-/**
- * DynamicMailPreviewController는 메일 미리보기 UI에 데이터를 동적으로 표시하는 컨트롤러입니다.
- * 받은 메일, 보낸 메일, 전체 메일 등의 정보를 상황에 맞게 구분하여 UI 구성 요소(Label, TextArea)에 출력합니다.
- */
+import javafx.scene.control.ButtonType;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
+
 public class DynamicMailPreviewController {
 
-    // =======================
-    // FXML UI 요소 정의
-    // =======================
+    @FXML private Label senderLabel;
+    @FXML private Label recipientLabel;
+    @FXML private Label subjectLabel;
+    @FXML private Label dateLabel;
+    @FXML private Label attachmentLabel;
+    @FXML private TextArea contentTextArea;
+    @FXML private Button forwardButton;
 
-    /** 발신자 라벨 */
-    @FXML
-    private Label senderLabel;
+    private ApiClient apiClient = ApiClient.getInstance();
 
-    /** 수신자 라벨 */
-    @FXML
-    private Label recipientLabel;
+    private MessageDto selectedMessage;
+    private MailController mailController;
 
-    /** 메일 제목 라벨 */
-    @FXML
-    private Label subjectLabel;
+    public void setMailController(MailController mailController) {
+        this.mailController = mailController;
+    }
 
-    /** 날짜 라벨 */
-    @FXML
-    private Label dateLabel;
+    public void setSelectedMessage(MessageDto selectedMessage) {
+        this.selectedMessage = selectedMessage;
+    }
 
-    /** 첨부파일 라벨 */
-    @FXML
-    private Label attachmentLabel;
-
-    /** 메일 본문 표시 영역 */
-    @FXML
-    private TextArea contentTextArea;
-
-    // ==================================================
-    // 공통 메일 표시 메서드 (메일의 일반 정보 전달용)
-    // ==================================================
-
-    /**
-     * 모든 유형의 메일에 대해 공통적으로 UI에 데이터를 표시합니다.
-     *
-     * @param sender     발신자 이름
-     * @param recipient  수신자 이름
-     * @param subject    메일 제목
-     * @param content    메일 본문
-     * @param date       발신/수신 날짜
-     * @param attachment 첨부파일 이름
-     */
-    public void setMailData(String sender, String recipient, String subject, String content, String date, String attachment) {
+    public void setMailData(String sender, String recipient, String subject, String content, LocalDateTime date, String attachment) {
         senderLabel.setText(sender != null ? sender : "발신자");
         recipientLabel.setText(recipient != null ? recipient : "수신자");
         subjectLabel.setText(subject != null ? subject : "제목 없음");
         contentTextArea.setText(content != null ? content : "");
-        dateLabel.setText(date != null ? date : "");
-        attachmentLabel.setText((attachment != null && !attachment.isEmpty()) ? attachment : "첨부파일 없음");
+
+        if (date != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            dateLabel.setText(date.format(formatter));
+        } else {
+            dateLabel.setText("날짜 없음");
+        }
+
+        if (attachment != null && !attachment.isEmpty()) {
+            attachmentLabel.setText(attachment);
+        } else {
+            attachmentLabel.setText("첨부파일 없음");
+        }
     }
 
-    // ==================================================
-    // 보낸 메일 표시 메서드 (나 → 다른 사람)
-    // ==================================================
-
-    /**
-     * 보낸 메일함에서 사용할 데이터 설정 메서드입니다.
-     * 발신자는 항상 "나"로 표시되며, 수신자 정보가 중요합니다.
-     *
-     * @param recipient  수신자 이름
-     * @param subject    메일 제목
-     * @param content    메일 본문
-     * @param date       보낸 날짜
-     * @param attachment 첨부파일 이름
-     */
     public void setSentMailData(String recipient, String subject, String content, String date, String attachment) {
         senderLabel.setText("나");
         recipientLabel.setText(recipient != null ? recipient : "수신자");
@@ -84,20 +71,6 @@ public class DynamicMailPreviewController {
         attachmentLabel.setText((attachment != null && !attachment.isEmpty()) ? attachment : "첨부파일 없음");
     }
 
-    // ==================================================
-    // 받은 메일 표시 메서드 (다른 사람 → 나)
-    // ==================================================
-
-    /**
-     * 받은 메일함에서 사용할 데이터 설정 메서드입니다.
-     * 수신자는 항상 "나"로 표시되며, 발신자 정보가 중요합니다.
-     *
-     * @param sender     발신자 이름
-     * @param subject    메일 제목
-     * @param content    메일 본문
-     * @param date       받은 날짜
-     * @param attachment 첨부파일 이름
-     */
     public void setReceivedMailData(String sender, String subject, String content, String date, String attachment) {
         senderLabel.setText(sender != null ? sender : "발신자");
         recipientLabel.setText("나");
@@ -105,5 +78,96 @@ public class DynamicMailPreviewController {
         contentTextArea.setText(content != null ? content : "");
         dateLabel.setText(date != null ? date : "");
         attachmentLabel.setText((attachment != null && !attachment.isEmpty()) ? attachment : "첨부파일 없음");
+    }
+
+
+    @FXML
+    public void handleForwardMail() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/content/mail/composeMailPanel.fxml"));
+            Node composeMailPanel = loader.load();
+
+            ComposeMailController composeController = loader.getController();
+            if (composeController != null) {
+                composeController.setRecipientEmail(senderLabel.getText());
+            }
+
+            Node node = senderLabel;
+            while (node != null && !(node.getParent() instanceof StackPane)) {
+                node = node.getParent();
+            }
+            if (node != null && node.getParent() instanceof StackPane) {
+                StackPane rightContentContainer = (StackPane) node.getParent();
+                rightContentContainer.getChildren().clear();
+                rightContentContainer.getChildren().add(composeMailPanel);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void handleForwardContent() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/content/mail/composeMailPanel.fxml"));
+            Node composeMailPanel = loader.load();
+
+            ComposeMailController composeController = loader.getController();
+            if (composeController != null) {
+                composeController.setRecipientContent(contentTextArea.getText());
+            }
+
+            Node node = contentTextArea;
+            while (node != null && !(node.getParent() instanceof StackPane)) {
+                node = node.getParent();
+            }
+            if (node != null && node.getParent() instanceof StackPane) {
+                StackPane rightContentContainer = (StackPane) node.getParent();
+                rightContentContainer.getChildren().clear();
+                rightContentContainer.getChildren().add(composeMailPanel);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // ✅ 메시지 삭제 메서드
+    @FXML
+    public void handleDelete() {
+        if (selectedMessage == null) {
+            showAlert("삭제할 메시지가 선택되지 않았습니다.", Alert.AlertType.WARNING);
+            return;
+        }
+
+        Alert confirmationAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmationAlert.setTitle("메일 삭제 확인");
+        confirmationAlert.setHeaderText(null);
+        confirmationAlert.setContentText("정말로 이 메일을 삭제하시겠습니까?");
+
+        Optional<ButtonType> result = confirmationAlert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            Long messageId = selectedMessage.getMessageId();
+            User user = apiClient.getCurrentUser();
+            Long userId = user.getUserId();
+
+            boolean isDeleted = MessageApiClient.getInstance().deleteMessageById(messageId, userId);
+
+            if (isDeleted) {
+                showAlert("메시지가 성공적으로 삭제되었습니다.", Alert.AlertType.INFORMATION);
+                if (mailController != null) {
+                    mailController.returnToMailList(); // MailController의 메서드를 호출하여 목록 새로고침
+                }
+            } else {
+                showAlert("메시지 삭제에 실패했습니다.", Alert.AlertType.ERROR);
+            }
+        }
+    }
+
+    private void showAlert(String message, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setTitle("알림");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

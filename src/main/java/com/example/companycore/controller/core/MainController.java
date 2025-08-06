@@ -8,19 +8,11 @@ import javafx.scene.image.ImageView;
 import javafx.application.Platform;
 
 public class MainController {
-    
 
-    
     @FXML
     private ImageView logoImage;
-    
     @FXML
     private ImageView logoText;
-    
-
-    
-
-    
     @FXML
     private VBox contentArea;
     

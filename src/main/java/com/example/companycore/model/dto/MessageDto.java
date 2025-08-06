@@ -2,6 +2,7 @@ package com.example.companycore.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * 메시지 DTO
@@ -10,15 +11,30 @@ import java.time.LocalDateTime;
 public class MessageDto {
     private Long messageId;
     private Long senderId;
+    private String senderEmail; // ✅ 추가됨
     private String receiverEmail;
     private String title;
     private String content;
     private String messageType; // MESSAGE, EMAIL, NOTICE
     private Boolean isRead;
-    private LocalDateTime createdAt;
+    private LocalDateTime sentAt;
     private LocalDateTime readAt;
     private String senderName;
     private String receiverName;
+
+    // equals & hashCode
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        MessageDto that = (MessageDto) obj;
+        return Objects.equals(messageId, that.messageId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(messageId);
+    }
 
     // 기본 생성자
     public MessageDto() {}
@@ -32,18 +48,19 @@ public class MessageDto {
         this.isRead = false;
     }
 
-    // 전체 생성자
-    public MessageDto(Long messageId, Long senderId, String receiverEmail, String title, String content,
-                     String messageType, Boolean isRead, LocalDateTime createdAt, LocalDateTime readAt,
-                     String senderName, String receiverName) {
+    // 전체 생성자 (senderEmail 포함)
+    public MessageDto(Long messageId, Long senderId, String senderEmail, String receiverEmail, String title, String content,
+                      String messageType, Boolean isRead, LocalDateTime sentAt, LocalDateTime readAt,
+                      String senderName, String receiverName) {
         this.messageId = messageId;
         this.senderId = senderId;
+        this.senderEmail = senderEmail; // ✅
         this.receiverEmail = receiverEmail;
         this.title = title;
         this.content = content;
         this.messageType = messageType;
         this.isRead = isRead;
-        this.createdAt = createdAt;
+        this.sentAt = sentAt;
         this.readAt = readAt;
         this.senderName = senderName;
         this.receiverName = receiverName;
@@ -56,6 +73,9 @@ public class MessageDto {
     public Long getSenderId() { return senderId; }
     public void setSenderId(Long senderId) { this.senderId = senderId; }
 
+    public String getSenderEmail() { return senderEmail; } // ✅
+    public void setSenderEmail(String senderEmail) { this.senderEmail = senderEmail; } // ✅
+
     public String getReceiverEmail() { return receiverEmail; }
     public void setReceiverEmail(String receiverEmail) { this.receiverEmail = receiverEmail; }
 
@@ -65,14 +85,14 @@ public class MessageDto {
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
 
-    public String getMessageType() { return "EMAIL"; }
+    public String getMessageType() { return messageType; }
     public void setMessageType(String messageType) { this.messageType = messageType; }
 
     public Boolean getIsRead() { return isRead; }
     public void setIsRead(Boolean isRead) { this.isRead = isRead; }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getSentAt() { return sentAt; }
+    public void setSentAt(LocalDateTime sentAt) { this.sentAt = sentAt; }
 
     public LocalDateTime getReadAt() { return readAt; }
     public void setReadAt(LocalDateTime readAt) { this.readAt = readAt; }
@@ -88,15 +108,16 @@ public class MessageDto {
         return "MessageDto{" +
                 "messageId=" + messageId +
                 ", senderId=" + senderId +
-                ", receiverId=" + receiverEmail +
+                ", senderEmail='" + senderEmail + '\'' + // ✅
+                ", receiverEmail='" + receiverEmail + '\'' +
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
                 ", messageType='" + messageType + '\'' +
                 ", isRead=" + isRead +
-                ", createdAt=" + createdAt +
+                ", sentAt=" + sentAt +
                 ", readAt=" + readAt +
                 ", senderName='" + senderName + '\'' +
                 ", receiverName='" + receiverName + '\'' +
                 '}';
     }
-} 
+}
