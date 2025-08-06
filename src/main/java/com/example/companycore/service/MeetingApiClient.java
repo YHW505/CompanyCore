@@ -216,6 +216,8 @@ public class MeetingApiClient extends BaseApiClient {
         private LocalDateTime startTime;
         private LocalDateTime endTime;
         private String location;
+        private String department;
+        private String author;
         private String attachmentPath;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
@@ -225,13 +227,15 @@ public class MeetingApiClient extends BaseApiClient {
 
         // 생성자
         public MeetingDto(Long meetingId, String title, String description, LocalDateTime startTime, 
-                         LocalDateTime endTime, String location, String attachmentPath) {
+                         LocalDateTime endTime, String location, String department, String author, String attachmentPath) {
             this.meetingId = meetingId;
             this.title = title;
             this.description = description;
             this.startTime = startTime;
             this.endTime = endTime;
             this.location = location;
+            this.department = department;
+            this.author = author;
             this.attachmentPath = attachmentPath;
         }
 
@@ -254,6 +258,12 @@ public class MeetingApiClient extends BaseApiClient {
         public String getLocation() { return location; }
         public void setLocation(String location) { this.location = location; }
 
+        public String getDepartment() { return department; }
+        public void setDepartment(String department) { this.department = department; }
+
+        public String getAuthor() { return author; }
+        public void setAuthor(String author) { this.author = author; }
+
         public String getAttachmentPath() { return attachmentPath; }
         public void setAttachmentPath(String attachmentPath) { this.attachmentPath = attachmentPath; }
 
@@ -272,6 +282,8 @@ public class MeetingApiClient extends BaseApiClient {
                     ", startTime=" + startTime +
                     ", endTime=" + endTime +
                     ", location='" + location + '\'' +
+                    ", department='" + department + '\'' +
+                    ", author='" + author + '\'' +
                     ", attachmentPath='" + attachmentPath + '\'' +
                     ", createdAt=" + createdAt +
                     ", updatedAt=" + updatedAt +

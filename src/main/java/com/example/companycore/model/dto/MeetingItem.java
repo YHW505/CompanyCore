@@ -12,6 +12,9 @@ public class MeetingItem {
     private final javafx.beans.property.StringProperty department;
     private final javafx.beans.property.StringProperty author;
     private final javafx.beans.property.StringProperty date;
+    private final javafx.beans.property.StringProperty attachmentContent;
+    private final javafx.beans.property.StringProperty attachmentPath;
+    private final javafx.beans.property.LongProperty attachmentSize;
 
     /**
      * MeetingItem 생성자
@@ -20,12 +23,19 @@ public class MeetingItem {
      * @param department 부서
      * @param author 작성자
      * @param date 날짜
+     * @param attachmentContent 첨부파일 내용 (Base64)
+     * @param attachmentPath 첨부파일 경로
+     * @param attachmentSize 첨부파일 크기
      */
-    public MeetingItem(String title, String department, String author, String date) {
+    public MeetingItem(String title, String department, String author, String date, 
+                      String attachmentContent, String attachmentPath, Long attachmentSize) {
         this.title = new javafx.beans.property.SimpleStringProperty(title);
         this.department = new javafx.beans.property.SimpleStringProperty(department);
         this.author = new javafx.beans.property.SimpleStringProperty(author);
         this.date = new javafx.beans.property.SimpleStringProperty(date);
+        this.attachmentContent = new javafx.beans.property.SimpleStringProperty(attachmentContent != null ? attachmentContent : "");
+        this.attachmentPath = new javafx.beans.property.SimpleStringProperty(attachmentPath != null ? attachmentPath : "");
+        this.attachmentSize = new javafx.beans.property.SimpleLongProperty(attachmentSize != null ? attachmentSize : 0L);
     }
 
     // ==================== Getter/Setter 메서드 ====================
@@ -76,5 +86,41 @@ public class MeetingItem {
     
     public javafx.beans.property.StringProperty dateProperty() { 
         return date; 
+    }
+
+    public String getAttachmentContent() { 
+        return attachmentContent.get(); 
+    }
+    
+    public void setAttachmentContent(String attachmentContent) { 
+        this.attachmentContent.set(attachmentContent); 
+    }
+    
+    public javafx.beans.property.StringProperty attachmentContentProperty() { 
+        return attachmentContent; 
+    }
+
+    public String getAttachmentPath() { 
+        return attachmentPath.get(); 
+    }
+    
+    public void setAttachmentPath(String attachmentPath) { 
+        this.attachmentPath.set(attachmentPath); 
+    }
+    
+    public javafx.beans.property.StringProperty attachmentPathProperty() { 
+        return attachmentPath; 
+    }
+
+    public Long getAttachmentSize() { 
+        return attachmentSize.get(); 
+    }
+    
+    public void setAttachmentSize(Long attachmentSize) { 
+        this.attachmentSize.set(attachmentSize); 
+    }
+    
+    public javafx.beans.property.LongProperty attachmentSizeProperty() { 
+        return attachmentSize; 
     }
 } 

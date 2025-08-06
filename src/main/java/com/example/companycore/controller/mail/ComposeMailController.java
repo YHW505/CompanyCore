@@ -75,28 +75,32 @@ public class ComposeMailController {
             message.setTitle(subject);           // 제목
             message.setContent(content);         // 본문
             message.setSenderId(senderId);       // 보내는 사람 ID
+            message.setMessageType("EMAIL");
 
             // 메시지 API 클라이언트를 통해 서버로 메시지 전송
             MessageApiClient client = MessageApiClient.getInstance();
             MessageDto sent = client.sendMessage(message, senderId); // 전송 결과를 받음
-
+            System.out.println(sent);
             if (sent != null) {
                 System.out.println("✅ 서버에 메시지 전송 완료");
+                
+                // 성공 메시지 표시
+                showAlert("성공", "메일이 성공적으로 전송되었습니다.", Alert.AlertType.INFORMATION);
+                
+                // 로컬 보낸 메일함에 추가
+                if (parentController != null) {
+                    parentController.addSentMail(recipient, subject, content, attachmentName);
+                }
+
+                // 폼 초기화 및 메일 목록으로 돌아감
+                clearMailForm();
             } else {
                 System.out.println("❌ 서버 메시지 전송 실패");
                 System.out.println(message.getReceiverEmail());
                 System.out.println(message.getSenderId());
-            }
 
-            // 로컬 보낸 메일함에 추가
-            if (parentController != null) {
-                parentController.addSentMail(recipient, subject, content, attachmentName);
-            }
-
-            // 폼 초기화 및 기본 뷰로 돌아감
-            clearMailForm();
-            if (parentController != null) {
-                parentController.showDefaultView();
+                // 실패 메시지 표시
+                showAlert("실패", "메일 전송에 실패했습니다. 다시 시도해주세요.", Alert.AlertType.ERROR);
             }
         }
     }
@@ -197,5 +201,19 @@ public class ComposeMailController {
      */
     public void setParentController(MailController parentController) {
         this.parentController = parentController;
+    }
+
+    /**
+     * 전달 기능: 수신자 이메일을 외부에서 세팅
+     */
+    public void setRecipientEmail(String email) {
+        if (recipientField != null) {
+            recipientField.setText(email);
+        }
+    }
+    public void setRecipientContent(String content) {
+        if (contentArea != null) {
+            contentArea.setText(content);
+        }
     }
 }

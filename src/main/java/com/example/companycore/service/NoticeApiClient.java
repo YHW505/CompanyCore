@@ -124,7 +124,7 @@ public class NoticeApiClient extends BaseApiClient {
                                     // 🆕 첨부파일 내용 파싱
                                     if (noticeNode.has("attachmentContent")) {
                                         notice.setAttachmentContent(noticeNode.get("attachmentContent").asText());
-                                        System.out.println("첨부파일 내용 파싱: " + notice.getAttachmentFilename() + " (Base64 길이: " + notice.getAttachmentContent().length() + ")");
+                                        System.out.println("첨부파일 내용 파싱: " + notice.getAttachmentFilename() + " (Base64 내용 생략)");
                                     } else {
                                         System.out.println("⚠️ attachmentContent 필드가 없습니다. 서버 응답 필드들: " + noticeNode.fieldNames());
                                     }
@@ -260,9 +260,9 @@ public class NoticeApiClient extends BaseApiClient {
                 requestNode.put("hasAttachments", true);
                 if (notice.getAttachmentContent() != null && !notice.getAttachmentContent().isEmpty()) {
                     requestNode.put("attachmentContent", notice.getAttachmentContent());
-                    System.out.println("첨부파일 내용 추가: " + notice.getAttachmentFilename() + " (Base64)");
+                    System.out.println("첨부파일 내용 추가: " + notice.getAttachmentFilename() + " (Base64 내용 생략)");
                 }
-                System.out.println("첨부파일 정보 추가: " + notice.getAttachmentFilename());
+                System.out.println("첨부파일 정보 추가: " + notice.getAttachmentFilename() + " (크기: " + notice.getAttachmentSize() + " bytes)");
             } else {
                 requestNode.put("hasAttachments", false);
             }
@@ -303,7 +303,12 @@ public class NoticeApiClient extends BaseApiClient {
             }
             
             String requestBody = objectMapper.writeValueAsString(requestNode);
-            System.out.println("공지사항 생성 요청: " + requestBody);
+            // Base64 인코딩된 첨부파일 내용은 로그에서 제외
+            String logRequestBody = requestBody;
+            if (notice.hasAttachments() && notice.getAttachmentContent() != null && !notice.getAttachmentContent().isEmpty()) {
+                logRequestBody = requestBody.replace(notice.getAttachmentContent(), "[Base64 첨부파일 내용 생략]");
+            }
+            System.out.println("공지사항 생성 요청: " + logRequestBody);
             
             HttpRequest request = createAuthenticatedRequestBuilder("/notices")
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody))

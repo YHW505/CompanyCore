@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.String?>
+<?import java.net.URL?>
 <?import javafx.collections.FXCollections?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Pagination?>
@@ -55,11 +57,24 @@
         </TableView>
     </VBox>
 
+    <HBox spacing="20" alignment="CENTER_RIGHT" style="-fx-padding: 15 0;">
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="deleteBtn" mnemonicParsing="false" text="삭제"
+                style="-fx-background-color: #444951; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;"
+                onAction="#handleDelete"/>
+        <Region prefWidth="20" />
+    </HBox>
+
     <!-- 페이지네이션 -->
-    <HBox alignment="CENTER" prefHeight="75.0" prefWidth="594.0" spacing="10" style="-fx-padding: 15 0;">
-        <Pagination fx:id="pagination" style="-fx-page-information-visible: false; -fx-arrows-visible: true;">
+    <HBox spacing="20" alignment="CENTER" style="-fx-padding: 15 0;">
+        <Region HBox.hgrow="ALWAYS" />
+        <Pagination fx:id="pagination" prefHeight="45.0" prefWidth="600.0"
+                    style="-fx-page-information-visible: false; -fx-arrows-visible: true; -fx-background-color: transparent;">
+            <stylesheets>
+                <URL value="@../common/pagination.css" />
+            </stylesheets>
         </Pagination>
-        <Button fx:id="deleteBtn" onAction="#handleDelete" style="-fx-background-color: #444951; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" text="삭제" />
+        <Region HBox.hgrow="ALWAYS" />
     </HBox>
 
     <!-- 푸터 -->

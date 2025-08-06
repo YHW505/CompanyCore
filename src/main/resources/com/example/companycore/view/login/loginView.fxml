@@ -1,19 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.PasswordField?>
-<?import javafx.scene.control.ProgressIndicator?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
 
-<StackPane style="-fx-background-color: #D6D8EB;" xmlns="http://javafx.com/javafx/21"
-           xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.companycore.controller.core.LoginController">
+<StackPane style="-fx-background-color: #D6D8EB;"
+           xmlns="http://javafx.com/javafx/21"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.example.companycore.controller.core.LoginController">
 
     <children>
         <VBox alignment="CENTER" maxWidth="380.0" spacing="45.0">
@@ -26,68 +21,84 @@
                                 <Image url="@../../images/logo/logo_image.png"/>
                             </image>
                         </ImageView>
-                        <!-- 회사명 -->
-                        <Label style="-fx-font-size: 32px;                                -fx-font-weight: bold;                                -fx-text-fill: #2c5282;"
-                               text="CompanyCore"/>
+                        <Label text="CompanyCore"
+                               style="-fx-font-size: 32px;
+                                      -fx-font-weight: bold;
+                                      -fx-text-fill: #2c5282;"/>
                     </children>
                 </HBox>
 
                 <!-- 입력 폼 영역 -->
                 <VBox alignment="CENTER" spacing="18.0">
                     <children>
+
                         <!-- 직원 ID 입력 -->
                         <HBox alignment="CENTER_LEFT" prefHeight="50.0" prefWidth="320.0"
-                              style="-fx-background-color: white;                               -fx-background-radius: 25;                               -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 6, 0, 0, 1);">
+                              style="-fx-background-color: white;
+                                     -fx-background-radius: 25;
+                                     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 6, 0, 0, 1);">
                             <children>
-                                <!-- 이메일 아이콘 -->
-                                <Label style="-fx-font-size: 25px; -fx-text-fill: #9ca3af;" text="✉"/>
-
-                                <!-- 입력 필드 -->
+                                <Label text="✉"
+                                       style="-fx-font-size: 25px; -fx-text-fill: #9ca3af;"/>
                                 <TextField fx:id="usernameField" promptText="employee ID"
-                                           style="-fx-background-color: transparent;                                          -fx-border-color: transparent;                                          -fx-font-size: 14px;                                          -fx-prompt-text-fill: #9ca3af;"
-                                           HBox.hgrow="ALWAYS"/>
+                                           HBox.hgrow="ALWAYS"
+                                           style="-fx-background-color: transparent;
+                                                  -fx-border-color: transparent;
+                                                  -fx-font-size: 14px;
+                                                  -fx-prompt-text-fill: #9ca3af;"/>
                             </children>
                             <padding>
-                                <Insets bottom="5.0" left="20.0" right="20.0" top="5.0"/>
+                                <Insets top="5.0" right="20.0" bottom="5.0" left="20.0"/>
                             </padding>
                         </HBox>
 
                         <!-- 비밀번호 입력 -->
                         <HBox alignment="CENTER_LEFT" prefHeight="50.0" prefWidth="320.0"
-                              style="-fx-background-color: white;                               -fx-background-radius: 25;                               -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 6, 0, 0, 1);">
+                              style="-fx-background-color: white;
+                                     -fx-background-radius: 25;
+                                     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 6, 0, 0, 1);">
                             <children>
-                                <!-- 자물쇠 아이콘 -->
-                                <Label style="-fx-font-size: 16px; -fx-text-fill: #9ca3af;" text="🔒"/>
-
-                                <!-- 비밀번호 필드 -->
+                                <Label text="🔒"
+                                       style="-fx-font-size: 16px; -fx-text-fill: #9ca3af;"/>
                                 <PasswordField fx:id="passwordField" promptText="Password"
-                                               style="-fx-background-color: transparent;                                              -fx-border-color: transparent;                                              -fx-font-size: 14px;                                              -fx-prompt-text-fill: #9ca3af;"
-                                               HBox.hgrow="ALWAYS"/>
+                                               HBox.hgrow="ALWAYS"
+                                               style="-fx-background-color: transparent;
+                                                      -fx-border-color: transparent;
+                                                      -fx-font-size: 14px;
+                                                      -fx-prompt-text-fill: #9ca3af;"/>
                             </children>
                             <padding>
-                                <Insets bottom="5.0" left="20.0" right="20.0" top="5.0"/>
+                                <Insets top="5.0" right="20.0" bottom="5.0" left="20.0"/>
                             </padding>
                         </HBox>
 
                         <!-- 로그인 버튼 -->
-                        <Button fx:id="loginButton" onAction="#handleLogin" prefHeight="50.0" prefWidth="320.0"
-                                style="-fx-background-color: #2563eb;                                 -fx-text-fill: white;                                 -fx-background-radius: 25;                                 -fx-font-size: 16px;                                 -fx-font-weight: bold;                                 -fx-cursor: hand;                                 -fx-effect: dropshadow(gaussian, rgba(37,99,235,0.3), 8, 0, 0, 2);"
-                                text="Login"/>
+                        <Button fx:id="loginButton" text="Login" onAction="#handleLogin"
+                                prefHeight="50.0" prefWidth="320.0"
+                                style="-fx-background-color: #2563eb;
+                                       -fx-text-fill: white;
+                                       -fx-background-radius: 25;
+                                       -fx-font-size: 16px;
+                                       -fx-font-weight: bold;
+                                       -fx-cursor: hand;
+                                       -fx-effect: dropshadow(gaussian, rgba(37,99,235,0.3), 8, 0, 0, 2);"/>
 
-                        <!-- 로딩 인디케이터 추가 (기본적으로 숨김) -->
+                        <!-- 로딩 인디케이터 -->
                         <ProgressIndicator fx:id="loadingIndicator" prefHeight="30.0" prefWidth="30.0"
-                                           visible="false" style="-fx-accent: #2563eb;"/>
+                                           visible="false"
+                                           style="-fx-accent: #2563eb;"/>
 
-                        <Label fx:id="clickableText"
-                               text="사번 조회"
-                               onMouseClicked="#handleEmployeeIdInquiry"
+                        <!-- 사번 조회 -->
+                        <Label fx:id="clickableText" text="사번 조회" onMouseClicked="#handleEmployeeIdInquiry"
                                style="-fx-text-fill: #2563eb;
-              -fx-cursor: hand;
-              -fx-font-size: 14px;
-              -fx-underline: true;"/>
+                                      -fx-cursor: hand;
+                                      -fx-font-size: 14px;
+                                      -fx-underline: true;"/>
 
                         <!-- 상태 메시지 -->
-                        <Label fx:id="statusLabel" style="-fx-text-fill: #205992; -fx-font-size: 12px;" text=""/>
+                        <Label fx:id="statusLabel"
+                               text=""
+                               style="-fx-text-fill: #205992; -fx-font-size: 12px;"/>
                     </children>
                 </VBox>
             </children>
