@@ -361,7 +361,7 @@ public class ProfileController implements Initializable {
         
         try {
             // 실제 비밀번호 변경 API 호출
-            boolean success = apiClient.changePassword(currentPassword, newPassword);
+            boolean success = apiClient.changePassword(currentPassword, newPassword, currentUser.getUserId());
             
             if (success) {
                 // 비밀번호 변경 성공

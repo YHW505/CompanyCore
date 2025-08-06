@@ -97,8 +97,8 @@ public class ApiClient {
         return userApiClient.updateUser(user);
     }
 
-    public boolean changePassword(String currentPassword, String newPassword) {
-        return userApiClient.changePassword(currentPassword, newPassword);
+    public boolean changePassword(String currentPassword, String newPassword, Long userId) {
+        return userApiClient.changePassword(currentPassword, newPassword, userId);
     }
 
     public com.example.companycore.model.entity.User createUser(com.example.companycore.model.entity.User user) {
