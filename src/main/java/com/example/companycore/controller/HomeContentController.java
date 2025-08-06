@@ -41,14 +41,20 @@ public class HomeContentController {
     @FXML
     private VBox recentAttendanceBox; // 새로 추가된 VBox
 
-    private boolean isWorking = false;
+    private static boolean isWorking = false;
+    private static boolean statusInitialized = false;
 
     @FXML
     public void initialize() {
-        // updateToggleState(false); // Initial state will be determined by API call
         loadAnnouncements();
         loadRecentAttendance(); // 새로운 메서드 호출
-        checkInitialAttendanceStatus(); // Check user's current attendance status
+
+        if (!statusInitialized) {
+            checkInitialAttendanceStatus();
+            statusInitialized = true;
+        } else {
+            updateToggleState(isWorking);
+        }
     }
 
     private void checkInitialAttendanceStatus() {
