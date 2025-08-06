@@ -9,6 +9,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +36,75 @@ public class MeetingApiClient extends BaseApiClient {
     }
 
     /**
-     * 모든 회의 조회
+     * 모든 회의 조회 (간단한 버전 - 첨부파일 제외)
+     * @return 회의 목록
+     */
+    public List<MeetingDto> getAllMeetingsSimple() {
+        try {
+            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/meetings/simple");
+            HttpRequest request = builder.GET().build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            // logResponseInfo(response, "모든 회의 조회 (간단한 버전)");
+
+            if (response.statusCode() == 200) {
+                String responseBody = getSafeResponseBody(response);
+                if (responseBody != null && !responseBody.trim().isEmpty()) {
+                    // 간단한 Map 형태로 파싱
+                    List<Map<String, Object>> simpleResponses = objectMapper.readValue(responseBody, new TypeReference<List<Map<String, Object>>>() {});
+                    
+                    // Map을 MeetingDto로 변환
+                    List<MeetingDto> results = new ArrayList<>();
+                    for (Map<String, Object> simpleResponse : simpleResponses) {
+                        MeetingDto dto = new MeetingDto();
+                        
+                        // 안전한 타입 변환
+                        Object idObj = simpleResponse.get("meetingId");
+                        if (idObj != null) {
+                            dto.setMeetingId(Long.valueOf(idObj.toString()));
+                        }
+                        
+                        dto.setTitle((String) simpleResponse.get("title"));
+                        dto.setDescription((String) simpleResponse.get("description"));
+                        dto.setLocation((String) simpleResponse.get("location"));
+                        dto.setDepartment((String) simpleResponse.get("department"));
+                        dto.setAuthor((String) simpleResponse.get("author"));
+                        
+                        // 날짜 파싱
+                        String startTimeStr = (String) simpleResponse.get("startTime");
+                        if (startTimeStr != null) {
+                            try {
+                                dto.setStartTime(LocalDateTime.parse(startTimeStr));
+                            } catch (Exception e) {
+                                System.err.println("시작 시간 파싱 오류: " + startTimeStr + " - " + e.getMessage());
+                            }
+                        }
+                        
+                        String endTimeStr = (String) simpleResponse.get("endTime");
+                        if (endTimeStr != null) {
+                            try {
+                                dto.setEndTime(LocalDateTime.parse(endTimeStr));
+                            } catch (Exception e) {
+                                System.err.println("종료 시간 파싱 오류: " + endTimeStr + " - " + e.getMessage());
+                            }
+                        }
+                        
+                        // 첨부파일 정보는 제외 (상세보기에서만 확인)
+                        
+                        results.add(dto);
+                    }
+                    
+                    return results;
+                }
+            }
+        } catch (Exception e) {
+            handleChunkedTransferError(e, "모든 회의 조회 (간단한 버전)");
+        }
+        return null;
+    }
+
+    /**
+     * 모든 회의 조회 (기존 버전 - 첨부파일 포함)
      * @return 회의 목록
      */
     public List<MeetingDto> getAllMeetings() {

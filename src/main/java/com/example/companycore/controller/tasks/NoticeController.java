@@ -293,8 +293,8 @@ public class NoticeController {
         javafx.concurrent.Task<List<NoticeItem>> loadTask = new javafx.concurrent.Task<>() {
             @Override
             protected List<NoticeItem> call() throws Exception {
-                // ApiClient를 통해 서버에서 공지사항 데이터 가져오기
-                return apiClient.getAllNotices();
+                // ApiClient를 통해 서버에서 공지사항 데이터 가져오기 (간단한 버전)
+                return apiClient.getAllNoticesSimple();
             }
         };
         

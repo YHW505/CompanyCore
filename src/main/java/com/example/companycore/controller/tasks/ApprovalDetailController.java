@@ -47,11 +47,41 @@ public class ApprovalDetailController {
      */
     public void setApprovalItem(ApprovalItem item) {
         this.approvalItem = item;
-        // 이미 로드된 데이터만 사용하여 즉시 UI 업데이트
-        updateUI();
+        // 서버에서 상세 정보를 가져와서 UI 업데이트
+        loadDetailFromServer();
     }
 
 
+
+    /**
+     * 서버에서 상세 정보를 가져와서 UI를 업데이트합니다.
+     */
+    private void loadDetailFromServer() {
+        if (approvalItem == null) return;
+        
+        try {
+            // 서버에서 상세 정보 가져오기
+            com.example.companycore.service.ApprovalApiClient approvalApiClient = 
+                com.example.companycore.service.ApprovalApiClient.getInstance();
+            
+            com.example.companycore.model.dto.ApprovalDto detailDto = 
+                approvalApiClient.getApprovalById(approvalItem.getServerId());
+            
+            if (detailDto != null) {
+                // 상세 정보로 ApprovalItem 업데이트
+                this.approvalItem = com.example.companycore.model.dto.ApprovalItem.fromApprovalDto(detailDto);
+                updateUI();
+            } else {
+                // 서버에서 정보를 가져올 수 없는 경우 기본 정보로 표시
+                updateUI();
+            }
+        } catch (Exception e) {
+            System.err.println("상세 정보 로드 중 오류: " + e.getMessage());
+            e.printStackTrace();
+            // 오류 발생 시 기본 정보로 표시
+            updateUI();
+        }
+    }
 
     /**
      * UI를 결재 데이터로 업데이트합니다.

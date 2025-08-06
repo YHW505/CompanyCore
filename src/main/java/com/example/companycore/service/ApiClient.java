@@ -456,6 +456,10 @@ public class ApiClient {
         return noticeApiClient.getAllNotices();
     }
 
+    public java.util.List<com.example.companycore.model.dto.NoticeItem> getAllNoticesSimple() {
+        return noticeApiClient.getAllNoticesSimple();
+    }
+
     public com.example.companycore.model.dto.NoticeItem getNoticeById(Long noticeId) {
         return noticeApiClient.getNoticeById(noticeId);
     }
