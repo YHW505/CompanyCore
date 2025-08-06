@@ -5,6 +5,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
@@ -20,6 +21,12 @@
     <!-- 제목 -->
     <TextField fx:id="titleField" promptText="제목" />
 
+    <!-- 위치 -->
+    <TextField fx:id="locationField" promptText="회의 위치" />
+
+    <!-- 내용 -->
+    <TextArea fx:id="descriptionField" promptText="회의 내용을 입력하세요..." prefRowCount="5" />
+
     <VBox spacing="6">
         <Label styleClass="field-label" text="첨부파일 추가 📎" />
         <VBox fx:id="dropZone" prefHeight="120" spacing="8" styleClass="dropzone">
@@ -31,6 +38,7 @@
             </HBox>
 
             <ListView fx:id="attachmentList" managed="false" visible="false" />
+            <Label fx:id="fileInfoLabel" style="-fx-text-fill: #666; -fx-font-size: 12px;" />
         </VBox>
     </VBox>
 

@@ -84,8 +84,8 @@ public class MainController {
     
     public void loadContent(String contentType) {
         // 콘텐츠 타입에 따라 메인 영역의 콘텐츠를 변경
+        String fxmlPath = "";
         try {
-            String fxmlPath = "";
             switch (contentType) {
                 case "home":
                     fxmlPath = "/com/example/companycore/view/content/home/homeContent.fxml";
@@ -170,6 +170,8 @@ public class MainController {
             }
         } catch (Exception e) {
             System.err.println("콘텐츠 로드 중 오류 발생: " + e.getMessage());
+            System.err.println("FXML 경로: " + fxmlPath);
+            e.printStackTrace();
             
             // 오류 발생 시 기본 홈 콘텐츠를 로드
             try {
@@ -181,6 +183,7 @@ public class MainController {
                 }
             } catch (Exception recoveryException) {
                 System.err.println("복구 시도도 실패: " + recoveryException.getMessage());
+                recoveryException.printStackTrace();
             }
         }
     }

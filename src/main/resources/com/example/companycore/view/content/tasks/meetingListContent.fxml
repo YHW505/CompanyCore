@@ -51,6 +51,7 @@
                 <TableColumn fx:id="colDepartment" prefWidth="120.0" text="부서" />
                 <TableColumn fx:id="colAuthor" prefWidth="120.0" text="작성자" />
                 <TableColumn fx:id="colDate" prefWidth="140.0" text="일자" />
+                <TableColumn fx:id="colAttachment" prefWidth="60.0" text="첨부" />
                 <TableColumn fx:id="colAction" prefWidth="80.0" text="관리" />
             </columns>
         </TableView>

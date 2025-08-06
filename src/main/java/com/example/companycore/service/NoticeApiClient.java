@@ -651,4 +651,30 @@ public class NoticeApiClient extends BaseApiClient {
         }
         return new ArrayList<>();
     }
+
+    public List<NoticeItem> getRecentNotices() {
+        try {
+            HttpRequest request = createAuthenticatedRequestBuilder("/notices/recent")
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            logResponseInfo(response, "최근 공지사항 조회");
+
+            if (response.statusCode() == 200) {
+                String responseBody = getSafeResponseBody(response);
+                if (responseBody != null && !responseBody.trim().isEmpty()) {
+                    JsonNode rootNode = objectMapper.readTree(responseBody);
+                    if (rootNode.has("data")) {
+                        JsonNode dataNode = rootNode.get("data");
+                        return objectMapper.readValue(dataNode.toString(),
+                                objectMapper.getTypeFactory().constructCollectionType(List.class, NoticeItem.class));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            handleChunkedTransferError(e, "최근 공지사항 조회");
+        }
+        return new ArrayList<>();
+    }
 } 
