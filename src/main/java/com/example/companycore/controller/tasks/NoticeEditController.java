@@ -312,12 +312,12 @@ public class NoticeEditController {
         fileChooser.setTitle("첨부파일 선택");
         
         // 파일 필터 설정
-        FileChooser.ExtensionFilter allFiles = new FileChooser.ExtensionFilter("모든 파일", "*.*");
-        FileChooser.ExtensionFilter documents = new FileChooser.ExtensionFilter("문서 파일", "*.pdf", "*.doc", "*.docx", "*.txt");
-        FileChooser.ExtensionFilter images = new FileChooser.ExtensionFilter("이미지 파일", "*.jpg", "*.jpeg", "*.png", "*.gif");
-        FileChooser.ExtensionFilter spreadsheets = new FileChooser.ExtensionFilter("스프레드시트", "*.xls", "*.xlsx");
-        
-        fileChooser.getExtensionFilters().addAll(documents, images, spreadsheets, allFiles);
+        fileChooser.getExtensionFilters().addAll(
+            new FileChooser.ExtensionFilter("모든 파일", "*.*"),
+            new FileChooser.ExtensionFilter("문서 파일", "*.pdf", "*.doc", "*.docx", "*.xls", "*.xlsx", "*.ppt", "*.pptx"),
+            new FileChooser.ExtensionFilter("이미지 파일", "*.jpg", "*.jpeg", "*.png", "*.gif"),
+            new FileChooser.ExtensionFilter("압축 파일", "*.zip", "*.rar")
+        );
         
         Stage stage = (Stage) addFileButton.getScene().getWindow();
         List<File> selectedFiles = fileChooser.showOpenMultipleDialog(stage);
@@ -325,10 +325,10 @@ public class NoticeEditController {
         if (selectedFiles != null && !selectedFiles.isEmpty()) {
             for (File file : selectedFiles) {
                 if (file.exists() && file.canRead()) {
-                    // 파일 크기 제한 (10MB)
-                    if (file.length() > 10 * 1024 * 1024) {
+                    // 파일 크기 제한 (50MB)
+                    if (file.length() > 50 * 1024 * 1024) {
                         showAlert("파일 크기 제한", 
-                                file.getName() + " 파일이 10MB를 초과합니다.", 
+                                file.getName() + " 파일이 50MB를 초과합니다.", 
                                 Alert.AlertType.WARNING);
                         continue;
                     }

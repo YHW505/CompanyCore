@@ -71,11 +71,11 @@ public class ApprovalItem {
         this.attachmentSize = new SimpleLongProperty();
     }
 
-    // ApprovalDto로부터 변환하는 정적 메서드
+    // ApprovalDto로부터 변환하는 정적 메서드 (성능 최적화)
     public static ApprovalItem fromApprovalDto(ApprovalDto dto) {
         ApprovalItem item = new ApprovalItem();
         
-        // UI용 필드 설정
+        // UI용 필드만 설정 (성능 최적화)
         item.setId(dto.getId() != null ? dto.getId().toString() : "");
         item.setTitle(dto.getTitle() != null ? dto.getTitle() : "");
         item.setContent(dto.getContent() != null ? dto.getContent() : "");
@@ -86,12 +86,11 @@ public class ApprovalItem {
             item.setDate(dto.getRequestDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         }
         
-        // 사용자 정보 설정
+        // 사용자 정보 설정 (최소한의 정보만)
         if (dto.getRequester() != null) {
-            item.setAuthor(dto.getRequester().getUsername() != null ? dto.getRequester().getUsername() : "Unknown");
-            // DepartmentDto에서 departmentName을 가져와서 사용
-            item.setDepartment(dto.getRequester().getDepartment() != null ? 
-                dto.getRequester().getDepartment().getDepartmentName() : "Unknown");
+            item.setAuthor(dto.getRequester().getUsername() != null ? dto.getRequester().getUsername() : "");
+            item.setDepartment(dto.getRequester().getDepartmentName() != null ? 
+                dto.getRequester().getDepartmentName() : "");
         }
         
         // 첨부파일 정보 설정
@@ -101,23 +100,13 @@ public class ApprovalItem {
         if (dto.getAttachmentSize() != null) {
             item.setAttachmentSize(dto.getAttachmentSize());
         }
-        // 첨부파일 내용 설정 (Base64 인코딩된 문자열)
         if (dto.getAttachmentContent() != null) {
             item.setAttachmentContent(dto.getAttachmentContent());
         }
         
-        // 서버용 필드 설정
+        // 필수 서버용 필드만 설정 (성능 최적화)
         item.serverId = dto.getId();
         item.requesterId = dto.getRequesterId();
-        item.approverId = dto.getApproverId();
-        item.requester = dto.getRequester();
-        item.approver = dto.getApprover();
-        item.requestDate = dto.getRequestDate();
-        item.rejectionReason = dto.getRejectionReason();
-        item.processedDate = dto.getProcessedDate();
-        item.attachmentContentType = dto.getAttachmentContentType();
-        item.createdAt = dto.getCreatedAt();
-        item.updatedAt = dto.getUpdatedAt();
         
         return item;
     }

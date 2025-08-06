@@ -4,9 +4,7 @@ import com.example.companycore.model.dto.ApprovalItem;
 import com.example.companycore.model.dto.ApprovalDto;
 import com.example.companycore.service.ApiClient;
 import com.example.companycore.service.ApprovalApiClient;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -35,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 public class ApprovalRequestController {
 
@@ -49,12 +48,14 @@ public class ApprovalRequestController {
     @FXML private TextField searchField;
     @FXML private ComboBox<String> searchComboBox;
     @FXML private Pagination pagination;
+    @FXML private ProgressIndicator loadingIndicator; // 로딩 인디케이터
 
     private final ObservableList<ApprovalItem> fullData = FXCollections.observableArrayList();
     private ObservableList<ApprovalItem> viewData = FXCollections.observableArrayList();
 
     private int visibleRowCount = 10;
     private static final boolean TEST_MODE = false;
+    // ObjectMapper는 BaseApiClient에서 이미 설정되어 있으므로 별도 설정 불필요
 
     @FXML
     public void initialize() {
@@ -196,33 +197,73 @@ public class ApprovalRequestController {
         return new Region();
     }
 
-    private void loadDataFromServer() {
-        try {
-            ApiClient apiClient = ApiClient.getInstance();
-            List<ApprovalDto> approvals = apiClient.getMyRequests();
-            
-            fullData.clear();
-            viewData.clear();
-            
-            if (approvals != null) {
-                for (ApprovalDto approvalDto : approvals) {
-                    // 통합 DTO를 사용하여 변환
-                    ApprovalItem item = ApprovalItem.fromApprovalDto(approvalDto);
-                    fullData.add(item);
-                }
-            }
-            
-            viewData.addAll(fullData);
-            System.out.println("서버에서 결재 요청 데이터 로드 완료: " + fullData.size() + "개");
-            updatePagination();
-            
-        } catch (Exception e) {
-            System.err.println("결재 요청 데이터 로드 실패: " + e.getMessage());
-            e.printStackTrace();
-            fullData.clear();
-            viewData.clear();
-            updatePagination();
+    /**
+     * 로딩 인디케이터 표시/숨김
+     */
+    private void showLoading(boolean show) {
+        if (loadingIndicator != null) {
+            loadingIndicator.setVisible(show);
+            loadingIndicator.setManaged(show);
+            approvalRequestTable.setVisible(!show);
+            approvalRequestTable.setManaged(!show);
         }
+    }
+
+    private void loadDataFromServer() {
+        // 로딩 인디케이터 표시
+        showLoading(true);
+        
+        // 백그라운드에서 데이터 로드 (기존 방식 사용 - 더 빠름)
+        javafx.concurrent.Task<Void> loadTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                ApiClient apiClient = ApiClient.getInstance();
+                ApprovalApiClient approvalApiClient = apiClient.getApprovalApiClient();
+                
+                // 간단한 API로 데이터 로드 (성능 최적화)
+                List<ApprovalDto> approvals = approvalApiClient.getMyRequestsSimple();
+                
+                // UI 업데이트는 Platform.runLater에서 수행
+                javafx.application.Platform.runLater(() -> {
+                    fullData.clear();
+                    viewData.clear();
+                    
+                    if (approvals != null) {
+                        // 성능 최적화: 배치 처리
+                        List<ApprovalItem> items = new java.util.ArrayList<>(approvals.size());
+                        for (ApprovalDto approvalDto : approvals) {
+                            ApprovalItem item = ApprovalItem.fromApprovalDto(approvalDto);
+                            items.add(item);
+                        }
+                        fullData.addAll(items);
+                        System.out.println("서버에서 결재 요청 데이터 로드 완료: " + fullData.size() + "개 (최적화된 방식)");
+                    } else {
+                        System.out.println("서버에서 결재 요청 데이터 로드 실패: null 응답");
+                    }
+                    
+                    viewData.addAll(fullData);
+                    updatePagination();
+                    showLoading(false);
+                });
+                
+                return null;
+            }
+        };
+        
+        // 에러 처리
+        loadTask.setOnFailed(event -> {
+            System.err.println("결재 요청 데이터 로드 실패: " + loadTask.getException().getMessage());
+            loadTask.getException().printStackTrace();
+            fullData.clear();
+            viewData.clear();
+            updatePagination();
+            showLoading(false);
+        });
+        
+        // 백그라운드 스레드에서 실행
+        Thread loadThread = new Thread(loadTask);
+        loadThread.setDaemon(true);
+        loadThread.start();
     }
 
     @FXML
@@ -271,32 +312,53 @@ public class ApprovalRequestController {
     public void handleDelete() {
         ApprovalItem selected = approvalRequestTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            new Alert(Alert.AlertType.WARNING, "삭제할 항목을 선택하세요.").showAndWait();
+            new Alert(Alert.AlertType.WARNING, "삭제할 결재를 선택하세요.").showAndWait();
             return;
         }
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                "선택한 항목을 삭제하시겠습니까?", ButtonType.YES, ButtonType.NO);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("결재 삭제");
+        alert.setHeaderText("결재 삭제 확인");
+        alert.setContentText("정말로 '" + selected.getTitle() + "' 결재를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.");
 
-        confirm.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.YES) {
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
                 try {
-                    ApiClient apiClient = ApiClient.getInstance();
-                    // TODO: 실제 결재 ID를 사용하여 삭제
-                    // 현재는 제목으로 식별하지만, 실제로는 고유 ID를 사용해야 함
-                    boolean success = apiClient.deleteApproval(1L); // 임시로 1L 사용
+                    ApprovalApiClient approvalApiClient = ApprovalApiClient.getInstance();
+                    // 실제 결재 ID를 사용하여 삭제
+                    boolean success = approvalApiClient.deleteApproval(Long.valueOf(selected.getId()));
                     
                     if (success) {
+                        // 성공 시 목록에서 제거
                         fullData.remove(selected);
+                        viewData.remove(selected);
+                        
+                        // 성공 메시지 표시
+                        Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+                        successAlert.setTitle("삭제 완료");
+                        successAlert.setHeaderText("결재 삭제 완료");
+                        successAlert.setContentText("결재가 성공적으로 삭제되었습니다.");
+                        successAlert.showAndWait();
+                        
+                        // 테이블 새로고침
                         updatePagination();
-                        new Alert(Alert.AlertType.INFORMATION, "삭제되었습니다.").showAndWait();
                     } else {
-                        new Alert(Alert.AlertType.ERROR, "삭제에 실패했습니다.").showAndWait();
+                        // 실패 메시지 표시
+                        Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                        errorAlert.setTitle("삭제 실패");
+                        errorAlert.setHeaderText("결재 삭제 실패");
+                        errorAlert.setContentText("결재 삭제 중 오류가 발생했습니다.");
+                        errorAlert.showAndWait();
                     }
                 } catch (Exception e) {
-                    System.err.println("결재 삭제 실패: " + e.getMessage());
+                    System.err.println("결재 삭제 중 오류 발생: " + e.getMessage());
                     e.printStackTrace();
-                    new Alert(Alert.AlertType.ERROR, "삭제 중 오류가 발생했습니다: " + e.getMessage()).showAndWait();
+                    
+                    Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                    errorAlert.setTitle("삭제 실패");
+                    errorAlert.setHeaderText("결재 삭제 실패");
+                    errorAlert.setContentText("결재 삭제 중 오류가 발생했습니다: " + e.getMessage());
+                    errorAlert.showAndWait();
                 }
             }
         });

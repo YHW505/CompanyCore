@@ -3,6 +3,7 @@ package com.example.companycore.service;
 import com.example.companycore.model.dto.NoticeItem;
 import com.example.companycore.model.dto.UserDto;
 import com.example.companycore.model.entity.User;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -402,9 +403,23 @@ public class UserApiClient extends BaseApiClient {
      */
     public boolean updateUser(User user) {
         try {
-            String json = objectMapper.writeValueAsString(user);
+            // UserUpdateRequest 형태로 변환
+            ObjectNode requestBody = objectMapper.createObjectNode();
+            requestBody.put("userId", user.getUserId());
+            requestBody.put("username", user.getUsername());
+            requestBody.put("email", user.getEmail());
+            requestBody.put("phone", user.getPhone());
+            requestBody.put("birthDate", user.getBirthDate() != null ? user.getBirthDate().toString() : null);
+            requestBody.put("address", user.getAddress());
+            requestBody.put("departmentId", user.getDepartmentId());
+            requestBody.put("positionId", user.getPositionId());
+            
+            String json = objectMapper.writeValueAsString(requestBody);
+            System.out.println("사용자 정보 업데이트 요청 JSON: " + json);
+            
             HttpRequest request = createAuthenticatedRequestBuilder("/user/update")
                     .PUT(HttpRequest.BodyPublishers.ofString(json))
+                    .header("Content-Type", "application/json")
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -415,11 +430,12 @@ public class UserApiClient extends BaseApiClient {
                 return true;
             } else {
                 System.out.println("사용자 정보 업데이트 실패 - 상태 코드: " + response.statusCode());
-                System.out.println("오류 응답: " + response.body());
+                System.out.println("오류 응답: " + getSafeResponseBody(response));
                 return false;
             }
         } catch (Exception e) {
             System.out.println("사용자 정보 업데이트 중 예외 발생: " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }

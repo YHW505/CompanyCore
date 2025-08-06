@@ -51,7 +51,7 @@ public class NoticeApiClient extends BaseApiClient {
                         .build();
 
                 HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-                logResponseInfo(response, "공지사항 조회 (페이지 " + page + ")");
+                // logResponseInfo(response, "공지사항 조회 (페이지 " + page + ")");
 
                 if (response.statusCode() == 200) {
                     String responseBody = getSafeResponseBody(response);
@@ -180,7 +180,7 @@ public class NoticeApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "ID로 공지사항 조회");
+            // logResponseInfo(response, "ID로 공지사항 조회");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -303,12 +303,7 @@ public class NoticeApiClient extends BaseApiClient {
             }
             
             String requestBody = objectMapper.writeValueAsString(requestNode);
-            // Base64 인코딩된 첨부파일 내용은 로그에서 제외
-            String logRequestBody = requestBody;
-            if (notice.hasAttachments() && notice.getAttachmentContent() != null && !notice.getAttachmentContent().isEmpty()) {
-                logRequestBody = requestBody.replace(notice.getAttachmentContent(), "[Base64 첨부파일 내용 생략]");
-            }
-            System.out.println("공지사항 생성 요청: " + logRequestBody);
+            System.out.println("공지사항 생성 요청: " + requestBody);
             
             HttpRequest request = createAuthenticatedRequestBuilder("/notices")
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody))
@@ -316,7 +311,7 @@ public class NoticeApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "공지사항 생성");
+            // logResponseInfo(response, "공지사항 생성");
 
             if (response.statusCode() == 201 || response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -442,7 +437,7 @@ public class NoticeApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "공지사항 수정");
+            // logResponseInfo(response, "공지사항 수정");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -506,7 +501,7 @@ public class NoticeApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "공지사항 삭제");
+            // logResponseInfo(response, "공지사항 삭제");
 
             return response.statusCode() == 200 || response.statusCode() == 204;
         } catch (Exception e) {
@@ -527,7 +522,7 @@ public class NoticeApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "제목으로 공지사항 검색");
+            // logResponseInfo(response, "제목으로 공지사항 검색");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -558,7 +553,7 @@ public class NoticeApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "부서별 공지사항 조회");
+            // logResponseInfo(response, "부서별 공지사항 조회");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -588,7 +583,7 @@ public class NoticeApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "중요 공지사항 조회");
+            // logResponseInfo(response, "중요 공지사항 조회");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -633,7 +628,7 @@ public class NoticeApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "복합 조건 공지사항 검색");
+            // logResponseInfo(response, "복합 조건 공지사항 검색");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -659,7 +654,7 @@ public class NoticeApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "최근 공지사항 조회");
+            // logResponseInfo(response, "최근 공지사항 조회");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);

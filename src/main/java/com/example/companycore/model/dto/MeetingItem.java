@@ -8,6 +8,7 @@ package com.example.companycore.model.dto;
  * @version 1.0
  */
 public class MeetingItem {
+    private final javafx.beans.property.LongProperty id;
     private final javafx.beans.property.StringProperty title;
     private final javafx.beans.property.StringProperty department;
     private final javafx.beans.property.StringProperty author;
@@ -24,6 +25,7 @@ public class MeetingItem {
     /**
      * MeetingItem 생성자
      * 
+     * @param id 회의 ID
      * @param title 제목
      * @param department 부서
      * @param author 작성자
@@ -36,10 +38,11 @@ public class MeetingItem {
      * @param attachmentFilename 첨부파일명
      * @param attachmentContentType 첨부파일 타입
      */
-    public MeetingItem(String title, String department, String author, String date, 
+    public MeetingItem(Long id, String title, String department, String author, String date, 
                       String description, String location,
                       String attachmentContent, String attachmentPath, Long attachmentSize,
                       String attachmentFilename, String attachmentContentType) {
+        this.id = new javafx.beans.property.SimpleLongProperty(id != null ? id : 0L);
         this.title = new javafx.beans.property.SimpleStringProperty(title);
         this.department = new javafx.beans.property.SimpleStringProperty(department);
         this.author = new javafx.beans.property.SimpleStringProperty(author);
@@ -54,6 +57,18 @@ public class MeetingItem {
     }
 
     // ==================== Getter/Setter 메서드 ====================
+    
+    public Long getId() { 
+        return id.get(); 
+    }
+    
+    public void setId(Long id) { 
+        this.id.set(id); 
+    }
+    
+    public javafx.beans.property.LongProperty idProperty() { 
+        return id; 
+    }
     
     public String getTitle() { 
         return title.get(); 

@@ -1,7 +1,6 @@
 package com.example.companycore.controller.tasks;
 
 import com.example.companycore.model.dto.ApprovalItem;
-import com.example.companycore.service.ApprovalApiClient;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
@@ -48,59 +47,11 @@ public class ApprovalDetailController {
      */
     public void setApprovalItem(ApprovalItem item) {
         this.approvalItem = item;
-
-        // 첨부파일이 있는 경우 상세 정보를 서버에서 가져오기
-        if (item != null && item.getAttachmentFilename() != null && !item.getAttachmentFilename().isEmpty()) {
-            try {
-                // serverId를 우선 사용하고, 없으면 getId() 사용
-                Long approvalId = item.getServerId();
-                if (approvalId == null) {
-                    approvalId = Long.parseLong(item.getId());
-                }
-                loadAttachmentContentFromServer(approvalId);
-            } catch (NumberFormatException e) {
-                System.err.println("❌ 결재 ID 변환 실패: " + item.getId());
-            }
-        }
+        // 이미 로드된 데이터만 사용하여 즉시 UI 업데이트
         updateUI();
     }
 
-    /**
-     * 서버에서 첨부파일 내용을 가져옵니다.
-     * 
-     * @param approvalId 결재 ID
-     */
-    private void loadAttachmentContentFromServer(Long approvalId) {
-        try {
-            // 별도 스레드에서 서버 요청
-            new Thread(() -> {
-                try {
-                    // ApprovalApiClient를 통해 상세 정보 가져오기
-                    var apiClient = ApprovalApiClient.getInstance();
-                    var detailedApproval = apiClient.getApprovalById(approvalId);
-                    
-                    if (detailedApproval != null && detailedApproval.getAttachmentContent() != null) {
-                        // UI 업데이트는 JavaFX 스레드에서 실행
-                        javafx.application.Platform.runLater(() -> {
-                            approvalItem.setAttachmentContent(detailedApproval.getAttachmentContent());
-                            updateUI();
-                        });
-                    } else {
-                        // 첨부파일 내용이 없으면 기본 UI 업데이트
-                        javafx.application.Platform.runLater(this::updateUI);
-                    }
-                } catch (Exception e) {
-                    System.err.println("❌ 첨부파일 내용 로드 실패: " + e.getMessage());
-                    // 오류 발생 시 기본 UI 업데이트
-                    javafx.application.Platform.runLater(this::updateUI);
-                }
-            }).start();
-//            isProgress = false;
-        } catch (Exception e) {
-            System.err.println("❌ 첨부파일 내용 로드 중 오류: " + e.getMessage());
-            updateUI();
-        }
-    }
+
 
     /**
      * UI를 결재 데이터로 업데이트합니다.
@@ -155,6 +106,12 @@ public class ApprovalDetailController {
 
         String attachmentFilename = approvalItem.getAttachmentFilename();
         Long attachmentSize = approvalItem.getAttachmentSize();
+
+        // 디버깅 정보 출력
+        System.out.println("🔍 첨부파일 정보 확인:");
+        System.out.println("  - 파일명: " + attachmentFilename);
+        System.out.println("  - 파일 크기: " + attachmentSize);
+        System.out.println("  - 첨부파일 내용 존재: " + (approvalItem.getAttachmentContent() != null && !approvalItem.getAttachmentContent().isEmpty()));
 
         // 첨부파일이 있는 경우 표시 (파일명이나 크기가 있으면)
         if ((attachmentFilename != null && !attachmentFilename.isEmpty()) || 
