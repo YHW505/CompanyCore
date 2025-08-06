@@ -4,6 +4,7 @@ import com.example.companycore.model.dto.MessageDto;
 import com.example.companycore.model.entity.User;
 import com.example.companycore.service.ApiClient;
 import com.example.companycore.service.MessageApiClient;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -16,8 +17,9 @@ import javafx.scene.layout.VBox;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MailController {
 
@@ -47,6 +49,8 @@ public class MailController {
     // 현재 메일함 타입 추적
     private String currentMailboxType = "allMailbox"; // 기본값: 전체 메일함
 
+    private Timer refreshTimer; // 메일 목록 자동 새로고침 타이머
+
     // 컨트롤러 초기화 시 자동 호출됨
     @FXML
     public void initialize() {
@@ -56,35 +60,55 @@ public class MailController {
 
         // 기본적으로 전체 메일함 로드
         loadMessages();
+
+        // 5초마다 메일 목록을 새로고침하는 타이머 설정
+        startMailRefreshTimer();
     }
 
-    // 현재 메일함 타입에 따라 메일 목록을 서버에서 조회
-    private void loadMessages() {
+    // 5초마다 메일 목록을 새로고침하는 타이머를 시작
+    private void startMailRefreshTimer() {
+        refreshTimer = new Timer(true); // 데몬 스레드로 설정하여 앱 종료 시 함께 종료
+        refreshTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                // 백그라운드 스레드에서 API를 호출하여 메일 목록을 가져옴
+                List<MessageDto> newMessages = fetchMessagesFromServer();
+
+                // UI 업데이트는 JavaFX Application Thread에서 실행
+                Platform.runLater(() -> {
+                    System.out.println("5초마다 메일 목록을 새로고침합니다.");
+                    messages = newMessages;
+                    updateMailListUI(); // UI 업데이트
+                });
+            }
+        }, 5000, 5000); // 5초 후에 시작해서 5초마다 반복
+    }
+
+    // 서버로부터 메시지를 가져오는 로직
+    private List<MessageDto> fetchMessagesFromServer() {
         long currentUserId = ApiClient.getInstance().getCurrentUser().getUserId();
+        List<MessageDto> fetchedMessages = new ArrayList<>();
 
         switch (currentMailboxType) {
             case "inbox":
-                // 받은 메일함
-                messages = messageApiClient.getReceiveMessagesById(currentUserId);
+                fetchedMessages.addAll(messageApiClient.getReceiveMessagesById(currentUserId));
                 break;
             case "sentMailbox":
-                // 보낸 메일함
-                messages = messageApiClient.getSentMessagesById(currentUserId);
+                fetchedMessages.addAll(messageApiClient.getSentMessagesById(currentUserId));
                 break;
             case "allMailbox":
             default:
-                // 전체 메일함: 받은 메일 + 보낸 메일 합치기
-                List<MessageDto> received = messageApiClient.getReceiveMessagesById(currentUserId);
-                List<MessageDto> sent = messageApiClient.getSentMessagesById(currentUserId);
-
-                // 두 리스트를 하나로 병합
-                messages = new ArrayList<>();
-                messages.addAll(received);
-                messages.addAll(sent);
+                fetchedMessages.addAll(messageApiClient.getReceiveMessagesById(currentUserId));
+                fetchedMessages.addAll(messageApiClient.getSentMessagesById(currentUserId));
                 break;
         }
+        return fetchedMessages;
+    }
 
-        // 페이지를 1로 리셋하고 UI 업데이트
+
+    // 현재 메일함 타입에 따라 메일 목록을 서버에서 조회
+    private void loadMessages() {
+        messages = fetchMessagesFromServer();
         currentPage = 1;
         updateMailListUI();
     }
@@ -337,6 +361,14 @@ public class MailController {
         } catch (IOException e) {
             showAlert("오류", "메일쓰기를 로드할 수 없습니다.", Alert.AlertType.ERROR);
             e.printStackTrace();
+        }
+    }
+
+    // 뷰가 파괴될 때 타이머를 중지하는 메서드
+    public void shutdown() {
+        if (refreshTimer != null) {
+            refreshTimer.cancel();
+            refreshTimer.purge();
         }
     }
 }
