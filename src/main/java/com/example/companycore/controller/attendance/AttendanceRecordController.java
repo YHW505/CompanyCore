@@ -1,6 +1,9 @@
 package com.example.companycore.controller.attendance;
 
+import com.example.companycore.model.entity.User;
+import com.example.companycore.service.UserApiClient;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
@@ -45,7 +48,13 @@ public class AttendanceRecordController implements Initializable {
     private void loadAttendanceRecordsFromServer() {
         try {
             // 실제 API 호출
-            List<Attendance> attendanceList = apiClient.getUserAttendance(1L);
+            User currentUser = UserApiClient.getInstance().getCurrentUser();
+//            if (currentUser == null) {
+//                showAlert(Alert.AlertType.ERROR, "오류", "사용자 정보를 가져올 수 없습니다.");
+//                return;
+//            }
+            long userId = currentUser.getUserId();
+            List<Attendance> attendanceList = apiClient.getUserAttendance(userId);
             
             // Attendance 엔티티를 AttendanceDto로 변환
             attendanceRecords.clear();

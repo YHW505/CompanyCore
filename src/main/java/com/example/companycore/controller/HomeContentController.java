@@ -11,6 +11,8 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -43,15 +45,82 @@ public class HomeContentController {
 
     @FXML
     public void initialize() {
-        updateToggleState(false);
+        // updateToggleState(false); // Initial state will be determined by API call
         loadAnnouncements();
         loadRecentAttendance(); // 새로운 메서드 호출
+        checkInitialAttendanceStatus(); // Check user's current attendance status
+    }
+
+    private void checkInitialAttendanceStatus() {
+        new Thread(() -> {
+            User currentUser = UserApiClient.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                Platform.runLater(() -> {
+                    showAlert(Alert.AlertType.ERROR, "오류", "사용자 정보를 가져올 수 없습니다.");
+                });
+                return;
+            }
+            long userId = currentUser.getUserId();
+            List<Attendance> notCheckedOut = AttendanceApiClient.getInstance().getNotCheckedOutAttendance(userId);
+            Platform.runLater(() -> {
+                isWorking = (notCheckedOut != null && !notCheckedOut.isEmpty());
+                updateToggleState(isWorking);
+            });
+        }).start();
     }
 
     @FXML
     public void handleToggleClick() {
-        isWorking = !isWorking;
-        updateToggleState(isWorking);
+        User currentUser = UserApiClient.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            showAlert(Alert.AlertType.ERROR, "오류", "사용자 정보를 가져올 수 없습니다.");
+            return;
+        }
+        long userId = currentUser.getUserId();
+
+        new Thread(() -> {
+            boolean success;
+            String action;
+            if (!isWorking) { // Currently "퇴근", want to "출근"
+                action = "출근";
+                success = AttendanceApiClient.getInstance().checkIn(userId);
+                Platform.runLater(() -> {
+                    if (success) {
+                        isWorking = !isWorking; // Toggle the state only on success
+                        updateToggleState(isWorking);
+                        showAlert(Alert.AlertType.INFORMATION, "성공", action + " 처리되었습니다.");
+                        loadRecentAttendance(); // Refresh recent attendance records
+                    } else {
+                        showAlert(Alert.AlertType.ERROR, "실패", action + " 기록이 이미 존재합니다.");
+                    }
+                });
+            } else { // Currently "근무중", want to "퇴근"
+                Platform.runLater(() -> {
+                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                    alert.setTitle("퇴근 확인");
+                    alert.setHeaderText(null);
+                    alert.setContentText("퇴근하시겠습니까?");
+
+                    alert.showAndWait().ifPresent(response -> {
+                        if (response == ButtonType.OK) {
+                            new Thread(() -> {
+                                boolean successCheckout = AttendanceApiClient.getInstance().checkOut(userId);
+                                Platform.runLater(() -> {
+                                    if (successCheckout) {
+                                        isWorking = !isWorking; // Toggle the state only on success
+                                        updateToggleState(isWorking);
+                                        showAlert(Alert.AlertType.INFORMATION, "성공", "퇴근 처리되었습니다.");
+                                        loadRecentAttendance(); // Refresh recent attendance records
+                                    } else {
+                                        showAlert(Alert.AlertType.ERROR, "실패", "퇴근 처리에 실패했습니다.");
+                                    }
+                                });
+                            }).start();
+                        }
+                    });
+                });
+            }
+        }).start();
     }
 
     private void updateToggleState(boolean working) {
@@ -205,5 +274,15 @@ public class HomeContentController {
                 }
             });
         }).start();
+    }
+
+    private void showAlert(Alert.AlertType alertType, String title, String message) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(alertType);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.setContentText(message);
+            alert.showAndWait();
+        });
     }
 } 

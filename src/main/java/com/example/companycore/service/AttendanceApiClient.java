@@ -35,7 +35,7 @@ public class AttendanceApiClient extends BaseApiClient {
      */
     public boolean checkIn(Long userId) {
         try {
-            String endpoint = "/attendance/check-in/" + userId;
+            String endpoint = "/attendance/check-in?userId=" + userId;
             HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
                     .POST(HttpRequest.BodyPublishers.noBody())
                     .build();
@@ -62,7 +62,7 @@ public class AttendanceApiClient extends BaseApiClient {
      */
     public boolean checkOut(Long userId) {
         try {
-            String endpoint = "/attendance/check-out/" + userId;
+            String endpoint = "/attendance/check-out?userId=" + userId;
             HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
                     .POST(HttpRequest.BodyPublishers.noBody())
                     .build();
