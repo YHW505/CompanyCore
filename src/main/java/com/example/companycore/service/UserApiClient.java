@@ -443,9 +443,10 @@ public class UserApiClient extends BaseApiClient {
     /**
      * 비밀번호를 변경합니다.
      */
-    public boolean changePassword(String currentPassword, String newPassword) {
+    public boolean changePassword(String currentPassword, String newPassword, Long userId) {
         try {
             ObjectNode requestBody = objectMapper.createObjectNode();
+            requestBody.put("userId", userId);
             requestBody.put("currentPassword", currentPassword);
             requestBody.put("newPassword", newPassword);
 
