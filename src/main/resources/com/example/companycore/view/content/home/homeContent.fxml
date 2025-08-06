@@ -21,33 +21,11 @@
                 <Label text="공지사항" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
                 <VBox fx:id="announcementBox" spacing="10" style="-fx-padding: 10 0 0 0;"/>
             </VBox>
-            
-            <!-- 처리할 업무 -->
+
+            <!-- 최근 출근 기록 -->
             <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
-                <Label text="처리할 업무" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-                <VBox fx:id="taskBox" spacing="10" style="-fx-padding: 10 0 0 0;">
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="👤" style="-fx-font-size: 12px;"/>
-                        <Region style="-fx-background-color: #bdc3c7; -fx-pref-width: 200; -fx-pref-height: 8; -fx-background-radius: 4;"/>
-                    </HBox>
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="👤" style="-fx-font-size: 12px;"/>
-                        <Region style="-fx-background-color: #bdc3c7; -fx-pref-width: 200; -fx-pref-height: 8; -fx-background-radius: 4;"/>
-                    </HBox>
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="⚠" style="-fx-font-size: 12px;"/>
-                        <Region style="-fx-background-color: #bdc3c7; -fx-pref-width: 200; -fx-pref-height: 8; -fx-background-radius: 4;"/>
-                    </HBox>
-                </VBox>
-            </VBox>
-            
-            <!-- 결재 서류 섹션 -->
-            <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
-                <Label text="결재 서류" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-                <VBox fx:id="approvalBox" spacing="5" style="-fx-padding: 10 0 0 0;">
-                    <Label text="• 반갑습니다" style="-fx-padding: 5 0;"/>
-                    <Label text="• 결재 서류입니다." style="-fx-padding: 5 0;"/>
-                </VBox>
+                <Label text="최근 출근 기록" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <VBox fx:id="recentAttendanceBox" spacing="10" style="-fx-padding: 10 0 0 0;"/>
             </VBox>
         </VBox>
         
