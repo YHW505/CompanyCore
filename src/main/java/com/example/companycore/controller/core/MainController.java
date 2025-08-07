@@ -8,6 +8,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
@@ -25,6 +26,8 @@ public class MainController {
     private Object currentContentController; // 현재 로드된 콘텐츠의 컨트롤러
     private Stage mainStage;
     private ApiClient apiClient;
+    private boolean isLoggedOut = false; // 로그아웃 상태 플래그
+    private javafx.animation.Timeline tokenValidationTimeline; // 토큰 검증 타임라인
 
     public void setStage(Stage stage) {
         this.mainStage = stage;
@@ -42,6 +45,8 @@ public class MainController {
             loadHomeContent();
             // Scene이 완전히 설정된 후 사이드바 통신 설정
             setupSidebarCommunication();
+            // 토큰 유효성 검증 시작
+            startTokenValidation();
         });
     }
 
@@ -75,13 +80,206 @@ public class MainController {
                 }
             }
         });
+        
+        // 전체화면 지원 설정
+        setupFullscreenSupport();
+    }
+    
+    private void setupFullscreenSupport() {
+        if (mainStage != null && mainStage.getScene() != null) {
+            Scene scene = mainStage.getScene();
+            
+            // F11 키로 전체화면 토글
+            scene.setOnKeyPressed(event -> {
+                switch (event.getCode()) {
+                    case F11:
+                        toggleFullscreen();
+                        break;
+                    case ESCAPE:
+                        if (mainStage.isFullScreen()) {
+                            mainStage.setFullScreen(false);
+                        }
+                        break;
+                }
+            });
+            
+            // 창 크기 변경 시 리사이징 처리
+            mainStage.widthProperty().addListener((obs, oldVal, newVal) -> {
+                handleWindowResize();
+            });
+            
+            mainStage.heightProperty().addListener((obs, oldVal, newVal) -> {
+                handleWindowResize();
+            });
+        }
+    }
+    
+    @FXML
+    private void toggleFullscreen() {
+        if (mainStage != null) {
+            if (mainStage.isFullScreen()) {
+                mainStage.setFullScreen(false);
+            } else {
+                mainStage.setFullScreen(true);
+            }
+        }
+    }
+    
+    private void handleWindowResize() {
+        if (mainStage != null && mainStage.getScene() != null) {
+            double width = mainStage.getWidth();
+            double height = mainStage.getHeight();
+            
+            // 최소 크기 보장
+            if (width < 800) width = 800;
+            if (height < 600) height = 600;
+            
+            // 루트 컨테이너 크기 조정
+            if (mainStage.getScene().getRoot() != null) {
+                Parent root = mainStage.getScene().getRoot();
+                if (root instanceof javafx.scene.layout.Region) {
+                    javafx.scene.layout.Region region = (javafx.scene.layout.Region) root;
+                    region.setPrefSize(width, height);
+                    region.setMinSize(800, 600);
+                }
+            }
+        }
     }
 
     private void handleLogout() {
-        // ApiClient에서 토큰 등 인증 정보 제거
-        apiClient.clearToken();
+        // 로그아웃 상태 설정
+        isLoggedOut = true;
+        
+        // 실제 로그아웃 처리 수행
+        performLogout();
+    }
+    
+    /**
+     * 토큰 유효성 검증을 주기적으로 수행
+     */
+    private void startTokenValidation() {
+        // 30초마다 토큰 유효성 검증
+        tokenValidationTimeline = new javafx.animation.Timeline(
+            new javafx.animation.KeyFrame(javafx.util.Duration.seconds(30), event -> {
+                if (!isLoggedOut) {
+                    validateToken();
+                }
+            })
+        );
+        tokenValidationTimeline.setCycleCount(javafx.animation.Timeline.INDEFINITE);
+        tokenValidationTimeline.play();
+    }
+    
+    /**
+     * 토큰 유효성 검증
+     */
+    private int consecutiveValidationFailures = 0;
+    private static final int MAX_CONSECUTIVE_FAILURES = 3;
+    
+    private void validateToken() {
+        if (isLoggedOut) {
+            return; // 이미 로그아웃된 상태면 검증 중단
+        }
+        
+        try {
+            boolean isValid = apiClient.validateToken();
+            if (isValid) {
+                // 성공 시 연속 실패 카운터 리셋
+                consecutiveValidationFailures = 0;
+                System.out.println("토큰 검증 성공");
+            } else {
+                consecutiveValidationFailures++;
+                System.out.println("토큰 검증 실패 (연속 " + consecutiveValidationFailures + "회)");
+                
+                // 연속 실패가 임계값을 초과한 경우에만 로그아웃
+                if (consecutiveValidationFailures >= MAX_CONSECUTIVE_FAILURES) {
+                    System.out.println("연속 " + MAX_CONSECUTIVE_FAILURES + "회 토큰 검증 실패로 로그아웃 처리");
+                    handleDuplicateLoginLogout();
+                }
+            }
+        } catch (Exception e) {
+            consecutiveValidationFailures++;
+            System.err.println("토큰 검증 중 오류: " + e.getMessage());
+            
+            // 네트워크 오류 등으로 인한 연속 실패가 임계값을 초과한 경우에만 로그아웃
+            if (consecutiveValidationFailures >= MAX_CONSECUTIVE_FAILURES) {
+                System.out.println("연속 " + MAX_CONSECUTIVE_FAILURES + "회 토큰 검증 오류로 로그아웃 처리");
+                handleNetworkErrorLogout();
+            }
+        }
+    }
+    
+    /**
+     * 중복 로그인으로 인한 로그아웃 처리
+     */
+    private void handleDuplicateLoginLogout() {
+        if (isLoggedOut) {
+            return; // 이미 로그아웃 처리됨
+        }
+        
+        isLoggedOut = true;
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("세션 종료");
+            alert.setHeaderText("다른 곳에서 로그인되어 현재 세션이 종료되었습니다.");
+            alert.setContentText("로그인 화면으로 이동합니다.");
+            alert.showAndWait();
+            
+            // 직접 로그아웃 처리 (handleLogout 호출하지 않음)
+            performLogout();
+        });
+    }
+    
+    /**
+     * 네트워크 오류로 인한 로그아웃 처리
+     */
+    private void handleNetworkErrorLogout() {
+        if (isLoggedOut) {
+            return; // 이미 로그아웃 처리됨
+        }
+        
+        isLoggedOut = true;
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("연결 오류");
+            alert.setHeaderText("서버와의 연결이 불안정합니다.");
+            alert.setContentText("로그인 화면으로 이동합니다.");
+            alert.showAndWait();
+            performLogout();
+        });
+    }
+    
+    /**
+     * 실제 로그아웃 처리 (UI 상태 보존)
+     */
+    private void performLogout() {
+        // 토큰 검증 타임라인 중단
+        if (tokenValidationTimeline != null) {
+            tokenValidationTimeline.stop();
+        }
+        
+        try {
+            // 로그아웃 처리
+            boolean logoutSuccess = apiClient.logout();
+            
+            if (logoutSuccess) {
+                System.out.println("로그아웃 성공");
+            } else {
+                System.out.println("로그아웃 실패");
+            }
+        } catch (Exception e) {
+            System.err.println("로그아웃 처리 중 예외 발생: " + e.getMessage());
+            e.printStackTrace();
+        }
 
         try {
+            // 현재 Stage 상태 저장
+            boolean wasFullScreen = mainStage.isFullScreen();
+            double currentWidth = mainStage.getWidth();
+            double currentHeight = mainStage.getHeight();
+            double currentX = mainStage.getX();
+            double currentY = mainStage.getY();
+            
             // 로그인 화면으로 돌아가기
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/login/loginView.fxml"));
             Parent loginRoot = loader.load();
@@ -89,6 +287,19 @@ public class MainController {
 
             mainStage.setScene(scene);
             mainStage.setTitle("CompanyCore - 로그인");
+            mainStage.setResizable(false);
+            
+            // Stage 위치 및 크기 복원
+            mainStage.setX(currentX);
+            mainStage.setY(currentY);
+            mainStage.setWidth(currentWidth);
+            mainStage.setHeight(currentHeight);
+            
+            // 전체화면 상태 복원
+            if (wasFullScreen) {
+                mainStage.setFullScreen(true);
+            }
+            
             mainStage.show();
 
         } catch (IOException e) {

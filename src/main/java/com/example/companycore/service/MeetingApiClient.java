@@ -400,6 +400,142 @@ public class MeetingApiClient extends BaseApiClient {
     }
 
     /**
+     * 부서별 회의 목록 조회
+     * @param department 부서명
+     * @return 부서별 회의 목록
+     */
+    public List<MeetingDto> getMeetingsByDepartment(String department) {
+        try {
+            String encodedDepartment = java.net.URLEncoder.encode(department, "UTF-8");
+            System.out.println("🔍 부서별 회의 목록 조회 - 부서: " + department);
+            
+            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/meetings/department/" + encodedDepartment);
+            HttpRequest request = builder.GET().build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            // logResponseInfo(response, "부서별 회의 목록 조회");
+
+            if (response.statusCode() == 200) {
+                String responseBody = getSafeResponseBody(response);
+                if (responseBody != null && !responseBody.trim().isEmpty()) {
+                    return objectMapper.readValue(responseBody, new TypeReference<List<MeetingDto>>() {});
+                }
+            } else {
+                System.err.println("❌ 부서별 회의 목록 조회 실패 - 상태 코드: " + response.statusCode());
+                String responseBody = getSafeResponseBody(response);
+                System.err.println("❌ 오류 응답: " + responseBody);
+            }
+        } catch (Exception e) {
+            System.err.println("❌ 부서별 회의 목록 조회 중 예외 발생: " + e.getMessage());
+            e.printStackTrace();
+            handleChunkedTransferError(e, "부서별 회의 목록 조회");
+        }
+        return new ArrayList<>();
+    }
+
+    /**
+     * 부서별 현재 진행중인 회의 조회
+     * @param department 부서명
+     * @return 부서별 현재 진행중인 회의 목록
+     */
+    public List<MeetingDto> getCurrentMeetingsByDepartment(String department) {
+        try {
+            String encodedDepartment = java.net.URLEncoder.encode(department, "UTF-8");
+            System.out.println("🔍 부서별 현재 진행중인 회의 조회 - 부서: " + department);
+            
+            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/meetings/department/" + encodedDepartment + "/current");
+            HttpRequest request = builder.GET().build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            // logResponseInfo(response, "부서별 현재 진행중인 회의 조회");
+
+            if (response.statusCode() == 200) {
+                String responseBody = getSafeResponseBody(response);
+                if (responseBody != null && !responseBody.trim().isEmpty()) {
+                    return objectMapper.readValue(responseBody, new TypeReference<List<MeetingDto>>() {});
+                }
+            } else {
+                System.err.println("❌ 부서별 현재 진행중인 회의 조회 실패 - 상태 코드: " + response.statusCode());
+                String responseBody = getSafeResponseBody(response);
+                System.err.println("❌ 오류 응답: " + responseBody);
+            }
+        } catch (Exception e) {
+            System.err.println("❌ 부서별 현재 진행중인 회의 조회 중 예외 발생: " + e.getMessage());
+            e.printStackTrace();
+            handleChunkedTransferError(e, "부서별 현재 진행중인 회의 조회");
+        }
+        return new ArrayList<>();
+    }
+
+    /**
+     * 부서별 예정된 회의 조회
+     * @param department 부서명
+     * @return 부서별 예정된 회의 목록
+     */
+    public List<MeetingDto> getUpcomingMeetingsByDepartment(String department) {
+        try {
+            String encodedDepartment = java.net.URLEncoder.encode(department, "UTF-8");
+            System.out.println("🔍 부서별 예정된 회의 조회 - 부서: " + department);
+            
+            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/meetings/department/" + encodedDepartment + "/upcoming");
+            HttpRequest request = builder.GET().build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            // logResponseInfo(response, "부서별 예정된 회의 조회");
+
+            if (response.statusCode() == 200) {
+                String responseBody = getSafeResponseBody(response);
+                if (responseBody != null && !responseBody.trim().isEmpty()) {
+                    return objectMapper.readValue(responseBody, new TypeReference<List<MeetingDto>>() {});
+                }
+            } else {
+                System.err.println("❌ 부서별 예정된 회의 조회 실패 - 상태 코드: " + response.statusCode());
+                String responseBody = getSafeResponseBody(response);
+                System.err.println("❌ 오류 응답: " + responseBody);
+            }
+        } catch (Exception e) {
+            System.err.println("❌ 부서별 예정된 회의 조회 중 예외 발생: " + e.getMessage());
+            e.printStackTrace();
+            handleChunkedTransferError(e, "부서별 예정된 회의 조회");
+        }
+        return new ArrayList<>();
+    }
+
+    /**
+     * 부서별 완료된 회의 조회
+     * @param department 부서명
+     * @return 부서별 완료된 회의 목록
+     */
+    public List<MeetingDto> getPastMeetingsByDepartment(String department) {
+        try {
+            String encodedDepartment = java.net.URLEncoder.encode(department, "UTF-8");
+            System.out.println("🔍 부서별 완료된 회의 조회 - 부서: " + department);
+            
+            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/meetings/department/" + encodedDepartment + "/past");
+            HttpRequest request = builder.GET().build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            // logResponseInfo(response, "부서별 완료된 회의 조회");
+
+            if (response.statusCode() == 200) {
+                String responseBody = getSafeResponseBody(response);
+                if (responseBody != null && !responseBody.trim().isEmpty()) {
+                    return objectMapper.readValue(responseBody, new TypeReference<List<MeetingDto>>() {});
+                }
+            } else {
+                System.err.println("❌ 부서별 완료된 회의 조회 실패 - 상태 코드: " + response.statusCode());
+                String responseBody = getSafeResponseBody(response);
+                System.err.println("❌ 오류 응답: " + responseBody);
+            }
+        } catch (Exception e) {
+            System.err.println("❌ 부서별 완료된 회의 조회 중 예외 발생: " + e.getMessage());
+            e.printStackTrace();
+            handleChunkedTransferError(e, "부서별 완료된 회의 조회");
+        }
+        return new ArrayList<>();
+    }
+
+    /**
      * 회의 DTO 클래스
      */
     public static class MeetingDto {
