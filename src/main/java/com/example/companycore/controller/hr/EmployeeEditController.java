@@ -187,6 +187,26 @@ public class EmployeeEditController {
             }
         }
         
+        // 부서 유효성 검증
+        String departmentName = departmentTextField.getText().trim();
+        if (!departmentName.isEmpty()) {
+            Integer departmentId = getDepartmentIdByName(departmentName);
+            if (departmentId == null) {
+                showAlert("입력 오류", "존재하지 않는 부서입니다.\n\n사용 가능한 부서:\n• 인사팀\n• 개발팀", Alert.AlertType.ERROR);
+                return false;
+            }
+        }
+        
+        // 직급 유효성 검증
+        String positionName = positionTextField.getText().trim();
+        if (!positionName.isEmpty()) {
+            Integer positionId = getPositionIdByName(positionName);
+            if (positionId == null) {
+                showAlert("입력 오류", "존재하지 않는 직급입니다.\n\n사용 가능한 직급:\n• 부장\n• 차장\n• 과장\n• 대리\n• 주임\n• 사원", Alert.AlertType.ERROR);
+                return false;
+            }
+        }
+        
         // 비밀번호 변경 시 검증
         if (isPasswordChange) {
             if (passwordField.getText().trim().isEmpty()) {
@@ -224,12 +244,6 @@ public class EmployeeEditController {
                 return 1;
             case "개발팀":
                 return 2;
-            case "마케팅팀":
-                return 3;
-            case "영업팀":
-                return 4;
-            case "기획팀":
-                return 5;
             default:
                 return null;
         }
@@ -242,17 +256,17 @@ public class EmployeeEditController {
         }
         
         switch (positionName.trim()) {
-            case "사원":
+            case "부장":
                 return 1;
-            case "대리":
+            case "차장":
                 return 2;
             case "과장":
                 return 3;
-            case "부장":
+            case "대리":
                 return 4;
-            case "이사":
+            case "주임":
                 return 5;
-            case "대표":
+            case "사원":
                 return 6;
             default:
                 return null;
@@ -288,7 +302,7 @@ public class EmployeeEditController {
             } else {
                 // 기존 직급 ID 유지 (변경되지 않은 경우)
                 if (user.getPositionId() == null) {
-                    user.setPositionId(1); // 기본값: 사원
+                    user.setPositionId(6); // 기본값: 사원
                 }
             }
             
