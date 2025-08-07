@@ -38,6 +38,12 @@ public class HomeContentController {
     private Label userStatusLabel;
 
     @FXML
+    private Label homeUserName;
+
+    @FXML
+    private Label homeUserPosition;
+
+    @FXML
     private VBox announcementBox;
 
     @FXML
@@ -57,6 +63,7 @@ public class HomeContentController {
         loadAnnouncements();
         loadRecentAttendance(); // 새로운 메서드 호출
         loadPendingApprovals(); // 결재 요청 로드
+        loadUserData();
 
         if (!statusInitialized) {
             checkInitialAttendanceStatus();
@@ -151,6 +158,18 @@ public class HomeContentController {
                 userStatusLabel.setText("퇴근");
                 userStatusLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
             }
+        }
+    }
+
+    private void loadUserData () {
+        User currentUser = UserApiClient.getInstance().getCurrentUser();
+        if(currentUser != null) {
+            homeUserName.setText(currentUser.getUsername());
+            homeUserPosition.setText(currentUser.getPositionName());
+        } else{
+            showAlert(Alert.AlertType.ERROR, "불러오기 실패", "사용자 정보를 불러오는데 실패하였습니다.");
+            homeUserName.setText("000");
+            homeUserPosition.setText("사원");
         }
     }
 
