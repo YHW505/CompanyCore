@@ -83,6 +83,26 @@ public class ApiClient {
 //        approvalApiClient.clearToken();
 //        noticeApiClient.clearToken();
     }
+    
+    /**
+     * 토큰 유효성 검증
+     * @return 토큰이 유효한지 여부
+     */
+    public boolean validateToken() {
+        return userApiClient.validateToken();
+    }
+    
+    /**
+     * 로그아웃 처리
+     * @return 로그아웃 성공 여부
+     */
+    public boolean logout() {
+        boolean result = userApiClient.logout();
+        if (result) {
+            clearToken();
+        }
+        return result;
+    }
 
     // User API 관련 메서드들
     public com.example.companycore.model.entity.User getCurrentUser() {

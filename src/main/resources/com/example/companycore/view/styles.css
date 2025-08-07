@@ -92,3 +92,13 @@
     -fx-border-color: #0056b3;
     -fx-border-width: 2px;
 }
+
+
+
+/* 리사이징 지원을 위한 스타일 */
+.resizable-content {
+    -fx-pref-width: 100%;
+    -fx-pref-height: 100%;
+    -fx-min-width: 800px;
+    -fx-min-height: 600px;
+}
