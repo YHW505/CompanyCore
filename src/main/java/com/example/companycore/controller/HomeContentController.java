@@ -313,18 +313,20 @@ public class HomeContentController {
 
             // positionId가 1인 경우에만 박스를 표시
             if (currentUser.getPositionId() != null && currentUser.getPositionId() == 1) {
-                String departmentName = currentUser.getDepartmentName();
-                System.out.println("부서명 =========== " + departmentName);
-                Map<String, Object> pendingApprovals = ApprovalApiClient.getInstance().getMyPendingWithPagination(departmentName, 0, 10, "requestDate", "desc");
+                Integer departmentId = currentUser.getDepartmentId();
+                System.out.println("부서명 =========== " + departmentId);
+                Map<String, Object> pendingApprovals = ApprovalApiClient.getInstance().getMyPendingWithPagination(departmentId, 0, 10, "requestDate", "desc");
                 Platform.runLater(() -> {
+                    System.out.println("pendingApprovals ==========" + pendingApprovals);
                     if (pendingApprovalBox != null) {
                         pendingApprovalBox.setVisible(true);
-                        int count = (pendingApprovals != null) ? pendingApprovals.size() : 0;
+                        List<Map<String, Object>> contentList = (List<Map<String, Object>>) pendingApprovals.get("content");
+                        int count = (contentList != null) ? contentList.size(): 0;
                         pendingApprovalCountLabel.setText(count + "건");
                         pendingApprovalBox.setOnMouseClicked(event -> {
                             MainController mainController = (MainController) pendingApprovalBox.getScene().getUserData();
                             if (mainController != null) {
-                                mainController.loadContent("approvalApprovalContent"); // 결재 요청 목록 뷰로 전환
+                                mainController.loadContent("approvalRequestContent"); // 결재 요청 목록 뷰로 전환
                             }
                         });
                     }
