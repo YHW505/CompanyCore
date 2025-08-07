@@ -7,6 +7,7 @@ import com.example.companycore.model.entity.User;
 import com.example.companycore.service.AttendanceApiClient;
 import com.example.companycore.service.NoticeApiClient;
 import com.example.companycore.service.UserApiClient;
+import com.example.companycore.service.ApprovalApiClient;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -17,9 +18,13 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 public class HomeContentController {
 
@@ -36,10 +41,22 @@ public class HomeContentController {
     private Label userStatusLabel;
 
     @FXML
+    private Label homeUserName;
+
+    @FXML
+    private Label homeUserPosition;
+
+    @FXML
     private VBox announcementBox;
 
     @FXML
     private VBox recentAttendanceBox; // 새로 추가된 VBox
+
+    @FXML
+    private VBox pendingApprovalBox; // 새로 추가된 결재 요청 박스
+
+    @FXML
+    private Label pendingApprovalCountLabel; // 결재 요청 건수 라벨
 
     private static boolean isWorking = false;
     private static boolean statusInitialized = false;
@@ -48,6 +65,8 @@ public class HomeContentController {
     public void initialize() {
         loadAnnouncements();
         loadRecentAttendance(); // 새로운 메서드 호출
+        loadPendingApprovals(); // 결재 요청 로드
+        loadUserData();
 
         if (!statusInitialized) {
             checkInitialAttendanceStatus();
@@ -55,6 +74,15 @@ public class HomeContentController {
         } else {
             updateToggleState(isWorking);
         }
+
+        // 10초마다 새로고침
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(10), event -> {
+            loadAnnouncements();
+            loadRecentAttendance();
+            loadPendingApprovals();
+        }));
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
     }
 
     private void checkInitialAttendanceStatus() {
@@ -142,6 +170,18 @@ public class HomeContentController {
                 userStatusLabel.setText("퇴근");
                 userStatusLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
             }
+        }
+    }
+
+    private void loadUserData () {
+        User currentUser = UserApiClient.getInstance().getCurrentUser();
+        if(currentUser != null) {
+            homeUserName.setText(currentUser.getUsername());
+            homeUserPosition.setText(currentUser.getPositionName());
+        } else{
+            showAlert(Alert.AlertType.ERROR, "불러오기 실패", "사용자 정보를 불러오는데 실패하였습니다.");
+            homeUserName.setText("000");
+            homeUserPosition.setText("사원");
         }
     }
 
@@ -291,4 +331,42 @@ public class HomeContentController {
             alert.showAndWait();
         });
     }
-} 
+
+    private void loadPendingApprovals() {
+        new Thread(() -> {
+            User currentUser = UserApiClient.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                Platform.runLater(() -> {
+                    if (pendingApprovalBox != null) pendingApprovalBox.setVisible(false);
+                });
+                return;
+            }
+
+            // positionId가 1인 경우에만 박스를 표시
+            if (currentUser.getPositionId() != null && currentUser.getPositionId() == 1) {
+                Integer departmentId = currentUser.getDepartmentId();
+                System.out.println("부서명 =========== " + departmentId);
+                Map<String, Object> pendingApprovals = ApprovalApiClient.getInstance().getMyPendingWithPagination(departmentId, 0, 10, "requestDate", "desc");
+                Platform.runLater(() -> {
+                    System.out.println("pendingApprovals ==========" + pendingApprovals);
+                    if (pendingApprovalBox != null) {
+                        pendingApprovalBox.setVisible(true);
+                        List<Map<String, Object>> contentList = (List<Map<String, Object>>) pendingApprovals.get("content");
+                        int count = (contentList != null) ? contentList.size(): 0;
+                        pendingApprovalCountLabel.setText(count + "건");
+                        pendingApprovalBox.setOnMouseClicked(event -> {
+                            MainController mainController = (MainController) pendingApprovalBox.getScene().getUserData();
+                            if (mainController != null) {
+                                mainController.loadContent("approvalApproval"); // 결재 요청 목록 뷰로 전환
+                            }
+                        });
+                    }
+                });
+            } else {
+                Platform.runLater(() -> {
+                    if (pendingApprovalBox != null) pendingApprovalBox.setVisible(false);
+                });
+            }
+        }).start();
+    }
+}
