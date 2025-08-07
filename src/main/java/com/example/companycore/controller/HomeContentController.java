@@ -326,7 +326,7 @@ public class HomeContentController {
                         pendingApprovalBox.setOnMouseClicked(event -> {
                             MainController mainController = (MainController) pendingApprovalBox.getScene().getUserData();
                             if (mainController != null) {
-                                mainController.loadContent("approvalRequestContent"); // 결재 요청 목록 뷰로 전환
+                                mainController.loadContent("approvalApproval"); // 결재 요청 목록 뷰로 전환
                             }
                         });
                     }
