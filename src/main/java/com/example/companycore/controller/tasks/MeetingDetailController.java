@@ -40,7 +40,51 @@ public class MeetingDetailController {
      */
     public void setMeetingItem(MeetingItem item) {
         this.meetingItem = item;
-        updateUI();
+        // 서버에서 상세 정보를 가져와서 UI 업데이트
+        loadDetailFromServer();
+    }
+
+    /**
+     * 서버에서 상세 정보를 가져와서 UI를 업데이트합니다.
+     */
+    private void loadDetailFromServer() {
+        if (meetingItem == null) return;
+        
+        try {
+            // 서버에서 상세 정보 가져오기
+            com.example.companycore.service.MeetingApiClient meetingApiClient = 
+                com.example.companycore.service.MeetingApiClient.getInstance();
+            
+            com.example.companycore.service.MeetingApiClient.MeetingDto detailDto = 
+                meetingApiClient.getMeetingById(meetingItem.getId());
+            
+            if (detailDto != null) {
+                // 상세 정보로 MeetingItem 업데이트
+                this.meetingItem = new com.example.companycore.model.dto.MeetingItem(
+                    detailDto.getMeetingId(),
+                    detailDto.getTitle(),
+                    detailDto.getDepartment(),
+                    detailDto.getAuthor(),
+                    detailDto.getStartTime() != null ? detailDto.getStartTime().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")) : "",
+                    detailDto.getDescription(),
+                    detailDto.getLocation(),
+                    detailDto.getAttachmentContent(),
+                    detailDto.getAttachmentPath(),
+                    detailDto.getAttachmentSize(),
+                    detailDto.getAttachmentFilename(),
+                    detailDto.getAttachmentContentType()
+                );
+                updateUI();
+            } else {
+                // 서버에서 정보를 가져올 수 없는 경우 기본 정보로 표시
+                updateUI();
+            }
+        } catch (Exception e) {
+            System.err.println("상세 정보 로드 중 오류: " + e.getMessage());
+            e.printStackTrace();
+            // 오류 발생 시 기본 정보로 표시
+            updateUI();
+        }
     }
 
     /**

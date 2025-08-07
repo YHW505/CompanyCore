@@ -229,8 +229,58 @@ public class ApprovalApiClient extends BaseApiClient {
                         // data 필드가 있는 경우
                         result = objectMapper.treeToValue(jsonNode.get("data"), ApprovalDto.class);
                     } else {
-                        // 직접 JSON 객체로 응답하는 경우
-                        result = objectMapper.treeToValue(jsonNode, ApprovalDto.class);
+                        // 직접 JSON 객체로 응답하는 경우 - 서버 응답 구조에 맞게 수동 파싱
+                        result = new ApprovalDto();
+                        result.setId(jsonNode.get("id").asLong());
+                        result.setTitle(jsonNode.get("title").asText());
+                        result.setContent(jsonNode.get("content").asText());
+                        result.setStatus(jsonNode.get("status").asText());
+                        
+                        // 날짜 파싱
+                        if (jsonNode.has("requestDate")) {
+                            try {
+                                result.setRequestDate(LocalDateTime.parse(jsonNode.get("requestDate").asText()));
+                            } catch (Exception e) {
+                                System.err.println("날짜 파싱 오류: " + e.getMessage());
+                            }
+                        }
+                        
+                        // 첨부파일 정보
+                        if (jsonNode.has("attachmentFilename")) {
+                            result.setAttachmentFilename(jsonNode.get("attachmentFilename").asText());
+                        }
+                        if (jsonNode.has("attachmentSize")) {
+                            result.setAttachmentSize(jsonNode.get("attachmentSize").asLong());
+                        }
+                        if (jsonNode.has("attachmentContent")) {
+                            result.setAttachmentContent(jsonNode.get("attachmentContent").asText());
+                        }
+                        
+                        // 요청자 정보 파싱
+                        if (jsonNode.has("requester") && !jsonNode.get("requester").isNull()) {
+                            JsonNode requesterNode = jsonNode.get("requester");
+                            UserDto requester = new UserDto();
+                            requester.setUserId(requesterNode.get("userId").asLong());
+                            requester.setUsername(requesterNode.get("username").asText());
+                            // 서버 응답의 department 필드를 departmentName으로 매핑
+                            if (requesterNode.has("department")) {
+                                requester.setDepartmentName(requesterNode.get("department").asText());
+                            }
+                            result.setRequester(requester);
+                        }
+                        
+                        // 승인자 정보 파싱
+                        if (jsonNode.has("approver") && !jsonNode.get("approver").isNull()) {
+                            JsonNode approverNode = jsonNode.get("approver");
+                            UserDto approver = new UserDto();
+                            approver.setUserId(approverNode.get("userId").asLong());
+                            approver.setUsername(approverNode.get("username").asText());
+                            // 서버 응답의 department 필드를 departmentName으로 매핑
+                            if (approverNode.has("department")) {
+                                approver.setDepartmentName(approverNode.get("department").asText());
+                            }
+                            result.setApprover(approver);
+                        }
                     }
                     
                     System.out.println("✅ 상세 조회 파싱 성공");

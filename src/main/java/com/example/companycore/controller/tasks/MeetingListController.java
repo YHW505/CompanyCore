@@ -318,7 +318,8 @@ public class MeetingListController {
             @Override
             protected Void call() throws Exception {
                 MeetingApiClient meetingApiClient = MeetingApiClient.getInstance();
-                List<MeetingApiClient.MeetingDto> meetings = meetingApiClient.getAllMeetings();
+                // 간단한 API로 데이터 로드 (성능 최적화)
+                List<MeetingApiClient.MeetingDto> meetings = meetingApiClient.getAllMeetingsSimple();
                 
                 // UI 업데이트는 Platform.runLater에서 수행
                 javafx.application.Platform.runLater(() -> {

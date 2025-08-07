@@ -213,6 +213,52 @@ public class EmployeeEditController {
         return phoneNumber.matches(phoneRegex);
     }
     
+    // ✅ 부서 이름을 ID로 매핑하는 메서드
+    private Integer getDepartmentIdByName(String departmentName) {
+        if (departmentName == null || departmentName.trim().isEmpty()) {
+            return null;
+        }
+        
+        switch (departmentName.trim()) {
+            case "인사팀":
+                return 1;
+            case "개발팀":
+                return 2;
+            case "마케팅팀":
+                return 3;
+            case "영업팀":
+                return 4;
+            case "기획팀":
+                return 5;
+            default:
+                return null;
+        }
+    }
+    
+    // ✅ 직급 이름을 ID로 매핑하는 메서드
+    private Integer getPositionIdByName(String positionName) {
+        if (positionName == null || positionName.trim().isEmpty()) {
+            return null;
+        }
+        
+        switch (positionName.trim()) {
+            case "사원":
+                return 1;
+            case "대리":
+                return 2;
+            case "과장":
+                return 3;
+            case "부장":
+                return 4;
+            case "이사":
+                return 5;
+            case "대표":
+                return 6;
+            default:
+                return null;
+        }
+    }
+    
     private void saveUserData() {
         try {
             // 사원 정보 업데이트
@@ -220,17 +266,47 @@ public class EmployeeEditController {
             user.setEmployeeCode(employeeIdTextField.getText().trim());
             user.setEmail(emailTextField.getText().trim());
             user.setPhone(phoneNumberTextField.getText().trim());
+            user.setAddress(addressTextField.getText().trim()); // ✅ 주소 필드 추가
             
-            // 비밀번호 변경 시
-            if (isPasswordChange) {
-                user.setPassword(passwordField.getText());
+            // ✅ 부서 ID 설정 (텍스트 필드에서 이름을 읽어서 ID로 변환)
+            String departmentName = departmentTextField.getText().trim();
+            Integer departmentId = getDepartmentIdByName(departmentName);
+            if (departmentId != null) {
+                user.setDepartmentId(departmentId);
+            } else {
+                // 기존 부서 ID 유지 (변경되지 않은 경우)
+                if (user.getDepartmentId() == null) {
+                    user.setDepartmentId(1); // 기본값: 인사팀
+                }
+            }
+            
+            // ✅ 직급 ID 설정 (텍스트 필드에서 이름을 읽어서 ID로 변환)
+            String positionName = positionTextField.getText().trim();
+            Integer positionId = getPositionIdByName(positionName);
+            if (positionId != null) {
+                user.setPositionId(positionId);
+            } else {
+                // 기존 직급 ID 유지 (변경되지 않은 경우)
+                if (user.getPositionId() == null) {
+                    user.setPositionId(1); // 기본값: 사원
+                }
             }
             
             // 실제 API 호출로 사용자 정보 업데이트
             boolean updateSuccess = apiClient.updateUser(user);
             
             if (updateSuccess) {
-                showAlert("성공", "사원 정보가 성공적으로 수정되었습니다.", Alert.AlertType.INFORMATION);
+                // 비밀번호 변경이 있는 경우 별도로 처리
+                if (isPasswordChange && !passwordField.getText().trim().isEmpty()) {
+                    boolean passwordChangeSuccess = apiClient.changePassword("", passwordField.getText().trim(), user.getUserId());
+                    if (passwordChangeSuccess) {
+                        showAlert("성공", "사원 정보와 비밀번호가 성공적으로 수정되었습니다.", Alert.AlertType.INFORMATION);
+                    } else {
+                        showAlert("부분 성공", "사원 정보는 수정되었지만 비밀번호 변경에 실패했습니다.", Alert.AlertType.WARNING);
+                    }
+                } else {
+                    showAlert("성공", "사원 정보가 성공적으로 수정되었습니다.", Alert.AlertType.INFORMATION);
+                }
             } else {
                 showAlert("오류", "사원 정보 수정에 실패했습니다.", Alert.AlertType.ERROR);
             }

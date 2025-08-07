@@ -119,7 +119,7 @@ public class LeaveApplicationController implements Initializable {
         employeeIdField.setEditable(false);
         
         // 휴가 종류 콤보박스 초기화
-        leaveTypeComboBox.getItems().addAll("연차", "병가", "공가", "반차", "특별휴가");
+        leaveTypeComboBox.getItems().addAll("연차", "반차", "병가", "개인사유", "공가", "출산휴가", "육아휴가", "특별휴가");
         leaveTypeComboBox.setValue(null);
         
         // 기본 날짜 설정 - 빈 상태로 초기화
@@ -265,14 +265,23 @@ public class LeaveApplicationController implements Initializable {
             case "연차":
                 leaveRequest.setLeaveType("ANNUAL");
                 break;
+            case "반차":
+                leaveRequest.setLeaveType("HALF_DAY");
+                break;
             case "병가":
                 leaveRequest.setLeaveType("SICK");
+                break;
+            case "개인사유":
+                leaveRequest.setLeaveType("PERSONAL");
                 break;
             case "공가":
                 leaveRequest.setLeaveType("OFFICIAL");
                 break;
-            case "반차":
-                leaveRequest.setLeaveType("HALF");
+            case "출산휴가":
+                leaveRequest.setLeaveType("MATERNITY");
+                break;
+            case "육아휴가":
+                leaveRequest.setLeaveType("PATERNITY");
                 break;
             case "특별휴가":
                 leaveRequest.setLeaveType("SPECIAL");
