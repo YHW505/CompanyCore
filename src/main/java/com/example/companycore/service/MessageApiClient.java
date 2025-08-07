@@ -266,7 +266,7 @@ public List<MessageDto> getSentMessagesById(Long userId) {
      * @param userId 사용자 ID (헤더에 포함)
      * @return 메시지 DTO 객체
      */
-    public MessageDto getMessageById(Long messageId, Long userId) {
+    public MessageDto getMessageById(Integer messageId, Long userId) {
         try {
             HttpRequest request = createAuthenticatedRequestBuilder("/messages/" + messageId)
                     .header("User-Id", userId.toString())
@@ -292,7 +292,7 @@ public List<MessageDto> getSentMessagesById(Long userId) {
      * ✅ 메시지 상태 업데이트 (PUT /messages/{id}).
      * 예: 읽음 처리, 삭제 등
      */
-    public boolean updateMessageStatus(Long messageId, Long userId, String action) {
+    public boolean updateMessageStatus(Integer messageId, Long userId, String action) {
         try {
             ObjectNode body = objectMapper.createObjectNode();
             body.put("action", action); // 예: "read", "delete"
@@ -340,7 +340,7 @@ public List<MessageDto> getSentMessagesById(Long userId) {
     /**
      * ✅ 특정 메시지에 답장합니다 (POST /messages/{id}/reply).
      */
-    public MessageDto replyToMessage(Long messageId, Long userId, String title, String content) {
+    public MessageDto replyToMessage(Integer messageId, Long userId, String title, String content) {
         try {
             ObjectNode body = objectMapper.createObjectNode();
             body.put("title", title);
@@ -439,7 +439,7 @@ public List<MessageDto> getSentMessagesById(Long userId) {
      * @param userId 사용자 ID (헤더로 전달)
      * @return 삭제 성공 여부
      */
-    public boolean deleteMessageById(Long messageId, Long userId) {
+    public boolean deleteMessageById(Integer messageId, Long userId) {
         try {
             HttpRequest request = createAuthenticatedRequestBuilder("/messages/" + messageId)
                     .header("User-Id", userId.toString())
