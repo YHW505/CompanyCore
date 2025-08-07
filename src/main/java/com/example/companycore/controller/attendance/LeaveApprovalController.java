@@ -267,13 +267,13 @@ public class LeaveApprovalController implements Initializable {
     
     private void addTableRow(LeaveRequestDto request, int rowIndex) {
         HBox row = new HBox(0);
-        row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        row.setAlignment(javafx.geometry.Pos.CENTER);
         row.setStyle("-fx-padding: 10; -fx-border-color: #e9ecef; -fx-border-width: 0 0 1 0; -fx-min-height: 50; -fx-pref-height: 50;");
         
         // 체크박스
         VBox checkBoxContainer = new VBox();
         checkBoxContainer.setAlignment(javafx.geometry.Pos.CENTER);
-        checkBoxContainer.setStyle("-fx-min-width: 65; -fx-pref-width: 65; -fx-min-height: 50; -fx-pref-height: 50;");
+        checkBoxContainer.setStyle("-fx-min-width: 50; -fx-pref-width: 50; -fx-min-height: 50; -fx-pref-height: 50;");
         CheckBox checkBox = new CheckBox();
         checkBoxContainer.getChildren().add(checkBox);
         rowCheckBoxes.add(checkBox);
@@ -373,7 +373,7 @@ public class LeaveApprovalController implements Initializable {
     
     private void addEmptyRow(int rowIndex) {
         HBox row = new HBox(0);
-        row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        row.setAlignment(javafx.geometry.Pos.CENTER);
         row.setStyle("-fx-padding: 10; -fx-border-color: #e9ecef; -fx-border-width: 0 0 1 0; -fx-min-height: 50; -fx-pref-height: 50;");
         
         // 빈 체크박스 (숨김)

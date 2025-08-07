@@ -8,6 +8,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
@@ -75,6 +76,70 @@ public class MainController {
                 }
             }
         });
+        
+        // 전체화면 지원 설정
+        setupFullscreenSupport();
+    }
+    
+    private void setupFullscreenSupport() {
+        if (mainStage != null && mainStage.getScene() != null) {
+            Scene scene = mainStage.getScene();
+            
+            // F11 키로 전체화면 토글
+            scene.setOnKeyPressed(event -> {
+                switch (event.getCode()) {
+                    case F11:
+                        toggleFullscreen();
+                        break;
+                    case ESCAPE:
+                        if (mainStage.isFullScreen()) {
+                            mainStage.setFullScreen(false);
+                        }
+                        break;
+                }
+            });
+            
+            // 창 크기 변경 시 리사이징 처리
+            mainStage.widthProperty().addListener((obs, oldVal, newVal) -> {
+                handleWindowResize();
+            });
+            
+            mainStage.heightProperty().addListener((obs, oldVal, newVal) -> {
+                handleWindowResize();
+            });
+        }
+    }
+    
+    @FXML
+    private void toggleFullscreen() {
+        if (mainStage != null) {
+            if (mainStage.isFullScreen()) {
+                mainStage.setFullScreen(false);
+            } else {
+                mainStage.setFullScreen(true);
+            }
+        }
+    }
+    
+    private void handleWindowResize() {
+        if (mainStage != null && mainStage.getScene() != null) {
+            double width = mainStage.getWidth();
+            double height = mainStage.getHeight();
+            
+            // 최소 크기 보장
+            if (width < 800) width = 800;
+            if (height < 600) height = 600;
+            
+            // 루트 컨테이너 크기 조정
+            if (mainStage.getScene().getRoot() != null) {
+                Parent root = mainStage.getScene().getRoot();
+                if (root instanceof javafx.scene.layout.Region) {
+                    javafx.scene.layout.Region region = (javafx.scene.layout.Region) root;
+                    region.setPrefSize(width, height);
+                    region.setMinSize(800, 600);
+                }
+            }
+        }
     }
 
     private void handleLogout() {
