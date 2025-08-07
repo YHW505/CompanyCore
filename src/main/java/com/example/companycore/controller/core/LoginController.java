@@ -133,6 +133,10 @@ public class LoginController implements Initializable {
             Stage stage = (Stage) loginButton.getScene().getWindow();
             Scene scene = new Scene(root, 1400, 800);
 
+            // MainController에 Stage 전달
+            MainController mainController = loader.getController();
+            mainController.setStage(stage);
+
             stage.setScene(scene);
             stage.setTitle("CompanyCore - 메인");
             stage.show();

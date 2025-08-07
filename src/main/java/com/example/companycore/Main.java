@@ -17,7 +17,7 @@ public class Main extends Application {
 
             primaryStage.setTitle("CompanyCore");
             primaryStage.setScene(scene);
-            primaryStage.setResizable(false);
+            primaryStage.setResizable(true);
             primaryStage.centerOnScreen();
             primaryStage.show();
 
