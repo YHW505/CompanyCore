@@ -75,13 +75,13 @@ public class ApiClient {
 
     public void clearToken() {
         userApiClient.clearToken();
-        taskApiClient.clearToken();
-        attendanceApiClient.clearToken();
-        leaveApiClient.clearToken();
-        messageApiClient.clearToken();
-        meetingApiClient.clearToken();
-        approvalApiClient.clearToken();
-        noticeApiClient.clearToken();
+//        taskApiClient.clearToken();
+//        attendanceApiClient.clearToken();
+//        leaveApiClient.clearToken();
+//        messageApiClient.clearToken();
+//        meetingApiClient.clearToken();
+//        approvalApiClient.clearToken();
+//        noticeApiClient.clearToken();
     }
 
     // User API 관련 메서드들
@@ -454,6 +454,10 @@ public class ApiClient {
     // Notice API 관련 메서드들
     public java.util.List<com.example.companycore.model.dto.NoticeItem> getAllNotices() {
         return noticeApiClient.getAllNotices();
+    }
+
+    public java.util.List<com.example.companycore.model.dto.NoticeItem> getAllNoticesSimple() {
+        return noticeApiClient.getAllNoticesSimple();
     }
 
     public com.example.companycore.model.dto.NoticeItem getNoticeById(Long noticeId) {

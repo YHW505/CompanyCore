@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Optional;
 import com.example.companycore.model.dto.MeetingItem;
 import java.util.stream.Collectors;
 import com.example.companycore.service.MeetingApiClient;
@@ -64,6 +65,7 @@ public class MeetingListController {
     @FXML private ComboBox<String> searchComboBox; // 검색 조건 선택 콤보박스
     @FXML private ComboBox<String> departmentFilterComboBox; // 부서 필터 콤보박스
     @FXML private Pagination pagination;        // 페이지네이션 UI
+    @FXML private ProgressIndicator loadingIndicator; // 로딩 인디케이터
 
     // ==================== 데이터 관리 ====================
     
@@ -78,6 +80,9 @@ public class MeetingListController {
     
     /** 테스트 모드 플래그 (더미 데이터 사용 여부) */
     private static final boolean TEST_MODE = false;
+    
+    /** API 클라이언트 */
+    private MeetingApiClient meetingApiClient;
 
     // ==================== 초기화 메서드 ====================
     
@@ -87,6 +92,9 @@ public class MeetingListController {
      */
     @FXML
     public void initialize() {
+        // API 클라이언트 초기화
+        meetingApiClient = MeetingApiClient.getInstance();
+        
         // 테이블 기본 설정
         setupTable();
         
@@ -210,34 +218,43 @@ public class MeetingListController {
         // 액션 컬럼은 빈 문자열로 설정 (버튼이 표시되므로)
         colAction.setCellValueFactory(cd -> new ReadOnlyStringWrapper(""));
         colAction.setStyle("-fx-alignment: center;");
+        colAction.setPrefWidth(120); // 버튼들이 들어갈 공간 확보
     }
 
-    /**
-     * 액션 컬럼에 상세보기 버튼을 설정
-     */
-    private void setupActionColumn() {
-        colAction.setCellFactory(col -> new TableCell<>() {
-            private final HBox buttonContainer = new HBox(5);
-            private final Button detailBtn = new Button("상세보기");
-            private final Button editBtn = new Button("수정");
+         /**
+      * 액션 컬럼에 상세보기, 수정 버튼을 설정
+      */
+     private void setupActionColumn() {
+         colAction.setCellFactory(col -> new TableCell<>() {
+             private final HBox buttonContainer = new HBox(5);
+             private final Button detailBtn = new Button("상세보기");
+             private final Button editBtn = new Button("수정");
 
-            {
-                // 버튼 스타일 지정 및 클릭 이벤트 핸들링
-                detailBtn.setStyle("-fx-background-color: #007bff; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 4 8;");
-                editBtn.setStyle("-fx-background-color: #28a745; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 4 8;");
-                
-                detailBtn.setOnAction(e -> {
-                    MeetingItem item = getTableView().getItems().get(getIndex());
-                    showMeetingDetail(item); // 상세보기 팝업 호출
-                });
-                
-                editBtn.setOnAction(e -> {
-                    MeetingItem item = getTableView().getItems().get(getIndex());
-                    showMeetingEdit(item); // 수정 팝업 호출
-                });
-                
-                buttonContainer.getChildren().addAll(detailBtn, editBtn);
-            }
+             {
+                 // 버튼 컨테이너를 중앙정렬로 설정
+                 buttonContainer.setAlignment(Pos.CENTER);
+                 
+                 // 버튼 크기 및 스타일 설정
+                 detailBtn.setPrefWidth(60);
+                 detailBtn.setPrefHeight(25);
+                 detailBtn.setStyle("-fx-background-color: #007bff; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 2 4; -fx-font-size: 11px;");
+                 
+                 editBtn.setPrefWidth(50);
+                 editBtn.setPrefHeight(25);
+                 editBtn.setStyle("-fx-background-color: #28a745; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 2 4; -fx-font-size: 11px;");
+                 
+                 detailBtn.setOnAction(e -> {
+                     MeetingItem item = getTableView().getItems().get(getIndex());
+                     showMeetingDetail(item); // 상세보기 팝업 호출
+                 });
+                 
+                 editBtn.setOnAction(e -> {
+                     MeetingItem item = getTableView().getItems().get(getIndex());
+                     showMeetingEdit(item); // 수정 팝업 호출
+                 });
+                 
+                 buttonContainer.getChildren().addAll(detailBtn, editBtn);
+             }
 
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -293,56 +310,91 @@ public class MeetingListController {
      * 서버에서 실제 데이터를 로드합니다.
      */
     private void loadDataFromServer() {
-        try {
-            MeetingApiClient meetingApiClient = MeetingApiClient.getInstance();
-            List<MeetingApiClient.MeetingDto> meetings = meetingApiClient.getAllMeetings();
-            
-            fullData.clear();
-            viewData.clear();
-            
-            if (meetings != null) {
-                for (MeetingApiClient.MeetingDto meetingDto : meetings) {
-                    // MeetingDto에서 사용 가능한 정보만 추출
-                    String title = meetingDto.getTitle() != null ? meetingDto.getTitle() : "제목 없음";
-                    String department = meetingDto.getDepartment() != null ? meetingDto.getDepartment() : "Unknown";
-                    String author = meetingDto.getAuthor() != null ? meetingDto.getAuthor() : "Unknown";
-                    String date = meetingDto.getStartTime() != null ? 
-                        meetingDto.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) : "Unknown";
+        // 로딩 인디케이터 표시
+        showLoading(true);
+        
+        // 백그라운드에서 데이터 로드
+        javafx.concurrent.Task<Void> loadTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                MeetingApiClient meetingApiClient = MeetingApiClient.getInstance();
+                // 간단한 API로 데이터 로드 (성능 최적화)
+                List<MeetingApiClient.MeetingDto> meetings = meetingApiClient.getAllMeetingsSimple();
+                
+                // UI 업데이트는 Platform.runLater에서 수행
+                javafx.application.Platform.runLater(() -> {
+                    fullData.clear();
+                    viewData.clear();
                     
-                    // 첨부파일 정보 추출
-                    String attachmentContent = meetingDto.getAttachmentContent() != null ? meetingDto.getAttachmentContent() : "";
-                    String attachmentPath = meetingDto.getAttachmentPath() != null ? meetingDto.getAttachmentPath() : "";
-                    Long attachmentSize = meetingDto.getAttachmentSize();
-                    String attachmentFilename = meetingDto.getAttachmentFilename() != null ? meetingDto.getAttachmentFilename() : "";
-                    String attachmentContentType = meetingDto.getAttachmentContentType() != null ? meetingDto.getAttachmentContentType() : "";
+                    if (meetings != null) {
+                        for (MeetingApiClient.MeetingDto meetingDto : meetings) {
+                            // MeetingDto에서 사용 가능한 정보만 추출
+                            String title = meetingDto.getTitle() != null ? meetingDto.getTitle() : "제목 없음";
+                            String department = meetingDto.getDepartment() != null ? meetingDto.getDepartment() : "Unknown";
+                            String author = meetingDto.getAuthor() != null ? meetingDto.getAuthor() : "Unknown";
+                            String date = meetingDto.getStartTime() != null ? 
+                                meetingDto.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) : "Unknown";
+                            
+                            // 첨부파일 정보 추출
+                            String attachmentContent = meetingDto.getAttachmentContent() != null ? meetingDto.getAttachmentContent() : "";
+                            String attachmentPath = meetingDto.getAttachmentPath() != null ? meetingDto.getAttachmentPath() : "";
+                            Long attachmentSize = meetingDto.getAttachmentSize();
+                            String attachmentFilename = meetingDto.getAttachmentFilename() != null ? meetingDto.getAttachmentFilename() : "";
+                            String attachmentContentType = meetingDto.getAttachmentContentType() != null ? meetingDto.getAttachmentContentType() : "";
+                            
+                            MeetingItem item = new MeetingItem(
+                                meetingDto.getMeetingId(),
+                                title,
+                                department,
+                                author,
+                                date,
+                                meetingDto.getDescription() != null ? meetingDto.getDescription() : "",
+                                meetingDto.getLocation() != null ? meetingDto.getLocation() : "",
+                                attachmentContent,
+                                attachmentPath,
+                                attachmentSize,
+                                attachmentFilename,
+                                attachmentContentType
+                            );
+                            fullData.add(item);
+                        }
+                    }
                     
-                    MeetingItem item = new MeetingItem(
-                        title,
-                        department,
-                        author,
-                        date,
-                        meetingDto.getDescription() != null ? meetingDto.getDescription() : "",
-                        meetingDto.getLocation() != null ? meetingDto.getLocation() : "",
-                        attachmentContent,
-                        attachmentPath,
-                        attachmentSize,
-                        attachmentFilename,
-                        attachmentContentType
-                    );
-                    fullData.add(item);
-                }
+                    viewData.addAll(fullData);
+                    System.out.println("서버에서 회의 데이터 로드 완료: " + fullData.size() + "개");
+                    updatePagination();
+                    showLoading(false);
+                });
+                
+                return null;
             }
-            
-            viewData.addAll(fullData);
-            System.out.println("서버에서 회의 데이터 로드 완료: " + fullData.size() + "개");
-            updatePagination();
-            
-        } catch (Exception e) {
-            System.err.println("회의 데이터 로드 실패: " + e.getMessage());
-            e.printStackTrace();
+        };
+        
+        // 에러 처리
+        loadTask.setOnFailed(event -> {
+            System.err.println("회의 데이터 로드 실패: " + loadTask.getException().getMessage());
+            loadTask.getException().printStackTrace();
             fullData.clear();
             viewData.clear();
             updatePagination();
+            showLoading(false);
+        });
+        
+        // 백그라운드 스레드에서 실행
+        Thread loadThread = new Thread(loadTask);
+        loadThread.setDaemon(true);
+        loadThread.start();
+    }
+    
+    /**
+     * 로딩 인디케이터 표시/숨김
+     */
+    private void showLoading(boolean show) {
+        if (loadingIndicator != null) {
+            loadingIndicator.setVisible(show);
+            loadingIndicator.setManaged(show);
+            meetingTable.setVisible(!show);
+            meetingTable.setManaged(!show);
         }
     }
 
@@ -462,32 +514,49 @@ public class MeetingListController {
         }
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("삭제 확인");
-        alert.setHeaderText(null);
-        alert.setContentText("선택된 회의를 삭제하시겠습니까?");
+        alert.setTitle("회의 삭제");
+        alert.setHeaderText("회의 삭제 확인");
+        alert.setContentText("정말로 '" + selected.getTitle() + "' 회의를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.");
 
-        alert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                try {
-                    ApiClient apiClient = ApiClient.getInstance();
-                    // TODO: 실제 회의 ID를 사용하여 삭제
-                    // 현재는 제목으로 식별하지만, 실제로는 고유 ID를 사용해야 함
-                    boolean success = apiClient.deleteMeeting(1L); // 임시로 1L 사용
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                // 서버에서 회의 삭제
+                boolean success = meetingApiClient.deleteMeeting(selected.getId());
+                
+                if (success) {
+                    // 성공 시 목록에서 제거
+                    fullData.remove(selected);
+                    viewData.remove(selected);
                     
-                    if (success) {
-                        fullData.remove(selected);
-                        updatePagination();
-                        new Alert(Alert.AlertType.INFORMATION, "회의가 삭제되었습니다.").showAndWait();
-                    } else {
-                        new Alert(Alert.AlertType.ERROR, "회의 삭제에 실패했습니다.").showAndWait();
-                    }
-                } catch (Exception e) {
-                    System.err.println("회의 삭제 실패: " + e.getMessage());
-                    e.printStackTrace();
-                    new Alert(Alert.AlertType.ERROR, "회의 삭제 중 오류가 발생했습니다: " + e.getMessage()).showAndWait();
+                    // 성공 메시지 표시
+                    Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+                    successAlert.setTitle("삭제 완료");
+                    successAlert.setHeaderText("회의 삭제 완료");
+                    successAlert.setContentText("회의가 성공적으로 삭제되었습니다.");
+                    successAlert.showAndWait();
+                    
+                    // 테이블 새로고침
+                    updatePagination();
+                } else {
+                    // 실패 메시지 표시
+                    Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                    errorAlert.setTitle("삭제 실패");
+                    errorAlert.setHeaderText("회의 삭제 실패");
+                    errorAlert.setContentText("회의 삭제 중 오류가 발생했습니다.");
+                    errorAlert.showAndWait();
                 }
+            } catch (Exception e) {
+                System.err.println("회의 삭제 중 오류 발생: " + e.getMessage());
+                e.printStackTrace();
+                
+                Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                errorAlert.setTitle("삭제 실패");
+                errorAlert.setHeaderText("회의 삭제 실패");
+                errorAlert.setContentText("회의 삭제 중 오류가 발생했습니다: " + e.getMessage());
+                errorAlert.showAndWait();
             }
-        });
+        }
     }
 
     /**
@@ -558,18 +627,68 @@ public class MeetingListController {
     }
 
     /**
+     * 회의 삭제 기능
+     */
+    private void deleteMeeting(MeetingItem item) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("회의 삭제");
+        alert.setHeaderText("회의 삭제 확인");
+        alert.setContentText("정말로 '" + item.getTitle() + "' 회의를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.");
+        
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                // 서버에서 회의 삭제
+                boolean success = meetingApiClient.deleteMeeting(item.getId());
+                
+                if (success) {
+                    // 성공 시 목록에서 제거
+                    fullData.remove(item);
+                    viewData.remove(item);
+                    
+                    // 성공 메시지 표시
+                    Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+                    successAlert.setTitle("삭제 완료");
+                    successAlert.setHeaderText("회의 삭제 완료");
+                    successAlert.setContentText("회의가 성공적으로 삭제되었습니다.");
+                    successAlert.showAndWait();
+                    
+                    // 테이블 새로고침
+                    updatePagination();
+                } else {
+                    // 실패 메시지 표시
+                    Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                    errorAlert.setTitle("삭제 실패");
+                    errorAlert.setHeaderText("회의 삭제 실패");
+                    errorAlert.setContentText("회의 삭제 중 오류가 발생했습니다.");
+                    errorAlert.showAndWait();
+                }
+            } catch (Exception e) {
+                System.err.println("회의 삭제 중 오류 발생: " + e.getMessage());
+                e.printStackTrace();
+                
+                Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                errorAlert.setTitle("삭제 실패");
+                errorAlert.setHeaderText("회의 삭제 실패");
+                errorAlert.setContentText("회의 삭제 중 오류가 발생했습니다: " + e.getMessage());
+                errorAlert.showAndWait();
+            }
+        }
+    }
+
+    /**
      * 회의 수정 팝업을 표시
      * 
      * @param item 수정할 회의 아이템
      */
     private void showMeetingEdit(MeetingItem item) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/content/tasks/meetingForm.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/content/tasks/meetingEdit.fxml"));
             Parent root = loader.load();
 
-            MeetingFormController formController = loader.getController();
-            formController.setParentController(this);
-            formController.setMeetingItem(item); // 수정할 회의 아이템 설정
+            MeetingEditController editController = loader.getController();
+            editController.setParentController(this);
+            editController.setMeetingData(item); // 수정할 회의 아이템 설정
 
             Stage stage = new Stage();
             stage.setTitle("회의록 수정");

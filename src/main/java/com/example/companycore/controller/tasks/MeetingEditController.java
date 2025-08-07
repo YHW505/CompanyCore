@@ -101,8 +101,8 @@ public class MeetingEditController {
         
         // 기존 데이터로 폼 초기화
         titleField.setText(meeting.getTitle());
-        descriptionField.setText("회의 내용"); // 기본값
-        locationField.setText("회의실"); // 기본값
+        descriptionField.setText(meeting.getDescription() != null ? meeting.getDescription() : "");
+        locationField.setText(meeting.getLocation() != null ? meeting.getLocation() : "");
         datePicker.setValue(LocalDate.parse(meeting.getDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         
         // 기존 첨부파일이 있으면 표시
@@ -154,8 +154,8 @@ public class MeetingEditController {
                     return;
                 }
 
-                if (!FileUtil.isFileSizeValid(selectedFile, 10)) {
-                    new Alert(Alert.AlertType.ERROR, "파일 크기가 너무 큽니다. (최대 10MB)").showAndWait();
+                if (!FileUtil.isFileSizeValid(selectedFile, 50)) {
+                    new Alert(Alert.AlertType.ERROR, "파일 크기가 너무 큽니다. (최대 50MB)").showAndWait();
                     return;
                 }
 
@@ -197,6 +197,8 @@ public class MeetingEditController {
      */
     @FXML
     private void onRemoveFile() {
+        System.out.println("🗑️ 첨부파일 삭제 버튼 클릭됨");
+        
         selectedFile = null;
         attachmentContent = null;
         attachmentFilename = null;
@@ -215,6 +217,8 @@ public class MeetingEditController {
         // 버튼 상태 변경
         removeFileBtn.setDisable(true);
         addFileBtn.setText("파일 선택");
+        
+        System.out.println("✅ 첨부파일 삭제 완료 - UI 업데이트됨");
     }
 
     /**
@@ -235,31 +239,39 @@ public class MeetingEditController {
 
             MeetingApiClient.MeetingDto updatedMeeting;
 
+            // 첨부파일 정보 설정
+            MeetingApiClient.MeetingDto meetingDto = new MeetingApiClient.MeetingDto();
+            meetingDto.setTitle(titleField.getText().trim());
+            meetingDto.setDescription(descriptionField.getText().trim());
+            meetingDto.setStartTime(startTime);
+            meetingDto.setEndTime(endTime);
+            meetingDto.setLocation(locationField.getText().trim());
+            
+            // 첨부파일 처리 로직 개선
             if (selectedFile != null) {
-                // 새 첨부파일이 있는 경우 - 기존 메서드 사용
-                MeetingApiClient.MeetingDto meetingDto = new MeetingApiClient.MeetingDto();
-                meetingDto.setTitle(titleField.getText().trim());
-                meetingDto.setDescription(descriptionField.getText().trim());
-                meetingDto.setStartTime(startTime);
-                meetingDto.setEndTime(endTime);
-                meetingDto.setLocation(locationField.getText().trim());
+                // 새 첨부파일이 있는 경우
                 meetingDto.setAttachmentFilename(attachmentFilename);
                 meetingDto.setAttachmentContentType(attachmentContentType);
                 meetingDto.setAttachmentSize(attachmentSize);
                 meetingDto.setAttachmentContent(attachmentContent);
-
-                updatedMeeting = meetingApiClient.updateMeeting(1L, meetingDto); // 임시로 1L 사용
+                System.out.println("✅ 새 첨부파일 설정: " + attachmentFilename);
+            } else if (originalMeeting.getAttachmentFilename() != null && !originalMeeting.getAttachmentFilename().isEmpty()) {
+                // 기존 첨부파일이 있었는데 삭제된 경우
+                meetingDto.setAttachmentFilename("");
+                meetingDto.setAttachmentContentType("");
+                meetingDto.setAttachmentSize(0L);
+                meetingDto.setAttachmentContent("");
+                System.out.println("🗑️ 기존 첨부파일 삭제됨");
             } else {
-                // 첨부파일이 없는 경우 기존 메서드 사용
-                MeetingApiClient.MeetingDto meetingDto = new MeetingApiClient.MeetingDto();
-                meetingDto.setTitle(titleField.getText().trim());
-                meetingDto.setDescription(descriptionField.getText().trim());
-                meetingDto.setStartTime(startTime);
-                meetingDto.setEndTime(endTime);
-                meetingDto.setLocation(locationField.getText().trim());
-
-                updatedMeeting = meetingApiClient.updateMeeting(1L, meetingDto); // 임시로 1L 사용
+                // 첨부파일이 없는 경우
+                meetingDto.setAttachmentFilename(null);
+                meetingDto.setAttachmentContentType(null);
+                meetingDto.setAttachmentSize(null);
+                meetingDto.setAttachmentContent(null);
+                System.out.println("📄 첨부파일 없음");
             }
+
+            updatedMeeting = meetingApiClient.updateMeeting(originalMeeting.getId(), meetingDto);
 
             if (updatedMeeting != null) {
                 new Alert(Alert.AlertType.INFORMATION, "회의가 성공적으로 수정되었습니다.").showAndWait();

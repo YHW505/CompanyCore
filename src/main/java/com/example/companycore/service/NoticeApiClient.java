@@ -35,7 +35,96 @@ public class NoticeApiClient extends BaseApiClient {
     }
 
     /**
-     * 모든 공지사항 조회 (모든 페이지를 순회하여 가져옴)
+     * 모든 공지사항 조회 (간단한 버전 - 첨부파일 제외)
+     * @return 공지사항 목록
+     */
+    public List<NoticeItem> getAllNoticesSimple() {
+        List<NoticeItem> allNotices = new ArrayList<>();
+        int page = 0;
+        int totalPages = 1;
+        
+        try {
+            do {
+                // 간단한 API로 공지사항 조회
+                HttpRequest request = createAuthenticatedRequestBuilder("/notices/simple?page=" + page + "&size=10")
+                        .GET()
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                // logResponseInfo(response, "간단한 공지사항 조회 (페이지 " + page + ")");
+
+                if (response.statusCode() == 200) {
+                    String responseBody = getSafeResponseBody(response);
+                    if (responseBody != null && !responseBody.trim().isEmpty()) {
+                        // API 응답 구조에 맞게 파싱
+                        JsonNode rootNode = objectMapper.readTree(responseBody);
+                        
+                        // 첫 페이지에서 전체 페이지 수 확인
+                        if (page == 0 && rootNode.has("totalPages")) {
+                            totalPages = rootNode.get("totalPages").asInt();
+                            System.out.println("전체 페이지 수: " + totalPages);
+                        }
+                        
+                        if (rootNode.has("data")) {
+                            JsonNode dataNode = rootNode.get("data");
+                            List<NoticeItem> pageNotices = new ArrayList<>();
+                            
+                            for (JsonNode noticeNode : dataNode) {
+                                NoticeItem notice = new NoticeItem();
+                                
+                                // API 응답 필드에 맞게 매핑
+                                if (noticeNode.has("id")) {
+                                    notice.setNoticeId(noticeNode.get("id").asLong());
+                                }
+                                if (noticeNode.has("title")) {
+                                    notice.setTitle(noticeNode.get("title").asText());
+                                }
+                                if (noticeNode.has("content")) {
+                                    notice.setContent(noticeNode.get("content").asText());
+                                }
+                                if (noticeNode.has("authorDepartment")) {
+                                    notice.setDepartment(noticeNode.get("authorDepartment").asText());
+                                }
+                                if (noticeNode.has("authorName")) {
+                                    notice.setAuthor(noticeNode.get("authorName").asText());
+                                }
+                                if (noticeNode.has("createdAt")) {
+                                    String createdAtStr = noticeNode.get("createdAt").asText();
+                                    try {
+                                        LocalDateTime createdAt = LocalDateTime.parse(createdAtStr.replace("Z", ""));
+                                        notice.setCreatedAt(createdAt);
+                                        notice.setDate(createdAt.toLocalDate());
+                                    } catch (Exception e) {
+                                        System.out.println("날짜 파싱 오류: " + createdAtStr);
+                                        notice.setDate(LocalDate.now());
+                                    }
+                                }
+                                
+                                // 첨부파일 정보는 제외 (상세보기에서만 확인)
+                                
+                                pageNotices.add(notice);
+                            }
+                            
+                            allNotices.addAll(pageNotices);
+                            System.out.println("페이지 " + (page + 1) + " 파싱 완료: " + pageNotices.size() + "개");
+                        }
+                    }
+                }
+                page++;
+            } while (page < totalPages);
+            
+            System.out.println("전체 간단한 공지사항 파싱 완료: " + allNotices.size() + "개");
+            return allNotices;
+            
+        } catch (Exception e) {
+            System.err.println("간단한 공지사항 조회 중 오류: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * 모든 공지사항 조회 (기존 버전 - 첨부파일 포함)
      * @return 공지사항 목록
      */
     public List<NoticeItem> getAllNotices() {
@@ -51,7 +140,7 @@ public class NoticeApiClient extends BaseApiClient {
                         .build();
 
                 HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-                logResponseInfo(response, "공지사항 조회 (페이지 " + page + ")");
+                // logResponseInfo(response, "공지사항 조회 (페이지 " + page + ")");
 
                 if (response.statusCode() == 200) {
                     String responseBody = getSafeResponseBody(response);
@@ -180,7 +269,7 @@ public class NoticeApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "ID로 공지사항 조회");
+            // logResponseInfo(response, "ID로 공지사항 조회");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -303,12 +392,7 @@ public class NoticeApiClient extends BaseApiClient {
             }
             
             String requestBody = objectMapper.writeValueAsString(requestNode);
-            // Base64 인코딩된 첨부파일 내용은 로그에서 제외
-            String logRequestBody = requestBody;
-            if (notice.hasAttachments() && notice.getAttachmentContent() != null && !notice.getAttachmentContent().isEmpty()) {
-                logRequestBody = requestBody.replace(notice.getAttachmentContent(), "[Base64 첨부파일 내용 생략]");
-            }
-            System.out.println("공지사항 생성 요청: " + logRequestBody);
+            System.out.println("공지사항 생성 요청: " + requestBody);
             
             HttpRequest request = createAuthenticatedRequestBuilder("/notices")
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody))
@@ -316,7 +400,7 @@ public class NoticeApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "공지사항 생성");
+            // logResponseInfo(response, "공지사항 생성");
 
             if (response.statusCode() == 201 || response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -442,7 +526,7 @@ public class NoticeApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "공지사항 수정");
+            // logResponseInfo(response, "공지사항 수정");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -506,7 +590,7 @@ public class NoticeApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "공지사항 삭제");
+            // logResponseInfo(response, "공지사항 삭제");
 
             return response.statusCode() == 200 || response.statusCode() == 204;
         } catch (Exception e) {
@@ -527,7 +611,7 @@ public class NoticeApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "제목으로 공지사항 검색");
+            // logResponseInfo(response, "제목으로 공지사항 검색");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -558,7 +642,7 @@ public class NoticeApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "부서별 공지사항 조회");
+            // logResponseInfo(response, "부서별 공지사항 조회");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -588,7 +672,7 @@ public class NoticeApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "중요 공지사항 조회");
+            // logResponseInfo(response, "중요 공지사항 조회");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -633,7 +717,7 @@ public class NoticeApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "복합 조건 공지사항 검색");
+            // logResponseInfo(response, "복합 조건 공지사항 검색");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -659,7 +743,7 @@ public class NoticeApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "최근 공지사항 조회");
+            // logResponseInfo(response, "최근 공지사항 조회");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);

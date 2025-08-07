@@ -1,7 +1,6 @@
 package com.example.companycore.controller.tasks;
 
 import com.example.companycore.model.dto.ApprovalItem;
-import com.example.companycore.service.ApprovalApiClient;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
@@ -48,56 +47,38 @@ public class ApprovalDetailController {
      */
     public void setApprovalItem(ApprovalItem item) {
         this.approvalItem = item;
-
-        // 첨부파일이 있는 경우 상세 정보를 서버에서 가져오기
-        if (item != null && item.getAttachmentFilename() != null && !item.getAttachmentFilename().isEmpty()) {
-            try {
-                // serverId를 우선 사용하고, 없으면 getId() 사용
-                Long approvalId = item.getServerId();
-                if (approvalId == null) {
-                    approvalId = Long.parseLong(item.getId());
-                }
-                loadAttachmentContentFromServer(approvalId);
-            } catch (NumberFormatException e) {
-                System.err.println("❌ 결재 ID 변환 실패: " + item.getId());
-            }
-        }
-        updateUI();
+        // 서버에서 상세 정보를 가져와서 UI 업데이트
+        loadDetailFromServer();
     }
 
+
+
     /**
-     * 서버에서 첨부파일 내용을 가져옵니다.
-     * 
-     * @param approvalId 결재 ID
+     * 서버에서 상세 정보를 가져와서 UI를 업데이트합니다.
      */
-    private void loadAttachmentContentFromServer(Long approvalId) {
+    private void loadDetailFromServer() {
+        if (approvalItem == null) return;
+        
         try {
-            // 별도 스레드에서 서버 요청
-            new Thread(() -> {
-                try {
-                    // ApprovalApiClient를 통해 상세 정보 가져오기
-                    var apiClient = ApprovalApiClient.getInstance();
-                    var detailedApproval = apiClient.getApprovalById(approvalId);
-                    
-                    if (detailedApproval != null && detailedApproval.getAttachmentContent() != null) {
-                        // UI 업데이트는 JavaFX 스레드에서 실행
-                        javafx.application.Platform.runLater(() -> {
-                            approvalItem.setAttachmentContent(detailedApproval.getAttachmentContent());
-                            updateUI();
-                        });
-                    } else {
-                        // 첨부파일 내용이 없으면 기본 UI 업데이트
-                        javafx.application.Platform.runLater(this::updateUI);
-                    }
-                } catch (Exception e) {
-                    System.err.println("❌ 첨부파일 내용 로드 실패: " + e.getMessage());
-                    // 오류 발생 시 기본 UI 업데이트
-                    javafx.application.Platform.runLater(this::updateUI);
-                }
-            }).start();
-//            isProgress = false;
+            // 서버에서 상세 정보 가져오기
+            com.example.companycore.service.ApprovalApiClient approvalApiClient = 
+                com.example.companycore.service.ApprovalApiClient.getInstance();
+            
+            com.example.companycore.model.dto.ApprovalDto detailDto = 
+                approvalApiClient.getApprovalById(approvalItem.getServerId());
+            
+            if (detailDto != null) {
+                // 상세 정보로 ApprovalItem 업데이트
+                this.approvalItem = com.example.companycore.model.dto.ApprovalItem.fromApprovalDto(detailDto);
+                updateUI();
+            } else {
+                // 서버에서 정보를 가져올 수 없는 경우 기본 정보로 표시
+                updateUI();
+            }
         } catch (Exception e) {
-            System.err.println("❌ 첨부파일 내용 로드 중 오류: " + e.getMessage());
+            System.err.println("상세 정보 로드 중 오류: " + e.getMessage());
+            e.printStackTrace();
+            // 오류 발생 시 기본 정보로 표시
             updateUI();
         }
     }
@@ -155,6 +136,12 @@ public class ApprovalDetailController {
 
         String attachmentFilename = approvalItem.getAttachmentFilename();
         Long attachmentSize = approvalItem.getAttachmentSize();
+
+        // 디버깅 정보 출력
+        System.out.println("🔍 첨부파일 정보 확인:");
+        System.out.println("  - 파일명: " + attachmentFilename);
+        System.out.println("  - 파일 크기: " + attachmentSize);
+        System.out.println("  - 첨부파일 내용 존재: " + (approvalItem.getAttachmentContent() != null && !approvalItem.getAttachmentContent().isEmpty()));
 
         // 첨부파일이 있는 경우 표시 (파일명이나 크기가 있으면)
         if ((attachmentFilename != null && !attachmentFilename.isEmpty()) || 

@@ -244,9 +244,12 @@ public class LeaveApprovalController implements Initializable {
     private String getLeaveTypeDisplayName(String leaveType) {
         switch (leaveType) {
             case "ANNUAL": return "연차";
+            case "HALF_DAY": return "반차";
             case "SICK": return "병가";
+            case "PERSONAL": return "개인사유";
             case "OFFICIAL": return "공가";
-            case "HALF": return "반차";
+            case "MATERNITY": return "출산휴가";
+            case "PATERNITY": return "육아휴가";
             case "SPECIAL": return "특별휴가";
             default: return leaveType;
         }

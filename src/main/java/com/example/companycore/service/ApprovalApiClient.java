@@ -13,6 +13,7 @@ import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 /**
  * 결재 관련 API 클라이언트
@@ -37,6 +38,45 @@ public class ApprovalApiClient extends BaseApiClient {
     }
 
     /**
+     * 결재 요청 수정
+     * @param approvalId 결재 ID
+     * @param approvalDto 수정할 결재 데이터
+     * @return 수정된 결재 정보
+     */
+    public ApprovalDto updateApproval(Long approvalId, ApprovalDto approvalDto) {
+        try {
+            String requestBody = objectMapper.writeValueAsString(approvalDto);
+            System.out.println("🔍 결재 요청 수정 - 요청 본문: " + requestBody);
+            
+            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/approvals/" + approvalId);
+            HttpRequest request = builder
+                    .PUT(HttpRequest.BodyPublishers.ofString(requestBody))
+                    .header("Content-Type", "application/json")
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            // logResponseInfo(response, "결재 요청 수정");
+
+            if (response.statusCode() == 200) {
+                String responseBody = getSafeResponseBody(response);
+                // System.out.println("✅ 결재 요청 수정 성공 - 응답 본문: " + responseBody);
+                if (responseBody != null && !responseBody.trim().isEmpty()) {
+                    return objectMapper.readValue(responseBody, ApprovalDto.class);
+                }
+            } else {
+                System.err.println("❌ 결재 요청 수정 실패 - 상태 코드: " + response.statusCode());
+                // String responseBody = getSafeResponseBody(response);
+                // System.err.println("❌ 오류 응답: " + responseBody);
+            }
+        } catch (Exception e) {
+            System.err.println("❌ 결재 요청 수정 중 예외 발생: " + e.getMessage());
+            e.printStackTrace();
+            handleChunkedTransferError(e, "결재 요청 수정");
+        }
+        return null;
+    }
+
+    /**
      * 결재 요청 생성
      * @param approvalDto 결재 요청 데이터
      * @return 생성된 결재 정보
@@ -44,12 +84,7 @@ public class ApprovalApiClient extends BaseApiClient {
     public ApprovalDto createApproval(ApprovalDto approvalDto) {
         try {
             String requestBody = objectMapper.writeValueAsString(approvalDto);
-            // Base64 인코딩된 첨부파일 내용은 로그에서 제외
-            String logRequestBody = requestBody;
-            if (approvalDto.getAttachmentContent() != null && !approvalDto.getAttachmentContent().isEmpty()) {
-                logRequestBody = requestBody.replace(approvalDto.getAttachmentContent(), "[Base64 첨부파일 내용 생략]");
-            }
-            System.out.println("🔍 결재 요청 생성 - 요청 본문: " + logRequestBody);
+            System.out.println("🔍 결재 요청 생성 - 요청 본문: " + requestBody);
             
             HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/approvals/create");
             HttpRequest request = builder
@@ -58,11 +93,11 @@ public class ApprovalApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "결재 요청 생성");
+            // logResponseInfo(response, "결재 요청 생성");
 
             if (response.statusCode() == 200 || response.statusCode() == 201) {
                 String responseBody = getSafeResponseBody(response);
-                System.out.println("✅ 결재 요청 생성 성공 - 응답 본문: " + responseBody);
+                // System.out.println("✅ 결재 요청 생성 성공 - 응답 본문: " + responseBody);
                 if (responseBody != null && !responseBody.trim().isEmpty()) {
                     JsonNode jsonNode = objectMapper.readTree(responseBody);
                     if (jsonNode.has("data")) {
@@ -71,8 +106,8 @@ public class ApprovalApiClient extends BaseApiClient {
                 }
             } else {
                 System.err.println("❌ 결재 요청 생성 실패 - 상태 코드: " + response.statusCode());
-                String responseBody = getSafeResponseBody(response);
-                System.err.println("❌ 오류 응답: " + responseBody);
+                // String responseBody = getSafeResponseBody(response);
+                // System.err.println("❌ 오류 응답: " + responseBody);
             }
         } catch (Exception e) {
             System.err.println("❌ 결재 요청 생성 중 예외 발생: " + e.getMessage());
@@ -95,7 +130,7 @@ public class ApprovalApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "결재 승인");
+            // logResponseInfo(response, "결재 승인");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -130,7 +165,7 @@ public class ApprovalApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "결재 거부");
+            // logResponseInfo(response, "결재 거부");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -159,27 +194,27 @@ public class ApprovalApiClient extends BaseApiClient {
             HttpRequest request = builder.GET().build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "결재 상세 조회");
+            // logResponseInfo(response, "결재 상세 조회");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
                 // Base64 인코딩된 첨부파일 내용은 로그에서 제외
-                String logResponseBody = responseBody;
-                if (responseBody != null && responseBody.contains("attachmentContent")) {
-                    try {
-                        JsonNode jsonNode = objectMapper.readTree(responseBody);
-                        if (jsonNode.has("attachmentContent") && jsonNode.get("attachmentContent").asText() != null) {
-                            String attachmentContent = jsonNode.get("attachmentContent").asText();
-                            if (!attachmentContent.isEmpty()) {
-                                logResponseBody = responseBody.replace(attachmentContent, "[Base64 첨부파일 내용 생략]");
-                            }
-                        }
-                    } catch (Exception e) {
-                        // JSON 파싱 실패 시 원본 사용
-                        logResponseBody = responseBody;
-                    }
-                }
-                System.out.println("📋 상세 조회 응답 본문: " + logResponseBody);
+                // String logResponseBody = responseBody;
+                // if (responseBody != null && responseBody.contains("attachmentContent")) {
+                //     try {
+                //         JsonNode jsonNode = objectMapper.readTree(responseBody);
+                //         if (jsonNode.has("attachmentContent") && jsonNode.get("attachmentContent").asText() != null) {
+                //             String attachmentContent = jsonNode.get("attachmentContent").asText();
+                //             if (!attachmentContent.isEmpty()) {
+                //                 logResponseBody = responseBody.replace(attachmentContent, "[Base64 첨부파일 내용 생략]");
+                //             }
+                //         }
+                //     } catch (Exception e) {
+                //         // JSON 파싱 실패 시 원본 사용
+                //         logResponseBody = responseBody;
+                //     }
+                // }
+                // System.out.println("📋 상세 조회 응답 본문: " + logResponseBody);
                 
                 if (responseBody != null && !responseBody.trim().isEmpty()) {
                     JsonNode jsonNode = objectMapper.readTree(responseBody);
@@ -194,8 +229,58 @@ public class ApprovalApiClient extends BaseApiClient {
                         // data 필드가 있는 경우
                         result = objectMapper.treeToValue(jsonNode.get("data"), ApprovalDto.class);
                     } else {
-                        // 직접 JSON 객체로 응답하는 경우
-                        result = objectMapper.treeToValue(jsonNode, ApprovalDto.class);
+                        // 직접 JSON 객체로 응답하는 경우 - 서버 응답 구조에 맞게 수동 파싱
+                        result = new ApprovalDto();
+                        result.setId(jsonNode.get("id").asLong());
+                        result.setTitle(jsonNode.get("title").asText());
+                        result.setContent(jsonNode.get("content").asText());
+                        result.setStatus(jsonNode.get("status").asText());
+                        
+                        // 날짜 파싱
+                        if (jsonNode.has("requestDate")) {
+                            try {
+                                result.setRequestDate(LocalDateTime.parse(jsonNode.get("requestDate").asText()));
+                            } catch (Exception e) {
+                                System.err.println("날짜 파싱 오류: " + e.getMessage());
+                            }
+                        }
+                        
+                        // 첨부파일 정보
+                        if (jsonNode.has("attachmentFilename")) {
+                            result.setAttachmentFilename(jsonNode.get("attachmentFilename").asText());
+                        }
+                        if (jsonNode.has("attachmentSize")) {
+                            result.setAttachmentSize(jsonNode.get("attachmentSize").asLong());
+                        }
+                        if (jsonNode.has("attachmentContent")) {
+                            result.setAttachmentContent(jsonNode.get("attachmentContent").asText());
+                        }
+                        
+                        // 요청자 정보 파싱
+                        if (jsonNode.has("requester") && !jsonNode.get("requester").isNull()) {
+                            JsonNode requesterNode = jsonNode.get("requester");
+                            UserDto requester = new UserDto();
+                            requester.setUserId(requesterNode.get("userId").asLong());
+                            requester.setUsername(requesterNode.get("username").asText());
+                            // 서버 응답의 department 필드를 departmentName으로 매핑
+                            if (requesterNode.has("department")) {
+                                requester.setDepartmentName(requesterNode.get("department").asText());
+                            }
+                            result.setRequester(requester);
+                        }
+                        
+                        // 승인자 정보 파싱
+                        if (jsonNode.has("approver") && !jsonNode.get("approver").isNull()) {
+                            JsonNode approverNode = jsonNode.get("approver");
+                            UserDto approver = new UserDto();
+                            approver.setUserId(approverNode.get("userId").asLong());
+                            approver.setUsername(approverNode.get("username").asText());
+                            // 서버 응답의 department 필드를 departmentName으로 매핑
+                            if (approverNode.has("department")) {
+                                approver.setDepartmentName(approverNode.get("department").asText());
+                            }
+                            result.setApprover(approver);
+                        }
                     }
                     
                     System.out.println("✅ 상세 조회 파싱 성공");
@@ -230,7 +315,7 @@ public class ApprovalApiClient extends BaseApiClient {
     }
 
     /**
-     * 내가 요청한 결재 목록 조회
+     * 내가 요청한 결재 목록 조회 (최적화된 버전)
      * @return 내가 요청한 결재 목록
      */
     public List<ApprovalDto> getMyRequests() {
@@ -246,13 +331,28 @@ public class ApprovalApiClient extends BaseApiClient {
             HttpRequest request = builder.GET().build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "내가 요청한 결재 목록 조회");
+            // logResponseInfo(response, "내가 요청한 결재 목록 조회");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
                 if (responseBody != null && !responseBody.trim().isEmpty()) {
-                    // 서버에서 직접 배열로 응답하므로 data 필드 없이 직접 파싱
-                    return objectMapper.convertValue(objectMapper.readTree(responseBody), new TypeReference<List<ApprovalDto>>() {});
+                    // 직접 파싱하여 성능 최적화
+                    List<ApprovalDto> results = objectMapper.readValue(responseBody, new TypeReference<List<ApprovalDto>>() {});
+                    
+                    // 성능 최적화: 불필요한 중첩 객체 참조 제거
+                    for (ApprovalDto dto : results) {
+                        // UserDto 참조를 최소화하여 메모리 사용량 감소
+                        if (dto.getRequester() != null) {
+                            // DepartmentDto 참조 제거
+                            dto.getRequester().setDepartment(null);
+                        }
+                        if (dto.getApprover() != null) {
+                            // DepartmentDto 참조 제거
+                            dto.getApprover().setDepartment(null);
+                        }
+                    }
+                    
+                    return results;
                 }
             }
         } catch (Exception e) {
@@ -285,7 +385,7 @@ public class ApprovalApiClient extends BaseApiClient {
             HttpRequest request = builder.GET().build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "내가 요청한 결재 목록 조회 (페이지네이션)");
+            // logResponseInfo(response, "내가 요청한 결재 목록 조회 (페이지네이션)");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -316,7 +416,7 @@ public class ApprovalApiClient extends BaseApiClient {
             HttpRequest request = builder.GET().build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "내가 결재해야 할 목록 조회");
+            // logResponseInfo(response, "내가 결재해야 할 목록 조회");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -355,7 +455,7 @@ public class ApprovalApiClient extends BaseApiClient {
             HttpRequest request = builder.GET().build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "내가 결재해야 할 목록 조회 (페이지네이션)");
+            // logResponseInfo(response, "내가 결재해야 할 목록 조회 (페이지네이션)");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -379,7 +479,7 @@ public class ApprovalApiClient extends BaseApiClient {
             HttpRequest request = builder.GET().build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "내가 결재해야 할 대기중인 목록 조회");
+            // logResponseInfo(response, "내가 결재해야 할 대기중인 목록 조회");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -420,7 +520,7 @@ public class ApprovalApiClient extends BaseApiClient {
             HttpRequest request = builder.GET().build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "내가 결재해야 할 대기중인 목록 조회 (페이지네이션)");
+            // logResponseInfo(response, "내가 결재해야 할 대기중인 목록 조회 (페이지네이션)");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -444,7 +544,7 @@ public class ApprovalApiClient extends BaseApiClient {
             HttpRequest request = builder.GET().build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "모든 결재 목록 조회");
+            // logResponseInfo(response, "모든 결재 목록 조회");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -468,14 +568,42 @@ public class ApprovalApiClient extends BaseApiClient {
      */
     public boolean deleteApproval(Long approvalId) {
         try {
-            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/approvals/" + approvalId);
-            HttpRequest request = builder.DELETE().build();
+            System.out.println("🗑️ 결재 삭제 시도 - ID: " + approvalId);
+            
+            // 현재 사용자 정보 가져오기
+            var currentUser = ApiClient.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                System.err.println("❌ 현재 사용자 정보를 가져올 수 없습니다.");
+                return false;
+            }
+            
+            // API 문서에 따른 요청 본문 생성
+            Map<String, Long> requestBody = Map.of("requesterId", currentUser.getUserId());
+            String jsonBody = objectMapper.writeValueAsString(requestBody);
+            System.out.println("📝 삭제 요청 본문: " + jsonBody);
+            
+            // API 문서에 따른 올바른 엔드포인트 사용
+            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/approvals/my-request/" + approvalId);
+            HttpRequest request = builder
+                    .method("DELETE", HttpRequest.BodyPublishers.ofString(jsonBody))
+                    .header("Content-Type", "application/json")
+                    .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "결재 삭제");
+            // logResponseInfo(response, "결재 삭제");
 
-            return response.statusCode() == 200;
+            if (response.statusCode() == 200) {
+                System.out.println("✅ 결재 삭제 성공 - ID: " + approvalId);
+                return true;
+            } else {
+                System.err.println("❌ 결재 삭제 실패 - 상태 코드: " + response.statusCode());
+                String responseBody = getSafeResponseBody(response);
+                System.err.println("❌ 오류 응답: " + responseBody);
+                return false;
+            }
         } catch (Exception e) {
+            System.err.println("❌ 결재 삭제 중 예외 발생: " + e.getMessage());
+            e.printStackTrace();
             handleChunkedTransferError(e, "결재 삭제");
         }
         return false;
@@ -493,7 +621,7 @@ public class ApprovalApiClient extends BaseApiClient {
             HttpRequest request = builder.GET().build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logResponseInfo(response, "결재 제목 검색");
+            // logResponseInfo(response, "결재 제목 검색");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -506,6 +634,102 @@ public class ApprovalApiClient extends BaseApiClient {
             }
         } catch (Exception e) {
             handleChunkedTransferError(e, "결재 제목 검색");
+        }
+        return null;
+    }
+
+    /**
+     * 내가 요청한 결재 목록 조회 (간단한 버전 - 성능 최적화)
+     * @return 내가 요청한 결재 목록
+     */
+    public List<ApprovalDto> getMyRequestsSimple() {
+        try {
+            // 현재 사용자 정보 가져오기
+            var currentUser = ApiClient.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                System.err.println("현재 사용자 정보를 가져올 수 없습니다.");
+                return null;
+            }
+
+            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/approvals/my-requests/" + currentUser.getUserId() + "/simple");
+            HttpRequest request = builder.GET().build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            // logResponseInfo(response, "내가 요청한 결재 목록 조회 (간단한 버전)");
+
+            if (response.statusCode() == 200) {
+                String responseBody = getSafeResponseBody(response);
+                if (responseBody != null && !responseBody.trim().isEmpty()) {
+                    // 간단한 Map 형태로 파싱
+                    List<Map<String, Object>> simpleResponses = objectMapper.readValue(responseBody, new TypeReference<List<Map<String, Object>>>() {});
+                    
+                                         // Map을 ApprovalDto로 변환
+                     List<ApprovalDto> results = new ArrayList<>();
+                     for (Map<String, Object> simpleResponse : simpleResponses) {
+                         ApprovalDto dto = new ApprovalDto();
+                         
+                         // 안전한 타입 변환
+                         Object idObj = simpleResponse.get("id");
+                         if (idObj != null) {
+                             dto.setId(Long.valueOf(idObj.toString()));
+                         }
+                         
+                         dto.setTitle((String) simpleResponse.get("title"));
+                         dto.setContent((String) simpleResponse.get("content"));
+                         dto.setStatus((String) simpleResponse.get("status"));
+                        // 날짜 파싱 (서버에서 ISO 형식으로 반환됨)
+                        String requestDateStr = (String) simpleResponse.get("requestDate");
+                        if (requestDateStr != null) {
+                            try {
+                                dto.setRequestDate(LocalDateTime.parse(requestDateStr));
+                            } catch (Exception e) {
+                                System.err.println("날짜 파싱 오류: " + requestDateStr + " - " + e.getMessage());
+                                // 기본값 설정
+                                dto.setRequestDate(LocalDateTime.now());
+                            }
+                        }
+                        
+                                                 // 첨부파일 정보는 목록에서 제외 (상세보기에서만 확인)
+                         // Object attachmentFilenameObj = simpleResponse.get("attachmentFilename");
+                         // if (attachmentFilenameObj != null) {
+                         //     dto.setAttachmentFilename(attachmentFilenameObj.toString());
+                         // }
+                         // 
+                         // Object attachmentSizeObj = simpleResponse.get("attachmentSize");
+                         // if (attachmentSizeObj != null) {
+                         //     try {
+                         //         dto.setAttachmentSize(Long.valueOf(attachmentSizeObj.toString()));
+                         //     } catch (NumberFormatException e) {
+                         //         System.err.println("첨부파일 크기 파싱 오류: " + attachmentSizeObj);
+                         //     }
+                         // }
+                        
+                                                 // 사용자 정보 (간단한 형태)
+                         @SuppressWarnings("unchecked")
+                         Map<String, Object> requesterInfo = (Map<String, Object>) simpleResponse.get("requester");
+                         if (requesterInfo != null) {
+                             UserDto requester = new UserDto();
+                             String username = (String) requesterInfo.get("username");
+                             String department = (String) requesterInfo.get("department");
+                             
+                             // 디버깅 정보 출력
+                             System.out.println("🔍 클라이언트 부서 정보 확인:");
+                             System.out.println("  - 사용자명: " + username);
+                             System.out.println("  - 부서명: " + department);
+                             
+                             requester.setUsername(username);
+                             requester.setDepartmentName(department);
+                             dto.setRequester(requester);
+                         }
+                        
+                        results.add(dto);
+                    }
+                    
+                    return results;
+                }
+            }
+        } catch (Exception e) {
+            handleChunkedTransferError(e, "내가 요청한 결재 목록 조회 (간단한 버전)");
         }
         return null;
     }

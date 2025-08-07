@@ -61,6 +61,16 @@ public class NoticeDetailController {
      * 공지사항 데이터 설정
      */
     public void setNoticeItem(NoticeItem notice) {
+        System.out.println("🔍 NoticeDetailController.setNoticeItem 호출됨");
+        System.out.println("  - notice: " + (notice != null ? "not null" : "null"));
+        if (notice != null) {
+            System.out.println("  - noticeId: " + notice.getNoticeId());
+            System.out.println("  - title: " + notice.getTitle());
+            System.out.println("  - department: " + notice.getDepartment());
+            System.out.println("  - author: " + notice.getAuthor());
+            System.out.println("  - content length: " + (notice.getContent() != null ? notice.getContent().length() : "null"));
+        }
+        
         this.noticeItem = notice;
         populateData();
     }
@@ -69,7 +79,40 @@ public class NoticeDetailController {
      * 데이터 채우기
      */
     private void populateData() {
-        if (noticeItem == null) return;
+        System.out.println("🔍 populateData 호출됨");
+        if (noticeItem == null) {
+            System.out.println("❌ noticeItem이 null입니다.");
+            return;
+        }
+
+        System.out.println("  - 제목: " + noticeItem.getTitle());
+        System.out.println("  - 부서: " + noticeItem.getDepartment());
+        System.out.println("  - 작성자: " + noticeItem.getAuthor());
+        System.out.println("  - 날짜: " + noticeItem.getDate());
+        System.out.println("  - 내용 길이: " + (noticeItem.getContent() != null ? noticeItem.getContent().length() : "null"));
+        System.out.println("  - 중요 여부: " + noticeItem.isImportant());
+
+        // UI 컴포넌트가 null인지 확인
+        if (titleLabel == null) {
+            System.out.println("❌ titleLabel이 null입니다.");
+            return;
+        }
+        if (departmentLabel == null) {
+            System.out.println("❌ departmentLabel이 null입니다.");
+            return;
+        }
+        if (authorLabel == null) {
+            System.out.println("❌ authorLabel이 null입니다.");
+            return;
+        }
+        if (dateLabel == null) {
+            System.out.println("❌ dateLabel이 null입니다.");
+            return;
+        }
+        if (contentTextArea == null) {
+            System.out.println("❌ contentTextArea가 null입니다.");
+            return;
+        }
 
         titleLabel.setText(noticeItem.getTitle());
         departmentLabel.setText(noticeItem.getDepartment());
@@ -82,6 +125,8 @@ public class NoticeDetailController {
 
         // 첨부파일 처리
         processAttachments();
+        
+        System.out.println("✅ populateData 완료");
     }
 
     /**

@@ -60,6 +60,9 @@ public class NoticeController {
     // 액션 버튼들
     @FXML private Button deleteButton;
     @FXML private Button registerButton;
+    
+    // 로딩 인디케이터
+    @FXML private ProgressIndicator loadingIndicator;
 
     // ==================== 내부 데이터 저장소 ====================
 
@@ -268,12 +271,36 @@ public class NoticeController {
     // ==================== 데이터 로드 ====================
 
     /**
+     * 로딩 인디케이터 표시/숨김
+     */
+    private void showLoading(boolean show) {
+        if (loadingIndicator != null) {
+            loadingIndicator.setVisible(show);
+            loadingIndicator.setManaged(show);
+            tableView.setVisible(!show);
+            tableView.setManaged(!show);
+        }
+    }
+
+    /**
      * 데이터베이스에서 공지사항 데이터를 로드
      */
     private void loadNoticesFromDatabase() {
-        try {
-            // ApiClient를 통해 서버에서 공지사항 데이터 가져오기
-            List<NoticeItem> notices = apiClient.getAllNotices();
+        // 로딩 인디케이터 표시
+        showLoading(true);
+        
+        // 백그라운드에서 데이터 로드
+        javafx.concurrent.Task<List<NoticeItem>> loadTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected List<NoticeItem> call() throws Exception {
+                // ApiClient를 통해 서버에서 공지사항 데이터 가져오기 (간단한 버전)
+                return apiClient.getAllNoticesSimple();
+            }
+        };
+        
+        // 성공 시 처리
+        loadTask.setOnSucceeded(event -> {
+            List<NoticeItem> notices = loadTask.getValue();
             
             allItems.clear();
             allItems.addAll(notices);
@@ -286,18 +313,27 @@ public class NoticeController {
             
             // 필터링과 페이지네이션 업데이트
             filterNotices();
-            
-        } catch (Exception e) {
-            System.out.println("공지사항 로드 중 오류 발생: " + e.getMessage());
-            e.printStackTrace();
-            // 샘플 데이터 로드 제거 - API 오류 시 빈 목록으로 설정
+            showLoading(false);
+        });
+        
+        // 실패 시 처리
+        loadTask.setOnFailed(event -> {
+            System.out.println("공지사항 로드 중 오류 발생: " + loadTask.getException().getMessage());
+            loadTask.getException().printStackTrace();
+            // API 오류 시 빈 목록으로 설정
             allItems.clear();
             filteredItems.clear();
             System.out.println("API 오류로 인해 빈 목록으로 설정되었습니다.");
             
             // 빈 목록일 때도 페이지네이션 업데이트
             updatePagination();
-        }
+            showLoading(false);
+        });
+        
+        // 백그라운드 스레드에서 실행
+        Thread loadThread = new Thread(loadTask);
+        loadThread.setDaemon(true);
+        loadThread.start();
     }
     
     /**
