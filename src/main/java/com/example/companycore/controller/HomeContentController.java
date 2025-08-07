@@ -18,6 +18,9 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -71,6 +74,15 @@ public class HomeContentController {
         } else {
             updateToggleState(isWorking);
         }
+
+        // 10초마다 새로고침
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(10), event -> {
+            loadAnnouncements();
+            loadRecentAttendance();
+            loadPendingApprovals();
+        }));
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
     }
 
     private void checkInitialAttendanceStatus() {
