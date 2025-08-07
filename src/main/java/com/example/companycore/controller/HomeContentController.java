@@ -7,6 +7,7 @@ import com.example.companycore.model.entity.User;
 import com.example.companycore.service.AttendanceApiClient;
 import com.example.companycore.service.NoticeApiClient;
 import com.example.companycore.service.UserApiClient;
+import com.example.companycore.service.ApprovalApiClient;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -41,6 +42,12 @@ public class HomeContentController {
     @FXML
     private VBox recentAttendanceBox; // 새로 추가된 VBox
 
+    @FXML
+    private VBox pendingApprovalBox; // 새로 추가된 결재 요청 박스
+
+    @FXML
+    private Label pendingApprovalCountLabel; // 결재 요청 건수 라벨
+
     private static boolean isWorking = false;
     private static boolean statusInitialized = false;
 
@@ -48,6 +55,7 @@ public class HomeContentController {
     public void initialize() {
         loadAnnouncements();
         loadRecentAttendance(); // 새로운 메서드 호출
+        loadPendingApprovals(); // 결재 요청 로드
 
         if (!statusInitialized) {
             checkInitialAttendanceStatus();
@@ -291,4 +299,38 @@ public class HomeContentController {
             alert.showAndWait();
         });
     }
-} 
+
+    private void loadPendingApprovals() {
+        new Thread(() -> {
+            User currentUser = UserApiClient.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                Platform.runLater(() -> {
+                    if (pendingApprovalBox != null) pendingApprovalBox.setVisible(false);
+                });
+                return;
+            }
+
+            // positionId가 1인 경우에만 박스를 표시
+            if (currentUser.getPositionId() != null && currentUser.getPositionId() == 1) {
+                List<com.example.companycore.model.dto.ApprovalDto> pendingApprovals = ApprovalApiClient.getInstance().getMyPending();
+                Platform.runLater(() -> {
+                    if (pendingApprovalBox != null) {
+                        pendingApprovalBox.setVisible(true);
+                        int count = (pendingApprovals != null) ? pendingApprovals.size() : 0;
+                        pendingApprovalCountLabel.setText(count + "건");
+                        pendingApprovalBox.setOnMouseClicked(event -> {
+                            MainController mainController = (MainController) pendingApprovalBox.getScene().getUserData();
+                            if (mainController != null) {
+                                mainController.loadContent("approvalRequest"); // 결재 요청 목록 뷰로 전환
+                            }
+                        });
+                    }
+                });
+            } else {
+                Platform.runLater(() -> {
+                    if (pendingApprovalBox != null) pendingApprovalBox.setVisible(false);
+                });
+            }
+        }).start();
+    }
+}
