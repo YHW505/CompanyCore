@@ -240,21 +240,30 @@ public class DtoConverter {
     public static MessageDto toMessageDto(Message message) {
         if (message == null) return null;
 
-        MessageDto dto = new MessageDto(
-                message.getMessageId() != null ? message.getMessageId().longValue() : null, // Long messageId
+        return new MessageDto(
+                message.getMessageId(),                     // Integer messageId
                 message.getSenderId(),                      // Long senderId
-                message.getSenderEmail(),                   // String senderEmail ✅ 순서 변경됨
-                message.getReceiverEmail(),                 // String receiverEmail
+                message.getReceiverId(),                    // Long receiverId
+                message.getMessageType() != null ? message.getMessageType().toString() : null, // String messageType
                 message.getTitle(),                         // String title
                 message.getContent(),                       // String content
-                message.getMessageType() != null ? message.getMessageType().toString() : null, // String messageType
                 message.getIsRead(),                        // Boolean isRead
                 message.getSentAt(),                        // LocalDateTime sentAt
-                null,                                       // LocalDateTime readAt
-                null,                                       // String senderName
-                null                                        // String receiverName
+                message.getAttachmentContentType(),         // String attachmentContentType
+                message.getAttachmentSize(),                // Long attachmentSize
+                message.getAttachmentContent(),              // String attachmentContent
+                message.getAttachmentFilename(),             // String attachmentFilename
+                message.getSenderName(),                    // String senderName
+                message.getSenderEmployeeCode(),            // String senderEmployeeCode
+                message.getSenderPositionName(),            // String senderPositionName
+                message.getSenderDepartmentName(),          // String senderDepartmentName
+                message.getSenderEmail(),                   // String senderEmail
+                message.getReceiverName(),                  // String receiverName
+                message.getReceiverEmployeeCode(),          // String receiverEmployeeCode
+                message.getReceiverPositionName(),          // String receiverPositionName
+                message.getReceiverDepartmentName(),        // String receiverDepartmentName
+                message.getReceiverEmail()                  // String receiverEmail
         );
-        return dto;
     }
 
     /**
@@ -264,10 +273,9 @@ public class DtoConverter {
         if (messageDto == null) return null;
 
         Message message = new Message();
-        message.setMessageId(messageDto.getMessageId() != null ? messageDto.getMessageId().intValue() : null);
+        message.setMessageId(messageDto.getMessageId());
         message.setSenderId(messageDto.getSenderId());
-        message.setReceiverEmail(messageDto.getReceiverEmail());
-        message.setSenderEmail(messageDto.getSenderEmail()); // ✅ 추가
+        message.setReceiverId(messageDto.getReceiverId());
         if (messageDto.getMessageType() != null) {
             message.setMessageType(com.example.companycore.model.entity.Enum.MessageType.valueOf(messageDto.getMessageType()));
         }
@@ -275,6 +283,24 @@ public class DtoConverter {
         message.setContent(messageDto.getContent());
         message.setIsRead(messageDto.getIsRead());
         message.setSentAt(messageDto.getSentAt());
+        
+        // 첨부파일 정보
+        message.setAttachmentContentType(messageDto.getAttachmentContentType());
+        message.setAttachmentSize(messageDto.getAttachmentSize());
+        message.setAttachmentContent(messageDto.getAttachmentContent());
+        message.setAttachmentFilename(messageDto.getAttachmentFilename());
+        
+        // 사용자 정보
+        message.setSenderName(messageDto.getSenderName());
+        message.setSenderEmployeeCode(messageDto.getSenderEmployeeCode());
+        message.setSenderPositionName(messageDto.getSenderPositionName());
+        message.setSenderDepartmentName(messageDto.getSenderDepartmentName());
+        message.setSenderEmail(messageDto.getSenderEmail());
+        message.setReceiverName(messageDto.getReceiverName());
+        message.setReceiverEmployeeCode(messageDto.getReceiverEmployeeCode());
+        message.setReceiverPositionName(messageDto.getReceiverPositionName());
+        message.setReceiverDepartmentName(messageDto.getReceiverDepartmentName());
+        message.setReceiverEmail(messageDto.getReceiverEmail());
 
         return message;
     }

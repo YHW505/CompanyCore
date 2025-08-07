@@ -146,7 +146,7 @@ public class DynamicMailPreviewController {
 
         Optional<ButtonType> result = confirmationAlert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            Long messageId = selectedMessage.getMessageId();
+            Integer messageId = selectedMessage.getMessageId();
             User user = apiClient.getCurrentUser();
             Long userId = user.getUserId();
 
