@@ -6,8 +6,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+
 
 /**
  * 📦 메시지 관련 API 클라이언트 클래스
@@ -122,55 +126,136 @@ public class MessageApiClient extends BaseApiClient {
         }
     }
 
-  public List<MessageDto> getReceiveMessagesById(Long userId) {
+    public List<MessageDto> getReceiveMessagesById(Long userId) {
         try {
-//            StringBuilder endpoint = new StringBuilder("/messages?");
-//            String type = "received";
             String endpoint = "/messages?type=received";
 
-
             HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
                     .header("User-Id", userId.toString())
                     .GET()
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println(response);
+            System.out.println("응답: " + response.body()); // 디버깅용
 
             if (response.statusCode() == 200 && response.body() != null && !response.body().trim().isEmpty()) {
-                return objectMapper.readValue(response.body(),
-                        objectMapper.getTypeFactory().constructCollectionType(List.class, MessageDto.class));
-            } else {
-                return new ArrayList<>();
+                // JSON 응답을 Map으로 파싱
+                Map<String, Object> responseMap = objectMapper.readValue(response.body(), Map.class);
+
+                // success 확인
+                Boolean success = (Boolean) responseMap.get("success");
+                if (success != null && success) {
+                    // data 배열 추출
+                    List<Map<String, Object>> dataList = (List<Map<String, Object>>) responseMap.get("data");
+
+                    // MessageDto 리스트로 변환
+                    List<MessageDto> messageDtos = new ArrayList<>();
+                    for (Map<String, Object> item : dataList) {
+                        MessageDto dto = convertToMessageDto(item);
+                        messageDtos.add(dto);
+                    }
+                    return messageDtos;
+                }
             }
+            return new ArrayList<>();
+
         } catch (Exception e) {
             System.out.println("메시지 목록 요청 실패: " + e.getMessage());
+            e.printStackTrace(); // 상세 에러 확인
             return new ArrayList<>();
         }
     }
 
-    public List<MessageDto> getSentMessagesById(Long userId) {
-        try {
-            String endpoint = "/messages?type=sent";
+//  public List<MessageDto> getReceiveMessagesById(Long userId) {
+//        try {
+////            StringBuilder endpoint = new StringBuilder("/messages?");
+////            String type = "received";
+//            String endpoint = "/messages?type=received";
+//
+//            HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
+//                    .header("User-Id", userId.toString())
+//                    .GET()
+//                    .build();
+//
+//            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+//            System.out.println(response);
+//
+//            if (response.statusCode() == 200 && response.body() != null && !response.body().trim().isEmpty()) {
+//                return objectMapper.readValue(response.body(),
+//                        objectMapper.getTypeFactory().constructCollectionType(List.class, MessageDto.class));
+//            } else {
+//                return new ArrayList<>();
+//            }
+//        } catch (Exception e) {
+//            System.out.println("메시지 목록 요청 실패: " + e.getMessage());
+//            return new ArrayList<>();
+//        }
+//    }
 
-            HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
-                    .header("User-Id", userId.toString())
-                    .GET()
-                    .build();
+public List<MessageDto> getSentMessagesById(Long userId) {
+    try {
+        String endpoint = "/messages?type=sent";
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
+                .header("User-Id", userId.toString())
+                .GET()
+                .build();
 
-            if (response.statusCode() == 200 && response.body() != null && !response.body().trim().isEmpty()) {
-                return objectMapper.readValue(response.body(),
-                        objectMapper.getTypeFactory().constructCollectionType(List.class, MessageDto.class));
-            } else {
-                return new ArrayList<>();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        System.out.println("보낸 메시지 응답: " + response.body()); // 디버깅용
+
+        if (response.statusCode() == 200 && response.body() != null && !response.body().trim().isEmpty()) {
+            // JSON 응답을 Map으로 파싱
+            Map<String, Object> responseMap = objectMapper.readValue(response.body(), Map.class);
+
+            // success 확인
+            Boolean success = (Boolean) responseMap.get("success");
+            if (success != null && success) {
+                // data 배열 추출
+                List<Map<String, Object>> dataList = (List<Map<String, Object>>) responseMap.get("data");
+
+                if (dataList != null) {
+                    // MessageDto 리스트로 변환
+                    List<MessageDto> messageDtos = new ArrayList<>();
+                    for (Map<String, Object> item : dataList) {
+                        MessageDto dto = convertToMessageDto(item);
+                        messageDtos.add(dto);
+                    }
+                    return messageDtos;
+                }
             }
-        } catch (Exception e) {
-            System.out.println("메시지 목록 요청 실패: " + e.getMessage());
-            return new ArrayList<>();
         }
+        return new ArrayList<>();
+
+    } catch (Exception e) {
+        System.out.println("보낸 메시지 목록 요청 실패: " + e.getMessage());
+        e.printStackTrace(); // 상세 에러 확인
+        return new ArrayList<>();
     }
+}
+
+//    public List<MessageDto> getSentMessagesById(Long userId) {
+//        try {
+//            String endpoint = "/messages?type=sent";
+//
+//            HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
+//                    .header("User-Id", userId.toString())
+//                    .GET()
+//                    .build();
+//
+//            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+//
+//            if (response.statusCode() == 200 && response.body() != null && !response.body().trim().isEmpty()) {
+//                return objectMapper.readValue(response.body(),
+//                        objectMapper.getTypeFactory().constructCollectionType(List.class, MessageDto.class));
+//            } else {
+//                return new ArrayList<>();
+//            }
+//        } catch (Exception e) {
+//            System.out.println("메시지 목록 요청 실패: " + e.getMessage());
+//            return new ArrayList<>();
+//        }
+//    }
 
 
     // ------------------------------------------------------------------------
@@ -373,5 +458,57 @@ public class MessageApiClient extends BaseApiClient {
             System.out.println("❌ 메시지 삭제 중 예외 발생: " + e.getMessage());
         }
         return false;
+    }
+
+    // Map을 MessageDto로 변환하는 헬퍼 메서드 (공통으로 사용)
+    private MessageDto convertToMessageDto(Map<String, Object> item) {
+        MessageDto dto = new MessageDto();
+
+        try {
+            // messageId 변환 (Integer -> Long)
+            Object messageIdObj = item.get("messageId");
+            if (messageIdObj instanceof Integer) {
+                dto.setMessageId(((Integer) messageIdObj).longValue());
+            } else if (messageIdObj instanceof Long) {
+                dto.setMessageId((Long) messageIdObj);
+            }
+
+            // 기본 필드들
+            dto.setTitle((String) item.get("title"));
+            dto.setContent((String) item.get("content"));
+            dto.setSenderName((String) item.get("senderName"));
+            dto.setReceiverName((String) item.get("receiverName"));
+            dto.setIsRead((Boolean) item.get("isRead"));
+            dto.setMessageType((String) item.get("messageType"));
+
+            // senderId 변환 (있는 경우)
+            Object senderIdObj = item.get("senderId");
+            if (senderIdObj instanceof Integer) {
+                dto.setSenderId(((Integer) senderIdObj).longValue());
+            } else if (senderIdObj instanceof Long) {
+                dto.setSenderId((Long) senderIdObj);
+            }
+
+            // 이메일 정보 (있는 경우)
+            dto.setSenderEmail((String) item.get("senderEmail"));
+            dto.setReceiverEmail((String) item.get("receiverEmail"));
+
+            // LocalDateTime 변환
+            String sentAtStr = (String) item.get("sentAt");
+            if (sentAtStr != null && !sentAtStr.isEmpty()) {
+                dto.setSentAt(LocalDateTime.parse(sentAtStr));
+            }
+
+            String readAtStr = (String) item.get("readAt");
+            if (readAtStr != null && !readAtStr.isEmpty()) {
+                dto.setReadAt(LocalDateTime.parse(readAtStr));
+            }
+
+        } catch (Exception e) {
+            System.out.println("MessageDto 변환 중 오류: " + e.getMessage());
+            // 기본값으로 설정하거나 로그만 남기고 계속 진행
+        }
+
+        return dto;
     }
 }
