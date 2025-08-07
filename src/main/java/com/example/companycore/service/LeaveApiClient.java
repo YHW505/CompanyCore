@@ -39,20 +39,47 @@ public class LeaveApiClient extends BaseApiClient {
             // 날짜를 문자열로 변환하여 전송
             ObjectNode requestBody = objectMapper.createObjectNode();
             requestBody.put("userId", leaveRequest.getUserId());
-            requestBody.put("leaveType", leaveRequest.getLeaveType());
+            
+            // leaveType을 대문자로 변환하여 전송
+            String leaveType = leaveRequest.getLeaveType();
+            if (leaveType != null) {
+                leaveType = leaveType.toUpperCase();
+                // 모든 휴가 유형 처리
+                if ("반차".equals(leaveRequest.getLeaveType()) || "HALF_DAY".equals(leaveType)) {
+                    leaveType = "HALF_DAY";
+                } else if ("공가".equals(leaveRequest.getLeaveType()) || "OFFICIAL".equals(leaveType)) {
+                    leaveType = "OFFICIAL";
+                } else if ("연차".equals(leaveRequest.getLeaveType()) || "ANNUAL".equals(leaveType)) {
+                    leaveType = "ANNUAL";
+                } else if ("병가".equals(leaveRequest.getLeaveType()) || "SICK".equals(leaveType)) {
+                    leaveType = "SICK";
+                } else if ("개인사유".equals(leaveRequest.getLeaveType()) || "PERSONAL".equals(leaveType)) {
+                    leaveType = "PERSONAL";
+                } else if ("출산휴가".equals(leaveRequest.getLeaveType()) || "MATERNITY".equals(leaveType)) {
+                    leaveType = "MATERNITY";
+                } else if ("육아휴가".equals(leaveRequest.getLeaveType()) || "PATERNITY".equals(leaveType)) {
+                    leaveType = "PATERNITY";
+                } else if ("특별휴가".equals(leaveRequest.getLeaveType()) || "SPECIAL".equals(leaveType)) {
+                    leaveType = "SPECIAL";
+                }
+            }
+            requestBody.put("leaveType", leaveType);
             requestBody.put("startDate", leaveRequest.getStartDate() != null ? leaveRequest.getStartDate().toString() : null);
             requestBody.put("endDate", leaveRequest.getEndDate() != null ? leaveRequest.getEndDate().toString() : null);
             requestBody.put("reason", leaveRequest.getReason());
             requestBody.put("status", leaveRequest.getStatus());
             
             String json = objectMapper.writeValueAsString(requestBody);
-            System.out.println("전송할 JSON: " + json);
+            System.out.println("휴가 신청 전송 - JSON: " + json);
             
             HttpRequest request = createAuthenticatedRequestBuilder("/leave-requests")
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            System.out.println("휴가 신청 응답 - 상태 코드: " + response.statusCode());
+            System.out.println("휴가 신청 응답 - 본문: " + response.body());
 
             if (response.statusCode() == 201 || response.statusCode() == 200) {
                 try {
@@ -70,6 +97,7 @@ public class LeaveApiClient extends BaseApiClient {
             }
         } catch (Exception e) {
             System.out.println("휴가 신청 생성 중 예외 발생: " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }
@@ -179,15 +207,22 @@ public class LeaveApiClient extends BaseApiClient {
     public boolean approveLeaveRequest(Long leaveId, Long approverId) {
         try {
             ObjectNode requestBody = objectMapper.createObjectNode();
-            requestBody.put("approverId", approverId);  // 서버가 기대하는 파라미터명으로 변경
+            requestBody.put("approverId", approverId);
 
             String json = objectMapper.writeValueAsString(requestBody);
             String endpoint = "/leave-requests/" + leaveId + "/approve";
+            
+            System.out.println("휴가 승인 요청 - 휴가ID: " + leaveId + ", 승인자ID: " + approverId);
+            System.out.println("휴가 승인 요청 - JSON: " + json);
+            
             HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
                     .PUT(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            System.out.println("휴가 승인 응답 - 상태 코드: " + response.statusCode());
+            System.out.println("휴가 승인 응답 - 본문: " + response.body());
 
             if (response.statusCode() == 200) {
                 System.out.println("휴가 신청 승인 성공!");
@@ -199,6 +234,7 @@ public class LeaveApiClient extends BaseApiClient {
             }
         } catch (Exception e) {
             System.out.println("휴가 신청 승인 중 예외 발생: " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
@@ -209,16 +245,23 @@ public class LeaveApiClient extends BaseApiClient {
     public boolean rejectLeaveRequest(Long leaveId, Long rejectedBy, String rejectionReason) {
         try {
             ObjectNode requestBody = objectMapper.createObjectNode();
-            requestBody.put("rejectedBy", rejectedBy);  // 서버와 일치
-            requestBody.put("rejectionReason", rejectionReason);  // 서버와 일치
+            requestBody.put("rejectedBy", rejectedBy);
+            requestBody.put("rejectionReason", rejectionReason);
 
             String json = objectMapper.writeValueAsString(requestBody);
             String endpoint = "/leave-requests/" + leaveId + "/reject";
+            
+            System.out.println("휴가 거부 요청 - 휴가ID: " + leaveId + ", 거부자ID: " + rejectedBy + ", 사유: " + rejectionReason);
+            System.out.println("휴가 거부 요청 - JSON: " + json);
+            
             HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
                     .PUT(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            System.out.println("휴가 거부 응답 - 상태 코드: " + response.statusCode());
+            System.out.println("휴가 거부 응답 - 본문: " + response.body());
 
             if (response.statusCode() == 200) {
                 System.out.println("휴가 신청 반려 성공!");
@@ -230,6 +273,7 @@ public class LeaveApiClient extends BaseApiClient {
             }
         } catch (Exception e) {
             System.out.println("휴가 신청 반려 중 예외 발생: " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
