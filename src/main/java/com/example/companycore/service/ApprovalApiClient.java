@@ -454,7 +454,7 @@ public class ApprovalApiClient extends BaseApiClient {
      * @param sortDir 정렬 방향 (asc/desc)
      * @return 페이지네이션된 대기중인 결재 목록
      */
-    public Map<String, Object> getMyPendingWithPagination(int page, int size, String sortBy, String sortDir) {
+    public Map<String, Object> getMyPendingWithPagination(String department, int page, int size, String sortBy, String sortDir) {
         try {
             // 현재 사용자 정보 가져오기
             var currentUser = ApiClient.getInstance().getCurrentUser();

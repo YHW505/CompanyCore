@@ -35,7 +35,7 @@
                     <Label text="" fx:id="pendingApprovalCountLabel" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #3498db;"/>
                     <Label text="이 있습니다." style="-fx-font-size: 18px; -fx-text-fill: #2c3e50;"/>
                 </HBox>
-                <Label text="클릭하여 결재 요청 목록으로 이동" style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d; -fx-padding: 5 0 0 0;"/>
+                <Label text="클릭하여 결재 승인 목록으로 이동" style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d; -fx-padding: 5 0 0 0;"/>
             </VBox>
         </VBox>
         
