@@ -27,6 +27,16 @@
                 <Label text="최근 출근 기록" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
                 <VBox fx:id="recentAttendanceBox" spacing="10" style="-fx-padding: 10 0 0 0;"/>
             </VBox>
+
+            <!-- 처리해야 할 결재 요청 -->
+            <VBox fx:id="pendingApprovalBox" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);" visible="false">
+                <Label text="처리해야 할 결재 요청" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <HBox alignment="CENTER_LEFT" spacing="5" style="-fx-padding: 10 0 0 0;">
+                    <Label text="" fx:id="pendingApprovalCountLabel" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #3498db;"/>
+                    <Label text="이 있습니다." style="-fx-font-size: 18px; -fx-text-fill: #2c3e50;"/>
+                </HBox>
+                <Label text="클릭하여 결재 승인 목록으로 이동" style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d; -fx-padding: 5 0 0 0;"/>
+            </VBox>
         </VBox>
         
         <!-- 오른쪽 컬럼 -->
