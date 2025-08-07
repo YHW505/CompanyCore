@@ -905,4 +905,78 @@ public class UserApiClient extends BaseApiClient {
         }
         return false;
     }
+    
+    /**
+     * 토큰 유효성 검증
+     * @return 토큰이 유효한지 여부
+     */
+    public boolean validateToken() {
+        try {
+            if (authToken == null || authToken.isEmpty()) {
+                System.out.println("토큰이 없습니다.");
+                return false;
+            }
+            
+            ObjectNode requestBody = objectMapper.createObjectNode();
+            requestBody.put("token", authToken);
+            
+            HttpRequest request = createAuthenticatedRequestBuilder("/auth/validate-token")
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
+                    .build();
+            
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            logResponseInfo(response, "토큰 유효성 검증");
+            
+            if (response.statusCode() == 200) {
+                String responseBody = getSafeResponseBody(response);
+                if (responseBody != null && !responseBody.trim().isEmpty()) {
+                    JsonNode rootNode = objectMapper.readTree(responseBody);
+                    boolean isValid = rootNode.get("valid").asBoolean();
+                    System.out.println("토큰 유효성 검증 결과: " + (isValid ? "유효" : "무효"));
+                    return isValid;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("토큰 유효성 검증 중 오류: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    /**
+     * 로그아웃 처리
+     * @return 로그아웃 성공 여부
+     */
+    public boolean logout() {
+        try {
+            if (authToken == null || authToken.isEmpty()) {
+                System.out.println("로그아웃할 토큰이 없습니다.");
+                return true; // 토큰이 없으면 이미 로그아웃된 상태로 간주
+            }
+            
+            ObjectNode requestBody = objectMapper.createObjectNode();
+            requestBody.put("token", authToken);
+            
+            HttpRequest request = createAuthenticatedRequestBuilder("/auth/logout")
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
+                    .build();
+            
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            logResponseInfo(response, "로그아웃");
+            
+            if (response.statusCode() == 200) {
+                System.out.println("로그아웃 성공");
+                clearToken();
+                return true;
+            } else {
+                System.out.println("로그아웃 실패 - 상태 코드: " + response.statusCode());
+                System.out.println("오류 응답: " + getSafeResponseBody(response));
+                return false;
+            }
+        } catch (Exception e) {
+            System.err.println("로그아웃 중 오류: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
 } 

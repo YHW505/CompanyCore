@@ -119,11 +119,21 @@ public class LeaveApiClient extends BaseApiClient {
                 }
 
                 try {
+                    System.out.println("서버 응답 JSON: " + response.body());
                     List<LeaveRequestDto> leaveRequests = objectMapper.readValue(response.body(),
                             objectMapper.getTypeFactory().constructCollectionType(List.class, LeaveRequestDto.class));
+                    
+                    // 파싱된 데이터 상태 확인
+                    for (LeaveRequestDto leaveRequest : leaveRequests) {
+                        System.out.println("파싱된 휴가 신청 - ID: " + leaveRequest.getLeaveId() + 
+                                        ", 상태: '" + leaveRequest.getStatus() + "'" +
+                                        ", 사용자: " + leaveRequest.getUserId());
+                    }
+                    
                     return leaveRequests;
                 } catch (Exception e) {
                     System.out.println("휴가 신청 목록 파싱 실패: " + e.getMessage());
+                    e.printStackTrace();
                     return new ArrayList<>();
                 }
             } else {

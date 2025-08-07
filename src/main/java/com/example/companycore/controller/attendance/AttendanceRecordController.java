@@ -236,10 +236,19 @@ public class AttendanceRecordController implements Initializable {
         Label clockOutLabel = new Label(clockOut);
         clockOutLabel.setStyle("-fx-alignment: CENTER; -fx-min-width: 280; -fx-pref-width: 280;");
         
-        Button statusButton = new Button(status);
-        statusButton.setStyle(String.format("-fx-background-color: %s; -fx-text-fill: %s; -fx-font-weight: bold; -fx-padding: 6 15; -fx-alignment: CENTER; -fx-cursor: hand; -fx-min-width: 160; -fx-pref-width: 160;", buttonColor, textColor));
+        // 빈 행인지 확인 (모든 필드가 비어있는 경우)
+        boolean isEmptyRow = date.isEmpty() && clockIn.isEmpty() && clockOut.isEmpty() && status.isEmpty();
         
-        row.getChildren().addAll(dateLabel, clockInLabel, clockOutLabel, statusButton);
+        if (isEmptyRow) {
+            // 빈 행인 경우 상태 버튼을 숨김
+            row.getChildren().addAll(dateLabel, clockInLabel, clockOutLabel);
+        } else {
+            // 데이터가 있는 행인 경우 상태 버튼 표시
+            Button statusButton = new Button(status);
+            statusButton.setStyle(String.format("-fx-background-color: %s; -fx-text-fill: %s; -fx-font-weight: bold; -fx-padding: 6 15; -fx-alignment: CENTER; -fx-cursor: hand; -fx-min-width: 160; -fx-pref-width: 160;", buttonColor, textColor));
+            row.getChildren().addAll(dateLabel, clockInLabel, clockOutLabel, statusButton);
+        }
+        
         tableData.getChildren().add(row);
     }
     
