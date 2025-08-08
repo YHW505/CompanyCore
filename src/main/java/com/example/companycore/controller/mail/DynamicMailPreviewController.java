@@ -63,6 +63,7 @@ public class DynamicMailPreviewController {
         if (attachment != null && !attachment.isEmpty()) {
             attachmentLabel.setText(attachment);
             downloadButton.setVisible(true);
+            System.out.println(attachmentLabel.getText());
         } else {
             attachmentLabel.setText("첨부파일 없음");
             downloadButton.setVisible(false);

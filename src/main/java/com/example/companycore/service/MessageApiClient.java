@@ -288,6 +288,7 @@ public List<MessageDto> getSentMessagesById(Long userId) {
 
                     if (data != null) {
                         // MessageDto로 변환
+                        System.out.println(data);
                         return convertToMessageDto(data);
                     }
                 }
