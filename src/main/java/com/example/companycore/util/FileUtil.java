@@ -86,6 +86,20 @@ public class FileUtil {
     }
 
     /**
+     * 바이트 배열을 파일로 저장
+     * @param bytes 저장할 바이트 배열
+     * @param outputPath 저장할 파일 경로
+     * @throws IOException 파일 쓰기 오류 시
+     */
+    public static void saveBytesToFile(byte[] bytes, String outputPath) throws IOException {
+        if (bytes == null) {
+            throw new IllegalArgumentException("저장할 바이트 배열이 null입니다.");
+        }
+        Path path = Path.of(outputPath);
+        Files.write(path, bytes);
+    }
+
+    /**
      * 파일 크기를 사람이 읽기 쉬운 형태로 변환
      * @param bytes 바이트 수
      * @return 변환된 문자열 (예: "1.5 MB")

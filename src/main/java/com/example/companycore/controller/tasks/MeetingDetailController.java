@@ -1,6 +1,7 @@
 package com.example.companycore.controller.tasks;
 
 import com.example.companycore.model.dto.MeetingItem;
+import com.example.companycore.service.MeetingApiClient;
 import com.example.companycore.util.FileUtil;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -162,7 +163,7 @@ public class MeetingDetailController {
         // 다운로드 버튼
         Button downloadBtn = new Button("다운로드");
         downloadBtn.setStyle("-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-padding: 4 8;");
-        downloadBtn.setOnAction(e -> downloadAttachment(filename));
+        downloadBtn.setOnAction(e -> downloadAttachment());
 
         item.getChildren().addAll(iconLabel, fileInfo, downloadBtn);
         return item;
@@ -170,25 +171,37 @@ public class MeetingDetailController {
 
     /**
      * 첨부파일을 다운로드합니다.
-     * 
-     * @param filename 파일명
+     *
      */
-    private void downloadAttachment(String filename) {
-        if (meetingItem == null || meetingItem.getAttachmentContent() == null) {
-            showAlert("오류", "다운로드할 파일이 없습니다.");
+    private void downloadAttachment() {
+        if (meetingItem == null || meetingItem.getId() == null) {
+            showAlert("오류", "회의 정보를 찾을 수 없습니다.");
             return;
         }
 
         try {
+            // API를 통해 첨부파일 내용 가져오기
+            byte[] attachmentBytes = MeetingApiClient.getInstance().downloadMeetingAttachment(meetingItem.getId());
+
+            if (attachmentBytes == null || attachmentBytes.length == 0) {
+                showAlert("오류", "다운로드할 첨부파일 내용이 없습니다.");
+                return;
+            }
+
+            // 파일명은 meetingItem에서 가져옴
+            String filename = meetingItem.getAttachmentFilename();
+            if (filename == null || filename.isEmpty()) {
+                showAlert("오류", "첨부파일 이름을 찾을 수 없습니다.");
+                return;
+            }
+
             DirectoryChooser directoryChooser = new DirectoryChooser();
             directoryChooser.setTitle("다운로드 위치 선택");
             File selectedDirectory = directoryChooser.showDialog(getStage());
 
             if (selectedDirectory != null) {
-                String attachmentContent = meetingItem.getAttachmentContent();
-                
-                // Base64 디코딩 및 파일 저장
-                FileUtil.saveBase64ToFile(attachmentContent, selectedDirectory.getAbsolutePath() + File.separator + filename);
+                // 바이트 배열을 파일로 저장
+                FileUtil.saveBytesToFile(attachmentBytes, selectedDirectory.getAbsolutePath() + File.separator + filename);
                 
                 showAlert("성공", "파일이 성공적으로 다운로드되었습니다.\n위치: " + selectedDirectory.getAbsolutePath() + File.separator + filename);
             }
