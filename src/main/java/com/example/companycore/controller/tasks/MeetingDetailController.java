@@ -1,6 +1,7 @@
 package com.example.companycore.controller.tasks;
 
 import com.example.companycore.model.dto.MeetingItem;
+import com.example.companycore.service.MeetingApiClient;
 import com.example.companycore.util.FileUtil;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -8,9 +9,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -162,7 +165,7 @@ public class MeetingDetailController {
         // 다운로드 버튼
         Button downloadBtn = new Button("다운로드");
         downloadBtn.setStyle("-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-padding: 4 8;");
-        downloadBtn.setOnAction(e -> downloadAttachment(filename));
+        downloadBtn.setOnAction(e -> downloadAttachment());
 
         item.getChildren().addAll(iconLabel, fileInfo, downloadBtn);
         return item;
@@ -170,31 +173,35 @@ public class MeetingDetailController {
 
     /**
      * 첨부파일을 다운로드합니다.
-     * 
-     * @param filename 파일명
+     *
      */
-    private void downloadAttachment(String filename) {
-        if (meetingItem == null || meetingItem.getAttachmentContent() == null) {
-            showAlert("오류", "다운로드할 파일이 없습니다.");
+    private void downloadAttachment() {
+        if (meetingItem == null || meetingItem.getId() == null || meetingItem.getAttachmentFilename() == null
+                || meetingItem.getAttachmentFilename().isEmpty()) {
+            showAlert("다운로드할 첨부파일이 없습니다.", String.valueOf(Alert.AlertType.WARNING));
             return;
         }
 
-        try {
-            DirectoryChooser directoryChooser = new DirectoryChooser();
-            directoryChooser.setTitle("다운로드 위치 선택");
-            File selectedDirectory = directoryChooser.showDialog(getStage());
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("첨부파일 저장");
+        fileChooser.setInitialFileName(meetingItem.getAttachmentFilename());
+        File file = fileChooser.showSaveDialog(null);
 
-            if (selectedDirectory != null) {
-                String attachmentContent = meetingItem.getAttachmentContent();
-                
-                // Base64 디코딩 및 파일 저장
-                FileUtil.saveBase64ToFile(attachmentContent, selectedDirectory.getAbsolutePath() + File.separator + filename);
-                
-                showAlert("성공", "파일이 성공적으로 다운로드되었습니다.\n위치: " + selectedDirectory.getAbsolutePath() + File.separator + filename);
+        if (file != null) {
+            byte[] attachmentBytes = MeetingApiClient.getInstance()
+                    .downloadMeetingAttachment(meetingItem.getId());
+
+            if (attachmentBytes != null) {
+                try (FileOutputStream fos = new FileOutputStream(file)) {
+                    fos.write(attachmentBytes);
+                    showAlert("첨부파일이 성공적으로 저장되었습니다.", String.valueOf(Alert.AlertType.INFORMATION));
+                } catch (IOException e) {
+                    showAlert("첨부파일 저장 중 오류가 발생했습니다.", String.valueOf(Alert.AlertType.ERROR));
+                    e.printStackTrace();
+                }
+            } else {
+                showAlert("첨부파일 다운로드에 실패했습니다.", String.valueOf(Alert.AlertType.ERROR));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            showAlert("오류", "파일 다운로드 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
 
@@ -208,7 +215,7 @@ public class MeetingDetailController {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
-        alert.setContentText(content);
+        alert.setContentText(content);//
         alert.showAndWait();
     }
 

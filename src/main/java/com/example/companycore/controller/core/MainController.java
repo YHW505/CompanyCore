@@ -287,7 +287,12 @@ public class MainController {
 
             mainStage.setScene(scene);
             mainStage.setTitle("CompanyCore - 로그인");
-            mainStage.setResizable(false);
+            mainStage.setResizable(true);
+            
+            // 로그인 화면에서는 기본 종료 동작으로 설정 (종료 확인 팝업 제거)
+            mainStage.setOnCloseRequest(event -> {
+                // 기본 닫기 작업 허용 (팝업 없이 바로 종료)
+            });
             
             // Stage 위치 및 크기 복원
             mainStage.setX(currentX);
