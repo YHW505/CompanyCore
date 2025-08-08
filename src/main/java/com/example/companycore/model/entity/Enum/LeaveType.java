@@ -4,10 +4,13 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum LeaveType {
     ANNUAL("ANNUAL"), 
+    HALF_DAY("HALF_DAY"),
     SICK("SICK"), 
     PERSONAL("PERSONAL"), 
     MATERNITY("MATERNITY"), 
-    PATERNITY("PATERNITY");
+    PATERNITY("PATERNITY"),
+    SPECIAL("SPECIAL"),
+    OFFICIAL("OFFICIAL");
     
     private final String value;
     

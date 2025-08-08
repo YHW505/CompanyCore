@@ -59,7 +59,7 @@
                 </HBox>
                 <HBox alignment="CENTER_LEFT" spacing="15" 
                       style="-fx-padding: 8 12 8 40; -fx-cursor: hand;"
-                      onMouseClicked="#handleLeaveApprovalClick">
+                      onMouseClicked="#handleLeaveApprovalClick" fx:id="leaveApprovalSubMenu">
                     <Label text="✅" style="-fx-font-size: 14px;"/>
                     <Label text="휴가승인" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 13px;"/>
                 </HBox>
@@ -125,13 +125,13 @@
                 </HBox>
                 <HBox alignment="CENTER_LEFT" spacing="15" 
                       style="-fx-padding: 8 12 8 40; -fx-cursor: hand;"
-                      onMouseClicked="#handleApprovalApprovalClick">
+                      onMouseClicked="#handleApprovalApprovalClick" fx:id="approvalApprovalSubMenu">
                     <Label text="✅" style="-fx-font-size: 14px;"/>
                     <Label text="결재 승인" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 13px;"/>
                 </HBox>
                 <HBox alignment="CENTER_LEFT" spacing="15" 
                       style="-fx-padding: 8 12 8 40; -fx-cursor: hand;"
-                      onMouseClicked="#handleAnnouncementsClick">
+                      onMouseClicked="#handleAnnouncementsClick" >
                     <Label text="📢" style="-fx-font-size: 14px;"/>
                     <Label text="공지사항" style="-fx-text-fill: #9197B3; -fx-font-weight: bold; -fx-font-size: 13px;"/>
                 </HBox>

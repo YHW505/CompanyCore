@@ -1,6 +1,7 @@
 package com.example.companycore.service;
 
 import com.example.companycore.model.entity.Attendance;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -34,7 +35,7 @@ public class AttendanceApiClient extends BaseApiClient {
      */
     public boolean checkIn(Long userId) {
         try {
-            String endpoint = "/attendance/check-in/" + userId;
+            String endpoint = "/attendance/check-in?userId=" + userId;
             HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
                     .POST(HttpRequest.BodyPublishers.noBody())
                     .build();
@@ -61,7 +62,7 @@ public class AttendanceApiClient extends BaseApiClient {
      */
     public boolean checkOut(Long userId) {
         try {
-            String endpoint = "/attendance/check-out/" + userId;
+            String endpoint = "/attendance/check-out?userId=" + userId;
             HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
                     .POST(HttpRequest.BodyPublishers.noBody())
                     .build();
@@ -435,6 +436,48 @@ public class AttendanceApiClient extends BaseApiClient {
         } catch (Exception e) {
             System.out.println("출근 기록 조회 중 예외 발생: " + e.getMessage());
             return null;
+        }
+    }
+
+    /**
+     * 최근 출근 기록 5개를 가져옵니다.
+     */
+    public List<Attendance> getRecentAttendance(Long userId) {
+        try {
+            String endpoint = "/attendance/recent?userId=" + userId;
+            HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            logResponseInfo(response, "최근 출근 기록 요청");
+
+            if (response.statusCode() == 200) {
+                String responseBody = getSafeResponseBody(response);
+                if (responseBody == null || responseBody.trim().isEmpty()) {
+                    return new ArrayList<>();
+                }
+
+                try {
+                    // "data" 필드에서 출근 기록 리스트를 추출
+                    JsonNode rootNode = objectMapper.readTree(responseBody);
+                    JsonNode dataNode = rootNode.path("data");
+
+                    List<Attendance> attendances = objectMapper.readValue(dataNode.toString(),
+                            objectMapper.getTypeFactory().constructCollectionType(List.class, Attendance.class));
+                    return attendances;
+                } catch (Exception e) {
+                    System.out.println("최근 출근 기록 파싱 실패: " + e.getMessage());
+                    return new ArrayList<>();
+                }
+            } else {
+                System.out.println("최근 출근 기록 요청 실패 - 상태 코드: " + response.statusCode());
+                System.out.println("오류 응답: " + getSafeResponseBody(response));
+                return new ArrayList<>();
+            }
+        } catch (Exception e) {
+            handleChunkedTransferError(e, "최근 출근 기록 요청");
+            return new ArrayList<>();
         }
     }
 } 

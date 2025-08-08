@@ -239,19 +239,30 @@ public class DtoConverter {
      */
     public static MessageDto toMessageDto(Message message) {
         if (message == null) return null;
-        
+
         return new MessageDto(
-            message.getMessageId() != null ? message.getMessageId().longValue() : null,
-            message.getSenderId(),
-            message.getReceiverId(),
-            message.getTitle(),
-            message.getContent(),
-            message.getMessageType() != null ? message.getMessageType().toString() : null,
-            message.getIsRead(),
-            message.getSentAt(),
-            null, // readAt
-            null, // senderName
-            null  // receiverName
+                message.getMessageId(),                     // Integer messageId
+                message.getSenderId(),                      // Long senderId
+                message.getReceiverId(),                    // Long receiverId
+                message.getMessageType() != null ? message.getMessageType().toString() : null, // String messageType
+                message.getTitle(),                         // String title
+                message.getContent(),                       // String content
+                message.getIsRead(),                        // Boolean isRead
+                message.getSentAt(),                        // LocalDateTime sentAt
+                message.getAttachmentContentType(),         // String attachmentContentType
+                message.getAttachmentSize(),                // Long attachmentSize
+                message.getAttachmentContent(),              // String attachmentContent
+                message.getAttachmentFilename(),             // String attachmentFilename
+                message.getSenderName(),                    // String senderName
+                message.getSenderEmployeeCode(),            // String senderEmployeeCode
+                message.getSenderPositionName(),            // String senderPositionName
+                message.getSenderDepartmentName(),          // String senderDepartmentName
+                message.getSenderEmail(),                   // String senderEmail
+                message.getReceiverName(),                  // String receiverName
+                message.getReceiverEmployeeCode(),          // String receiverEmployeeCode
+                message.getReceiverPositionName(),          // String receiverPositionName
+                message.getReceiverDepartmentName(),        // String receiverDepartmentName
+                message.getReceiverEmail()                  // String receiverEmail
         );
     }
 
@@ -260,9 +271,9 @@ public class DtoConverter {
      */
     public static Message toMessage(MessageDto messageDto) {
         if (messageDto == null) return null;
-        
+
         Message message = new Message();
-        message.setMessageId(messageDto.getMessageId() != null ? messageDto.getMessageId().intValue() : null);
+        message.setMessageId(messageDto.getMessageId());
         message.setSenderId(messageDto.getSenderId());
         message.setReceiverId(messageDto.getReceiverId());
         if (messageDto.getMessageType() != null) {
@@ -271,8 +282,26 @@ public class DtoConverter {
         message.setTitle(messageDto.getTitle());
         message.setContent(messageDto.getContent());
         message.setIsRead(messageDto.getIsRead());
-        message.setSentAt(messageDto.getCreatedAt());
+        message.setSentAt(messageDto.getSentAt());
         
+        // 첨부파일 정보
+        message.setAttachmentContentType(messageDto.getAttachmentContentType());
+        message.setAttachmentSize(messageDto.getAttachmentSize());
+        message.setAttachmentContent(messageDto.getAttachmentContent());
+        message.setAttachmentFilename(messageDto.getAttachmentFilename());
+        
+        // 사용자 정보
+        message.setSenderName(messageDto.getSenderName());
+        message.setSenderEmployeeCode(messageDto.getSenderEmployeeCode());
+        message.setSenderPositionName(messageDto.getSenderPositionName());
+        message.setSenderDepartmentName(messageDto.getSenderDepartmentName());
+        message.setSenderEmail(messageDto.getSenderEmail());
+        message.setReceiverName(messageDto.getReceiverName());
+        message.setReceiverEmployeeCode(messageDto.getReceiverEmployeeCode());
+        message.setReceiverPositionName(messageDto.getReceiverPositionName());
+        message.setReceiverDepartmentName(messageDto.getReceiverDepartmentName());
+        message.setReceiverEmail(messageDto.getReceiverEmail());
+
         return message;
     }
 

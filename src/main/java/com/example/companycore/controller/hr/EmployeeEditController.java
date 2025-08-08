@@ -1,6 +1,7 @@
 package com.example.companycore.controller.hr; 
 
 import com.example.companycore.model.entity.User;
+import com.example.companycore.service.ApiClient;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -60,10 +61,12 @@ public class EmployeeEditController {
     
     private User user;
     private boolean isPasswordChange = false;
+    private ApiClient apiClient;
     
     @FXML
     public void initialize() {
         setupButtons();
+        apiClient = ApiClient.getInstance();
     }
     
     public void setUser(User user) {
@@ -79,11 +82,34 @@ public class EmployeeEditController {
             
             nameTextField.setText(user.getUsername());
             employeeIdTextField.setText(user.getEmployeeCode());
-            departmentTextField.setText(user.getDepartment() != null ? user.getDepartment().getDepartmentName() : "");
-            addressTextField.setText(""); // User Entity에는 address 필드가 없음
+            
+            // 부서 정보 설정
+            if (user.getDepartment() != null && user.getDepartment().getDepartmentName() != null) {
+                departmentTextField.setText(user.getDepartment().getDepartmentName());
+            } else if (user.getDepartmentName() != null) {
+                departmentTextField.setText(user.getDepartmentName());
+            } else {
+                departmentTextField.setText("미지정");
+            }
+            
+            // 주소 정보 설정
+            if (user.getAddress() != null && !user.getAddress().trim().isEmpty()) {
+                addressTextField.setText(user.getAddress());
+            } else {
+                addressTextField.setText("");
+            }
+            
             phoneNumberTextField.setText(user.getPhone());
             emailTextField.setText(user.getEmail());
-            positionTextField.setText(user.getPosition() != null ? user.getPosition().getPositionName() : "");
+            
+            // 직급 정보 설정
+            if (user.getPosition() != null && user.getPosition().getPositionName() != null) {
+                positionTextField.setText(user.getPosition().getPositionName());
+            } else if (user.getPositionName() != null) {
+                positionTextField.setText(user.getPositionName());
+            } else {
+                positionTextField.setText("미지정");
+            }
             
             // 비밀번호 필드는 비워둠 (보안상)
             passwordField.clear();
@@ -161,6 +187,26 @@ public class EmployeeEditController {
             }
         }
         
+        // 부서 유효성 검증
+        String departmentName = departmentTextField.getText().trim();
+        if (!departmentName.isEmpty()) {
+            Integer departmentId = getDepartmentIdByName(departmentName);
+            if (departmentId == null) {
+                showAlert("입력 오류", "존재하지 않는 부서입니다.\n\n사용 가능한 부서:\n• 인사팀\n• 개발팀", Alert.AlertType.ERROR);
+                return false;
+            }
+        }
+        
+        // 직급 유효성 검증
+        String positionName = positionTextField.getText().trim();
+        if (!positionName.isEmpty()) {
+            Integer positionId = getPositionIdByName(positionName);
+            if (positionId == null) {
+                showAlert("입력 오류", "존재하지 않는 직급입니다.\n\n사용 가능한 직급:\n• 부장\n• 차장\n• 과장\n• 대리\n• 주임\n• 사원", Alert.AlertType.ERROR);
+                return false;
+            }
+        }
+        
         // 비밀번호 변경 시 검증
         if (isPasswordChange) {
             if (passwordField.getText().trim().isEmpty()) {
@@ -187,6 +233,46 @@ public class EmployeeEditController {
         return phoneNumber.matches(phoneRegex);
     }
     
+    // ✅ 부서 이름을 ID로 매핑하는 메서드
+    private Integer getDepartmentIdByName(String departmentName) {
+        if (departmentName == null || departmentName.trim().isEmpty()) {
+            return null;
+        }
+        
+        switch (departmentName.trim()) {
+            case "인사팀":
+                return 1;
+            case "개발팀":
+                return 2;
+            default:
+                return null;
+        }
+    }
+    
+    // ✅ 직급 이름을 ID로 매핑하는 메서드
+    private Integer getPositionIdByName(String positionName) {
+        if (positionName == null || positionName.trim().isEmpty()) {
+            return null;
+        }
+        
+        switch (positionName.trim()) {
+            case "부장":
+                return 1;
+            case "차장":
+                return 2;
+            case "과장":
+                return 3;
+            case "대리":
+                return 4;
+            case "주임":
+                return 5;
+            case "사원":
+                return 6;
+            default:
+                return null;
+        }
+    }
+    
     private void saveUserData() {
         try {
             // 사원 정보 업데이트
@@ -194,16 +280,50 @@ public class EmployeeEditController {
             user.setEmployeeCode(employeeIdTextField.getText().trim());
             user.setEmail(emailTextField.getText().trim());
             user.setPhone(phoneNumberTextField.getText().trim());
+            user.setAddress(addressTextField.getText().trim()); // ✅ 주소 필드 추가
             
-            // 비밀번호 변경 시
-            if (isPasswordChange) {
-                user.setPassword(passwordField.getText());
+            // ✅ 부서 ID 설정 (텍스트 필드에서 이름을 읽어서 ID로 변환)
+            String departmentName = departmentTextField.getText().trim();
+            Integer departmentId = getDepartmentIdByName(departmentName);
+            if (departmentId != null) {
+                user.setDepartmentId(departmentId);
+            } else {
+                // 기존 부서 ID 유지 (변경되지 않은 경우)
+                if (user.getDepartmentId() == null) {
+                    user.setDepartmentId(1); // 기본값: 인사팀
+                }
             }
             
-            // 여기서 실제 데이터베이스에 저장하는 로직을 구현
-            // 현재는 메모리에만 저장하는 예시
+            // ✅ 직급 ID 설정 (텍스트 필드에서 이름을 읽어서 ID로 변환)
+            String positionName = positionTextField.getText().trim();
+            Integer positionId = getPositionIdByName(positionName);
+            if (positionId != null) {
+                user.setPositionId(positionId);
+            } else {
+                // 기존 직급 ID 유지 (변경되지 않은 경우)
+                if (user.getPositionId() == null) {
+                    user.setPositionId(6); // 기본값: 사원
+                }
+            }
             
-            showAlert("성공", "사원 정보가 성공적으로 수정되었습니다.", Alert.AlertType.INFORMATION);
+            // 실제 API 호출로 사용자 정보 업데이트
+            boolean updateSuccess = apiClient.updateUser(user);
+            
+            if (updateSuccess) {
+                // 비밀번호 변경이 있는 경우 별도로 처리
+                if (isPasswordChange && !passwordField.getText().trim().isEmpty()) {
+                    boolean passwordChangeSuccess = apiClient.changePassword("", passwordField.getText().trim(), user.getUserId());
+                    if (passwordChangeSuccess) {
+                        showAlert("성공", "사원 정보와 비밀번호가 성공적으로 수정되었습니다.", Alert.AlertType.INFORMATION);
+                    } else {
+                        showAlert("부분 성공", "사원 정보는 수정되었지만 비밀번호 변경에 실패했습니다.", Alert.AlertType.WARNING);
+                    }
+                } else {
+                    showAlert("성공", "사원 정보가 성공적으로 수정되었습니다.", Alert.AlertType.INFORMATION);
+                }
+            } else {
+                showAlert("오류", "사원 정보 수정에 실패했습니다.", Alert.AlertType.ERROR);
+            }
             
         } catch (Exception e) {
             showAlert("오류", "사원 정보 수정 중 오류가 발생했습니다: " + e.getMessage(), Alert.AlertType.ERROR);

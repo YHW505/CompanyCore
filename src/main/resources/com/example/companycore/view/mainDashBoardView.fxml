@@ -11,6 +11,8 @@
             style="-fx-background-color: #f5f6fa;"
             stylesheets="@styles.css">
 
+
+
     <!-- 왼쪽 사이드바 -->
     <left>
         <fx:include source="sidebar.fxml"/>

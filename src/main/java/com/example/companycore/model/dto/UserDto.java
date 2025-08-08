@@ -27,6 +27,9 @@ public class UserDto {
     private Boolean isFirstLogin;
     private Boolean isActive;
     private LocalDateTime createdAt;
+    private String address;
+    private DepartmentDto department;
+    private PositionDto position;
 
     // 기본 생성자
     public UserDto() {}
@@ -99,6 +102,15 @@ public class UserDto {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+
+    public DepartmentDto getDepartment() { return department; }
+    public void setDepartment(DepartmentDto department) { this.department = department; }
+
+    public PositionDto getPosition() { return position; }
+    public void setPosition(PositionDto position) { this.position = position; }
 
     @Override
     public String toString() {
