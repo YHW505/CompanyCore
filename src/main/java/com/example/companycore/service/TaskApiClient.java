@@ -1,5 +1,6 @@
 package com.example.companycore.service;
 
+import com.example.companycore.model.dto.TaskDto;
 import com.example.companycore.model.entity.Task;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -277,9 +278,9 @@ public class TaskApiClient extends BaseApiClient {
     /**
      * 새 작업을 생성합니다.
      */
-    public Task createTask(Task task) {
+    public TaskDto createTask(TaskDto taskDto) {
         try {
-            String json = objectMapper.writeValueAsString(task);
+            String json = objectMapper.writeValueAsString(taskDto);
             HttpRequest request = createAuthenticatedRequestBuilder("/tasks")
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
@@ -288,7 +289,7 @@ public class TaskApiClient extends BaseApiClient {
 
             if (response.statusCode() == 201 || response.statusCode() == 200) {
                 try {
-                    Task createdTask = objectMapper.readValue(response.body(), Task.class);
+                    TaskDto createdTask = objectMapper.readValue(response.body(), TaskDto.class);
                     return createdTask;
                 } catch (Exception e) {
                     System.out.println("생성된 작업 파싱 실패: " + e.getMessage());

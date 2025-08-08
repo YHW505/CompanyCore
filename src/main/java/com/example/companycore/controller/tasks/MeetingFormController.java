@@ -2,9 +2,11 @@ package com.example.companycore.controller.tasks;
 
 import com.example.companycore.model.dto.MeetingItem;
 import com.example.companycore.model.dto.TaskDto;
+import com.example.companycore.model.entity.Enum.TaskStatus;
 import com.example.companycore.model.entity.Enum.TaskType;
 import com.example.companycore.service.ApiClient;
 import com.example.companycore.service.MeetingApiClient;
+import com.example.companycore.service.TaskApiClient;
 import com.example.companycore.util.FileUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -56,6 +58,7 @@ public class MeetingFormController {
 
     private ApiClient apiClient;
     private MeetingApiClient meetingApiClient;
+    private TaskApiClient taskApiClient;
     private File selectedFile;
     private String attachmentContent;
     private String attachmentFilename;
@@ -68,6 +71,7 @@ public class MeetingFormController {
     public void initialize() {
         apiClient = ApiClient.getInstance();
         meetingApiClient = MeetingApiClient.getInstance();
+        taskApiClient = TaskApiClient.getInstance();
         setupForm();
         setupFileHandling();
     }
@@ -225,6 +229,7 @@ public class MeetingFormController {
             var currentUser = apiClient.getCurrentUser();
             String author = currentUser != null ? currentUser.getUsername() : "Unknown";
             String department = currentUser != null ? currentUser.getDepartmentName() : "Unknown";
+            Long userId = currentUser != null ? currentUser.getUserId() : 1;
 
             // 회의 시간 설정
             LocalDate selectedDate = datePicker.getValue();
@@ -289,8 +294,15 @@ public class MeetingFormController {
                 TaskDto taskDto = new TaskDto();
                 taskDto.setTitle(titleField.getText().trim());
                 taskDto.setDescription(scheduleContentArea1.getText());
-                taskDto.setTaskType(TaskType.DEVELOPMENT);
-                taskDto.setStartDate();
+                taskDto.setStatus(TaskStatus.TODO);
+                taskDto.setTaskType(TaskType.TASK);
+                taskDto.setAssignedBy(userId);
+                taskDto.setStartDate(startDatePicker1.getValue());
+                taskDto.setEndDate(endDatePicker1.getValue());
+
+
+                taskApiClient.createTask(taskDto);
+
 
 
 
