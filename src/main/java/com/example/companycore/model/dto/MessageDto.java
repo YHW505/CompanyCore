@@ -128,7 +128,9 @@ public class MessageDto {
     public void setAttachmentContent(String attachmentContent) { this.attachmentContent = attachmentContent; }
 
     public String getAttachmentFilename() { return attachmentFilename; }
-    public void setAttachmentFilename(String attachmentFilename) { this.attachmentFilename = attachmentFilename; }
+    public String setAttachmentFilename(String attachmentFilename) { this.attachmentFilename = attachmentFilename;
+        return attachmentFilename;
+    }
 
     // 사용자 정보 관련 Getter & Setter
     public String getSenderName() { return senderName; }

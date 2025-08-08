@@ -344,20 +344,26 @@ public class MeetingApiClient extends BaseApiClient {
     /**
      * 회의록 첨부파일 다운로드
      * @param meetingId 회의 ID
-     * @return 첨부파일 정보 (Base64 인코딩된 내용 포함)
+     * @return 첨부파일 내용 (바이트 배열)
      */
-    public MeetingDto downloadMeetingAttachment(Long meetingId) {
+    public byte[] downloadMeetingAttachment(Long meetingId) {
         try {
             HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/meetings/" + meetingId + "/attachment");
             HttpRequest request = builder.GET().build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
             // logResponseInfo(response, "회의록 첨부파일 다운로드");
 
             if (response.statusCode() == 200) {
-                String responseBody = getSafeResponseBody(response);
-                if (responseBody != null && !responseBody.trim().isEmpty()) {
-                    return objectMapper.readValue(responseBody, MeetingDto.class);
+                return response.body();
+            } else {
+                System.err.println("❌ 첨부파일 다운로드 실패 - 상태 코드: " + response.statusCode());
+                // 오류 응답 본문이 텍스트일 경우를 대비하여 로깅
+                try {
+                    String errorBody = new String(response.body(), java.nio.charset.StandardCharsets.UTF_8);
+                    System.err.println("❌ 오류 응답: " + errorBody);
+                } catch (Exception e2) {
+                    System.err.println("❌ 오류 응답 본문 파싱 실패: " + e2.getMessage());
                 }
             }
         } catch (Exception e) {
@@ -561,7 +567,7 @@ public class MeetingApiClient extends BaseApiClient {
 
         // 생성자
         public MeetingDto(Long meetingId, String title, String description, LocalDateTime startTime, 
-                         LocalDateTime endTime, String location, String department, String author, String attachmentPath) {
+                         LocalDateTime endTime, String location, String department, String author, String attachmentPath, String attachmentContent) {
             this.meetingId = meetingId;
             this.title = title;
             this.description = description;
@@ -571,6 +577,7 @@ public class MeetingApiClient extends BaseApiClient {
             this.department = department;
             this.author = author;
             this.attachmentPath = attachmentPath;
+            this.attachmentContent = attachmentContent;
         }
 
         // Getter와 Setter 메서드들
