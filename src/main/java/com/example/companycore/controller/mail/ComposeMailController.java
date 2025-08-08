@@ -77,10 +77,26 @@ public class ComposeMailController {
             message.setSenderId(senderId);       // 보내는 사람 ID
             message.setMessageType("EMAIL");
 
+            // 첨부파일 처리
+            if (selectedFile != null) {
+                try {
+                    String encodedFile = com.example.companycore.util.FileUtil.encodeFileToBase64(selectedFile);
+                    message.setAttachmentContent(encodedFile);
+                    message.setAttachmentFilename(selectedFile.getName());
+                    message.setAttachmentSize(selectedFile.length());
+                    message.setAttachmentContentType(com.example.companycore.util.FileUtil.getMimeType(selectedFile.getName()));
+                    System.out.println("name= ============" + attachmentName);
+                } catch (java.io.IOException e) {
+                    e.printStackTrace();
+                    showAlert("오류", "파일을 처리하는 중 오류가 발생했습니다.", Alert.AlertType.ERROR);
+                    return;
+                }
+            }
+
             // 메시지 API 클라이언트를 통해 서버로 메시지 전송
             MessageApiClient client = MessageApiClient.getInstance();
             MessageDto sent = client.sendMessage(message, senderId); // 전송 결과를 받음
-            System.out.println(sent);
+            System.out.println("sent =================================" + sent);
             if (sent != null) {
                 System.out.println("✅ 서버에 메시지 전송 완료");
                 
@@ -149,6 +165,8 @@ public class ComposeMailController {
         // 선택한 파일이 있을 경우 이름 표시
         if (selectedFile != null) {
             attachmentLabel.setText(selectedFile.getName());
+            String filePath = selectedFile.getAbsolutePath(); // ✅ 전체 경로 얻기
+            System.out.println("파일 경로: " + filePath);
         }
     }
 

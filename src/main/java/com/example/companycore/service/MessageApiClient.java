@@ -268,6 +268,7 @@ public List<MessageDto> getSentMessagesById(Long userId) {
      */
     public MessageDto getMessageById(Integer messageId, Long userId) {
         try {
+            System.out.println(userId);
             HttpRequest request = createAuthenticatedRequestBuilder("/messages/" + messageId)
                     .header("User-Id", userId.toString())
                     .GET()
@@ -275,8 +276,21 @@ public List<MessageDto> getSentMessagesById(Long userId) {
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-            if (response.statusCode() == 200) {
-                return objectMapper.readValue(response.body(), MessageDto.class);
+            if (response.statusCode() == 200 && response.body() != null && !response.body().trim().isEmpty()) {
+                // JSON 응답을 Map으로 파싱
+                Map<String, Object> responseMap = objectMapper.readValue(response.body(), Map.class);
+
+                // success 확인
+                Boolean success = (Boolean) responseMap.get("success");
+                if (success != null && success) {
+                    // data 객체 추출
+                    Map<String, Object> data = (Map<String, Object>) responseMap.get("data");
+
+                    if (data != null) {
+                        // MessageDto로 변환
+                        return convertToMessageDto(data);
+                    }
+                }
             } else {
                 System.out.println("❌ 메시지 조회 실패 - 상태 코드: " + response.statusCode());
             }
@@ -460,17 +474,46 @@ public List<MessageDto> getSentMessagesById(Long userId) {
         return false;
     }
 
+    /**
+     * ✅ 첨부파일을 다운로드합니다 (GET /messages/{messageId}/attachment/download).
+     * @param messageId 메시지 ID
+     * @param userId 사용자 ID (헤더로 전달)
+     * @return 첨부파일의 바이트 배열, 실패 시 null
+     */
+    public byte[] downloadAttachment(Integer messageId, Long userId) {
+        try {
+            String endpoint = String.format("/messages/%d/attachment/download", messageId);
+            HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
+                    .header("User-Id", userId.toString())
+                    .GET()
+                    .build();
+
+            HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+
+            if (response.statusCode() == 200) {
+                return response.body();
+            } else {
+                System.out.println("❌ 첨부파일 다운로드 실패 - 상태 코드: " + response.statusCode());
+                return null;
+            }
+        } catch (Exception e) {
+            System.out.println("❌ 첨부파일 다운로드 중 예외 발생: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     // Map을 MessageDto로 변환하는 헬퍼 메서드 (공통으로 사용)
     private MessageDto convertToMessageDto(Map<String, Object> item) {
         MessageDto dto = new MessageDto();
 
         try {
-            // messageId 변환 (Integer -> Long)
+            // messageId 변환 (Object -> Integer)
             Object messageIdObj = item.get("messageId");
-            if (messageIdObj instanceof Integer) {
-                dto.setMessageId(((Integer) messageIdObj).longValue());
-            } else if (messageIdObj instanceof Long) {
-                dto.setMessageId((Long) messageIdObj);
+            if (messageIdObj instanceof Long) {
+                dto.setMessageId(((Long) messageIdObj).intValue());
+            } else if (messageIdObj instanceof Integer) {
+                dto.setMessageId((Integer) messageIdObj);
             }
 
             // 기본 필드들
@@ -481,7 +524,7 @@ public List<MessageDto> getSentMessagesById(Long userId) {
             dto.setIsRead((Boolean) item.get("isRead"));
             dto.setMessageType((String) item.get("messageType"));
 
-            // senderId 변환 (있는 경우)
+            // ID 정보
             Object senderIdObj = item.get("senderId");
             if (senderIdObj instanceof Integer) {
                 dto.setSenderId(((Integer) senderIdObj).longValue());
@@ -489,9 +532,30 @@ public List<MessageDto> getSentMessagesById(Long userId) {
                 dto.setSenderId((Long) senderIdObj);
             }
 
-            // 이메일 정보 (있는 경우)
+            Object receiverIdObj = item.get("receiverId");
+            if (receiverIdObj instanceof Integer) {
+                dto.setReceiverId(((Integer) receiverIdObj).longValue());
+            } else if (receiverIdObj instanceof Long) {
+                dto.setReceiverId((Long) receiverIdObj);
+            }
+
+            // 이메일 정보
             dto.setSenderEmail((String) item.get("senderEmail"));
             dto.setReceiverEmail((String) item.get("receiverEmail"));
+
+            // 첨부파일 정보
+            dto.setAttachmentContentType((String) item.get("attachmentContentType"));
+            dto.setAttachmentSize(item.get("attachmentSize") != null ? ((Number) item.get("attachmentSize")).longValue() : null);
+            dto.setAttachmentContent((String) item.get("attachmentContent"));
+            dto.setAttachmentFilename((String) item.get("attachmentFilename"));
+
+            // 사용자 상세 정보
+            dto.setSenderEmployeeCode((String) item.get("senderEmployeeCode"));
+            dto.setSenderPositionName((String) item.get("senderPositionName"));
+            dto.setSenderDepartmentName((String) item.get("senderDepartmentName"));
+            dto.setReceiverEmployeeCode((String) item.get("receiverEmployeeCode"));
+            dto.setReceiverPositionName((String) item.get("receiverPositionName"));
+            dto.setReceiverDepartmentName((String) item.get("receiverDepartmentName"));
 
             // LocalDateTime 변환
             String sentAtStr = (String) item.get("sentAt");
@@ -499,14 +563,9 @@ public List<MessageDto> getSentMessagesById(Long userId) {
                 dto.setSentAt(LocalDateTime.parse(sentAtStr));
             }
 
-            String readAtStr = (String) item.get("readAt");
-            if (readAtStr != null && !readAtStr.isEmpty()) {
-                dto.setReadAt(LocalDateTime.parse(readAtStr));
-            }
-
         } catch (Exception e) {
             System.out.println("MessageDto 변환 중 오류: " + e.getMessage());
-            // 기본값으로 설정하거나 로그만 남기고 계속 진행
+            e.printStackTrace();
         }
 
         return dto;
