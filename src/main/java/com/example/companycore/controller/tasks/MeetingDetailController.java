@@ -215,7 +215,7 @@ public class MeetingDetailController {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
-        alert.setContentText(content);
+        alert.setContentText(content);//
         alert.showAndWait();
     }
 
