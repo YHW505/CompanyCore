@@ -6,6 +6,7 @@ import com.example.companycore.service.ApiClient;
 import com.example.companycore.service.MessageApiClient;
 
 import javafx.fxml.FXML;
+import javafx.concurrent.Task;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
@@ -43,41 +44,34 @@ public class ComposeMailController {
      */
     @FXML
     public void handleSendMail() {
-        // 입력 필드 유효성 검사
         if (validateMailForm()) {
-            // 사용자 입력값 가져오기
             String recipient = recipientField.getText();
             String subject = subjectField.getText();
             String content = contentArea.getText();
             String attachmentName = attachmentLabel.getText();
 
-            // 첨부파일 없을 경우 빈 문자열 처리
             if (attachmentName == null || attachmentName.isEmpty()) {
                 attachmentName = "";
             }
 
-            // 현재 로그인한 사용자 정보 가져오기
             apiClient = ApiClient.getInstance();
             User user = apiClient.getCurrentUser();
 
-            // 사용자 정보가 없을 경우 처리 중단
             if (user == null) {
                 System.out.println("❌ 로그인한 사용자 정보를 찾을 수 없습니다.");
+                showAlert("오류", "로그인한 사용자 정보를 찾을 수 없습니다.", Alert.AlertType.ERROR);
                 return;
             }
 
-            // 발신자 ID
             Long senderId = user.getUserId();
 
-            // 메시지 객체 생성 및 정보 설정
             MessageDto message = new MessageDto();
-            message.setReceiverEmail(recipient); // 받는 사람 이메일
-            message.setTitle(subject);           // 제목
-            message.setContent(content);         // 본문
-            message.setSenderId(senderId);       // 보내는 사람 ID
+            message.setReceiverEmail(recipient);
+            message.setTitle(subject);
+            message.setContent(content);
+            message.setSenderId(senderId);
             message.setMessageType("EMAIL");
 
-            // 첨부파일 처리
             if (selectedFile != null) {
                 try {
                     String encodedFile = com.example.companycore.util.FileUtil.encodeFileToBase64(selectedFile);
@@ -85,39 +79,47 @@ public class ComposeMailController {
                     message.setAttachmentFilename(selectedFile.getName());
                     message.setAttachmentSize(selectedFile.length());
                     message.setAttachmentContentType(com.example.companycore.util.FileUtil.getMimeType(selectedFile.getName()));
-                    System.out.println("name= ============" + attachmentName);
                 } catch (java.io.IOException e) {
                     e.printStackTrace();
                     showAlert("오류", "파일을 처리하는 중 오류가 발생했습니다.", Alert.AlertType.ERROR);
                     return;
                 }
-            }
-
-            // 메시지 API 클라이언트를 통해 서버로 메시지 전송
-            MessageApiClient client = MessageApiClient.getInstance();
-            MessageDto sent = client.sendMessage(message, senderId); // 전송 결과를 받음
-            System.out.println("sent =================================" + sent);
-            if (sent != null) {
-                System.out.println("✅ 서버에 메시지 전송 완료");
-                
-                // 성공 메시지 표시
-                showAlert("성공", "메일이 성공적으로 전송되었습니다.", Alert.AlertType.INFORMATION);
-                
-                // 로컬 보낸 메일함에 추가
-                if (parentController != null) {
-                    parentController.addSentMail(recipient, subject, content, attachmentName);
-                }
-
-                // 폼 초기화 및 메일 목록으로 돌아감
-                clearMailForm();
             } else {
-                System.out.println("❌ 서버 메시지 전송 실패");
-                System.out.println(message.getReceiverEmail());
-                System.out.println(message.getSenderId());
-
-                // 실패 메시지 표시
-                showAlert("실패", "메일 전송에 실패했습니다. 다시 시도해주세요.", Alert.AlertType.ERROR);
+                System.out.println("handleSendMail - selectedFile is null. No attachment to send.");
             }
+
+            Task<MessageDto> sendMailTask = new Task<>() {
+                @Override
+                protected MessageDto call() throws Exception {
+                    MessageApiClient client = MessageApiClient.getInstance();
+                    return client.sendMessage(message, senderId);
+                }
+            };
+
+            String finalAttachmentName = attachmentName;
+            sendMailTask.setOnSucceeded(event -> {
+                MessageDto sent = sendMailTask.getValue();
+                if (sent != null) {
+                    System.out.println("✅ 서버에 메시지 전송 완료");
+                    showAlert("성공", "메일이 성공적으로 전송되었습니다.", Alert.AlertType.INFORMATION);
+                    if (parentController != null) {
+                        parentController.addSentMail(recipient, subject, content, finalAttachmentName);
+                    }
+                    clearMailForm();
+                } else {
+                    System.out.println("❌ 서버 메시지 전송 실패");
+                    showAlert("실패", "메일 전송에 실패했습니다. 다시 시도해주세요.", Alert.AlertType.ERROR);
+                }
+            });
+
+            sendMailTask.setOnFailed(event -> {
+                Throwable e = sendMailTask.getException();
+                System.err.println("메일 전송 중 예외 발생: " + e.getMessage());
+                e.printStackTrace();
+                showAlert("오류", "메일 전송 중 오류가 발생했습니다: " + e.getMessage(), Alert.AlertType.ERROR);
+            });
+
+            new Thread(sendMailTask).start();
         }
     }
 
@@ -167,6 +169,7 @@ public class ComposeMailController {
             attachmentLabel.setText(selectedFile.getName());
             String filePath = selectedFile.getAbsolutePath(); // ✅ 전체 경로 얻기
             System.out.println("파일 경로: " + filePath);
+            System.out.println("handleAddAttachment - selectedFile: " + selectedFile.getName());
         }
     }
 
@@ -201,6 +204,18 @@ public class ComposeMailController {
         if (contentArea != null) contentArea.clear();
         if (attachmentLabel != null) attachmentLabel.setText("");
         selectedFile = null;
+    }
+
+    /**
+     * 파일 이름에서 확장자를 제외한 부분을 반환합니다.
+     */
+    private String getFileNameWithoutExtension(File file) {
+        String fileName = file.getName();
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex == -1) {
+            return fileName; // 확장자가 없는 경우
+        }
+        return fileName.substring(0, dotIndex);
     }
 
     /**

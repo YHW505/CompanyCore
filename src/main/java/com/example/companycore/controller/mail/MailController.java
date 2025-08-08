@@ -213,6 +213,7 @@ public class MailController {
             // 1. 특정 메시지 ID에 해당하는 메시지 조회
             MessageDto selectedMessage = messageApiClient.getMessageById(
                     message.getMessageId(), user.getUserId());
+            System.out.println("MailController - Fetched attachment filename: " + selectedMessage.getAttachmentFilename());
 
             // 6. 컨트롤러에 메일 데이터를 전달하여 화면에 표시되도록 함
             previewController.setMailData(
