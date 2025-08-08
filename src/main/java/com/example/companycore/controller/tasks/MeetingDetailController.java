@@ -9,9 +9,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -174,40 +176,32 @@ public class MeetingDetailController {
      *
      */
     private void downloadAttachment() {
-        if (meetingItem == null || meetingItem.getId() == null) {
-            showAlert("오류", "회의 정보를 찾을 수 없습니다.");
+        if (meetingItem == null || meetingItem.getId() == null || meetingItem.getAttachmentFilename() == null
+                || meetingItem.getAttachmentFilename().isEmpty()) {
+            showAlert("다운로드할 첨부파일이 없습니다.", String.valueOf(Alert.AlertType.WARNING));
             return;
         }
 
-        try {
-            // API를 통해 첨부파일 내용 가져오기
-            byte[] attachmentBytes = MeetingApiClient.getInstance().downloadMeetingAttachment(meetingItem.getId());
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("첨부파일 저장");
+        fileChooser.setInitialFileName(meetingItem.getAttachmentFilename());
+        File file = fileChooser.showSaveDialog(null);
 
-            if (attachmentBytes == null || attachmentBytes.length == 0) {
-                showAlert("오류", "다운로드할 첨부파일 내용이 없습니다.");
-                return;
+        if (file != null) {
+            byte[] attachmentBytes = MeetingApiClient.getInstance()
+                    .downloadMeetingAttachment(meetingItem.getId());
+
+            if (attachmentBytes != null) {
+                try (FileOutputStream fos = new FileOutputStream(file)) {
+                    fos.write(attachmentBytes);
+                    showAlert("첨부파일이 성공적으로 저장되었습니다.", String.valueOf(Alert.AlertType.INFORMATION));
+                } catch (IOException e) {
+                    showAlert("첨부파일 저장 중 오류가 발생했습니다.", String.valueOf(Alert.AlertType.ERROR));
+                    e.printStackTrace();
+                }
+            } else {
+                showAlert("첨부파일 다운로드에 실패했습니다.", String.valueOf(Alert.AlertType.ERROR));
             }
-
-            // 파일명은 meetingItem에서 가져옴
-            String filename = meetingItem.getAttachmentFilename();
-            if (filename == null || filename.isEmpty()) {
-                showAlert("오류", "첨부파일 이름을 찾을 수 없습니다.");
-                return;
-            }
-
-            DirectoryChooser directoryChooser = new DirectoryChooser();
-            directoryChooser.setTitle("다운로드 위치 선택");
-            File selectedDirectory = directoryChooser.showDialog(getStage());
-
-            if (selectedDirectory != null) {
-                // 바이트 배열을 파일로 저장
-                FileUtil.saveBytesToFile(attachmentBytes, selectedDirectory.getAbsolutePath() + File.separator + filename);
-                
-                showAlert("성공", "파일이 성공적으로 다운로드되었습니다.\n위치: " + selectedDirectory.getAbsolutePath() + File.separator + filename);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            showAlert("오류", "파일 다운로드 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
 
