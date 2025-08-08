@@ -62,7 +62,7 @@ public class MailController {
         loadMessages();
 
         // 5초마다 메일 목록을 새로고침하는 타이머 설정
-        startMailRefreshTimer();
+//        startMailRefreshTimer();
     }
 
     // 5초마다 메일 목록을 새로고침하는 타이머를 시작
@@ -213,6 +213,7 @@ public class MailController {
             // 1. 특정 메시지 ID에 해당하는 메시지 조회
             MessageDto selectedMessage = messageApiClient.getMessageById(
                     message.getMessageId(), user.getUserId());
+            System.out.println("MailController - Fetched attachment filename: " + selectedMessage.getAttachmentFilename());
 
             // 6. 컨트롤러에 메일 데이터를 전달하여 화면에 표시되도록 함
             previewController.setMailData(
@@ -221,9 +222,9 @@ public class MailController {
                     selectedMessage.getTitle(),                 // 제목
                     selectedMessage.getContent(),               // 내용
                     selectedMessage.getSentAt(),                // 날짜
-                    ""                                          // 첨부파일 (추후 확장)
+                    selectedMessage.getAttachmentFilename() // 첨부파일 (추후 확장)
             );
-            System.out.println("CreatedAt: " + selectedMessage.getSentAt());
+            System.out.println("첨부파================== " + selectedMessage.getAttachmentFilename() + selectedMessage.getSenderEmail());
 
             // 7. 기존 우측 컨테이너의 내용을 비우고 새로운 미리보기 패널을 추가
             rightContentContainer.getChildren().clear();

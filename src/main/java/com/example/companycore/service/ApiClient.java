@@ -349,11 +349,11 @@ public class ApiClient {
         return messageApiClient.getMessages(userId, type, messageType, keyword, unreadOnly);
     }
 
-    public com.example.companycore.model.dto.MessageDto getMessageById(Long messageId, Long userId) {
+    public com.example.companycore.model.dto.MessageDto getMessageById(Integer messageId, Long userId) {
         return messageApiClient.getMessageById(messageId, userId);
     }
 
-    public boolean updateMessageStatus(Long messageId, Long userId, String action) {
+    public boolean updateMessageStatus(Integer messageId, Long userId, String action) {
         return messageApiClient.updateMessageStatus(messageId, userId, action);
     }
 
@@ -361,7 +361,7 @@ public class ApiClient {
         return messageApiClient.bulkUpdateMessages(userId, messageIds, action);
     }
 
-    public com.example.companycore.model.dto.MessageDto replyToMessage(Long messageId, Long userId, String title, String content) {
+    public com.example.companycore.model.dto.MessageDto replyToMessage(Integer messageId, Long userId, String title, String content) {
         return messageApiClient.replyToMessage(messageId, userId, title, content);
     }
 

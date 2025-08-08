@@ -317,12 +317,7 @@ public class CalendarController implements Initializable {
                               schedule.getCategory());
         }
         
-        // 샘플 데이터 (일정이 없을 때)
-        if (upcomingSchedules.isEmpty()) {
-            addUpcomingSchedule("팀 미팅", "2025-01-20", "14:00", "회의실 A", "회의");
-            addUpcomingSchedule("프로젝트 마감", "2025-01-25", "18:00", "온라인", "프로젝트");
-            addUpcomingSchedule("고객 미팅", "2025-01-28", "10:00", "회의실 B", "미팅");
-        }
+
     }
     
     /**
@@ -397,11 +392,7 @@ public class CalendarController implements Initializable {
                           meeting.getId());
         }
 
-        // 샘플 데이터 (회의록이 없을 때)
-        if (recentMeetings.isEmpty()) {
-            addMeetingNote("주간 팀 회의", "2025-01-15", "김팀장, 이사원, 박사원", "이번 주 진행상황 점검 및 다음 주 계획 수립", "meeting_001");
-            addMeetingNote("프로젝트 킥오프", "2025-01-10", "전체 팀원", "새로운 프로젝트 시작 및 역할 분담", "meeting_002");
-        }
+
     }
     
     /**
@@ -516,22 +507,6 @@ public class CalendarController implements Initializable {
         } catch (Exception e) {
             System.out.println("회의 API 호출 중 오류 발생: " + e.getMessage());
             e.printStackTrace();
-            
-            // API 호출 실패 시 기존 샘플 데이터 사용
-            switch (meetingId) {
-                case "meeting_001":
-                    importedSchedules.add(new Schedule("주간 미팅", LocalDate.now().plusDays(1), "09:00", "회의실 A", "회의"));
-                    importedSchedules.add(new Schedule("프로젝트 리뷰", LocalDate.now().plusDays(3), "14:00", "온라인", "미팅"));
-                    break;
-                case "meeting_002":
-                    importedSchedules.add(new Schedule("프로젝트 킥오프 미팅", LocalDate.now().plusDays(2), "10:00", "회의실 B", "프로젝트"));
-                    importedSchedules.add(new Schedule("역할 분담 회의", LocalDate.now().plusDays(4), "15:00", "회의실 C", "프로젝트"));
-                    importedSchedules.add(new Schedule("초기 계획 수립", LocalDate.now().plusDays(5), "11:00", "온라인", "프로젝트"));
-                    break;
-                default:
-                    importedSchedules.add(new Schedule("일반 미팅", LocalDate.now().plusDays(1), "14:00", "회의실 A", "회의"));
-                    break;
-            }
         }
 
         return importedSchedules;

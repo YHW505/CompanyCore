@@ -41,6 +41,10 @@
                 <Label text="일자" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
                 <Label fx:id="dateLabel" style="-fx-background-color: #f8f9fa; -fx-background-radius: 6; -fx-padding: 8; -fx-border-color: #ddd; -fx-border-width: 1; -fx-border-radius: 6; -fx-text-fill: #2c3e50;"/>
             </VBox>
+            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                <Label text="회의장소" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <Label fx:id="locationLabel" style="-fx-background-color: #f8f9fa; -fx-background-radius: 6; -fx-padding: 8; -fx-border-color: #ddd; -fx-border-width: 1; -fx-border-radius: 6; -fx-text-fill: #2c3e50;"/>
+            </VBox>
         </HBox>
 
         <!-- 내용 -->

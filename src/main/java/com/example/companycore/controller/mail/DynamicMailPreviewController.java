@@ -12,9 +12,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.StackPane;
+import javafx.stage.FileChooser;
 
 import javafx.scene.control.ButtonType;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -26,6 +30,7 @@ public class DynamicMailPreviewController {
     @FXML private Label subjectLabel;
     @FXML private Label dateLabel;
     @FXML private Label attachmentLabel;
+    @FXML private Button downloadButton;
     @FXML private TextArea contentTextArea;
     @FXML private Button forwardButton;
 
@@ -57,8 +62,11 @@ public class DynamicMailPreviewController {
 
         if (attachment != null && !attachment.isEmpty()) {
             attachmentLabel.setText(attachment);
+            downloadButton.setVisible(true);
+            System.out.println(attachmentLabel.getText());
         } else {
             attachmentLabel.setText("첨부파일 없음");
+            downloadButton.setVisible(false);
         }
     }
 
@@ -68,7 +76,13 @@ public class DynamicMailPreviewController {
         subjectLabel.setText(subject != null ? subject : "제목 없음");
         contentTextArea.setText(content != null ? content : "");
         dateLabel.setText(date != null ? date : "");
-        attachmentLabel.setText((attachment != null && !attachment.isEmpty()) ? attachment : "첨부파일 없음");
+        if (attachment != null && !attachment.isEmpty()) {
+            attachmentLabel.setText(attachment);
+            downloadButton.setVisible(true);
+        } else {
+            attachmentLabel.setText("첨부파일 없음");
+            downloadButton.setVisible(false);
+        }
     }
 
     public void setReceivedMailData(String sender, String subject, String content, String date, String attachment) {
@@ -77,7 +91,13 @@ public class DynamicMailPreviewController {
         subjectLabel.setText(subject != null ? subject : "제목 없음");
         contentTextArea.setText(content != null ? content : "");
         dateLabel.setText(date != null ? date : "");
-        attachmentLabel.setText((attachment != null && !attachment.isEmpty()) ? attachment : "첨부파일 없음");
+        if (attachment != null && !attachment.isEmpty()) {
+            attachmentLabel.setText(attachment);
+            downloadButton.setVisible(true);
+        } else {
+            attachmentLabel.setText("첨부파일 없음");
+            downloadButton.setVisible(false);
+        }
     }
 
 
@@ -159,6 +179,34 @@ public class DynamicMailPreviewController {
                 }
             } else {
                 showAlert("메시지 삭제에 실패했습니다.", Alert.AlertType.ERROR);
+            }
+        }
+    }
+
+    @FXML
+    public void handleDownloadAttachment() {
+        if (selectedMessage == null || selectedMessage.getAttachmentFilename() == null || selectedMessage.getAttachmentFilename().isEmpty()) {
+            showAlert("다운로드할 첨부파일이 없습니다.", Alert.AlertType.WARNING);
+            return;
+        }
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("첨부파일 저장");
+        fileChooser.setInitialFileName(selectedMessage.getAttachmentFilename());
+        File file = fileChooser.showSaveDialog(null);
+
+        if (file != null) {
+            byte[] attachmentData = MessageApiClient.getInstance().downloadAttachment(selectedMessage.getMessageId(), apiClient.getCurrentUser().getUserId());
+            if (attachmentData != null) {
+                try (FileOutputStream fos = new FileOutputStream(file)) {
+                    fos.write(attachmentData);
+                    showAlert("첨부파일이 성공적으로 저장되었습니다.", Alert.AlertType.INFORMATION);
+                } catch (IOException e) {
+                    showAlert("첨부파일 저장 중 오류가 발생했습니다.", Alert.AlertType.ERROR);
+                    e.printStackTrace();
+                }
+            } else {
+                showAlert("첨부파일 다운로드에 실패했습니다.", Alert.AlertType.ERROR);
             }
         }
     }
