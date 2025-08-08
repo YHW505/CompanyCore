@@ -661,9 +661,10 @@ public class UserApiClient extends BaseApiClient {
     /**
      * 부서별 사용자 조회
      */
-    public List<User> getUsersByDepartment(String departmentName) {
+    public List<User> getUsersByDepartment(Integer departmentId) {
         try {
-            HttpRequest request = createAuthenticatedRequestBuilder("/users/department/" + departmentName)
+//            String encodedDepartmentName = java.net.URLEncoder.encode(departmentName, java.nio.charset.StandardCharsets.UTF_8);
+            HttpRequest request = createAuthenticatedRequestBuilder("/users/department/" + departmentId)
                     .GET()
                     .build();
 
@@ -672,15 +673,19 @@ public class UserApiClient extends BaseApiClient {
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
+                System.out.println("DEBUG: getUsersByDepartment API Response Body: " + responseBody); // 응답 본문 로그 추가
                 if (responseBody != null && !responseBody.trim().isEmpty()) {
-                    JsonNode rootNode = objectMapper.readTree(responseBody);
-                    if (rootNode.has("data")) {
-                        JsonNode dataNode = rootNode.get("data");
-                        List<User> users = objectMapper.readValue(dataNode.toString(),
+                    try {
+                        List<User> users = objectMapper.readValue(responseBody,
                                 objectMapper.getTypeFactory().constructCollectionType(List.class, User.class));
                         System.out.println("부서별 사용자 조회 성공: " + users.size() + "명");
                         return users;
+                    } catch (Exception parseException) {
+                        System.err.println("ERROR: Failed to parse users from response: " + parseException.getMessage());
+                        System.err.println("Response body was: " + responseBody);
                     }
+                } else {
+                    System.out.println("DEBUG: Response body is null or empty."); // 추가
                 }
             }
         } catch (Exception e) {

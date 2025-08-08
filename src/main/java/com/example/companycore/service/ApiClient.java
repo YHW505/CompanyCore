@@ -146,8 +146,8 @@ public class ApiClient {
         return userApiClient.getUserByEmployeeCode(employeeCode);
     }
 
-    public java.util.List<com.example.companycore.model.entity.User> getUsersByDepartment(String departmentName) {
-        return userApiClient.getUsersByDepartment(departmentName);
+    public java.util.List<com.example.companycore.model.entity.User> getUsersByDepartment(Integer departmentId) {
+        return userApiClient.getUsersByDepartment(departmentId);
     }
 
     public java.util.List<com.example.companycore.model.entity.User> getUsersByRole(String role) {
