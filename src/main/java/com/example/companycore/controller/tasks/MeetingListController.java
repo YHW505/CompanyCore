@@ -264,7 +264,7 @@ public class MeetingListController {
     /**
      * 서버에서 실제 데이터를 로드합니다.
      */
-    private void loadDataFromServer() {
+    void loadDataFromServer() {
         // 로딩 인디케이터 표시
         showLoading(true);
         
