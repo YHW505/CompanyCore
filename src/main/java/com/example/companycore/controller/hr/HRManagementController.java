@@ -111,7 +111,7 @@ public class HRManagementController {
     }
     
     /**
-     * 샘플 데이터 초기화
+     * 데이터 초기화
      */
     private void initializeData() {
         allEmployees = FXCollections.observableArrayList();
