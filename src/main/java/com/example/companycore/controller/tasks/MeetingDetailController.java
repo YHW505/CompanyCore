@@ -28,6 +28,7 @@ public class MeetingDetailController {
     @FXML private Text contentText;
     @FXML private VBox attachmentContainer;
     @FXML private VBox attachmentList;
+    @FXML private Label locationLabel;
 
     private MeetingItem meetingItem;
 
@@ -101,6 +102,7 @@ public class MeetingDetailController {
         departmentLabel.setText(meetingItem.getDepartment());
         authorLabel.setText(meetingItem.getAuthor());
         dateLabel.setText(meetingItem.getDate());
+        locationLabel.setText(meetingItem.getLocation());
 
         // 내용 설정 (임시로 제목을 내용으로 사용)
         contentText.setText(meetingItem.getTitle());
