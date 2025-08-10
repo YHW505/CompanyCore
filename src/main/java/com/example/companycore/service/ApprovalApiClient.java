@@ -304,21 +304,6 @@ public class ApprovalApiClient extends BaseApiClient {
                     }
                     
                     System.out.println("✅ 상세 조회 파싱 성공");
-                    System.out.println("📋 파싱된 데이터:");
-                    System.out.println("  - ID: " + result.getId());
-                    System.out.println("  - 제목: " + result.getTitle());
-                    System.out.println("  - 첨부파일명: " + result.getAttachmentFilename());
-                    System.out.println("  - 첨부파일 크기: " + result.getAttachmentSize());
-                    System.out.println("  - 첨부파일 내용 존재: " + (result.getAttachmentContent() != null));
-                    
-                    if (result.getAttachmentContent() == null) {
-                        System.err.println("⚠️ 서버 응답에 attachmentContent 필드가 없습니다");
-                        System.err.println("📋 서버 응답 필드들:");
-                        jsonNode.fieldNames().forEachRemaining(field -> {
-                            System.err.println("    - " + field + ": " + jsonNode.get(field));
-                        });
-                    }
-                    
                     return result;
                 } else {
                     System.err.println("❌ 응답 본문이 비어있습니다");
