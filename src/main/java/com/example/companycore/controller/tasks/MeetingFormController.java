@@ -1,8 +1,12 @@
 package com.example.companycore.controller.tasks;
 
 import com.example.companycore.model.dto.MeetingItem;
+import com.example.companycore.model.dto.TaskDto;
+import com.example.companycore.model.entity.Enum.TaskStatus;
+import com.example.companycore.model.entity.Enum.TaskType;
 import com.example.companycore.service.ApiClient;
 import com.example.companycore.service.MeetingApiClient;
+import com.example.companycore.service.TaskApiClient;
 import com.example.companycore.util.FileUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -54,6 +58,7 @@ public class MeetingFormController {
 
     private ApiClient apiClient;
     private MeetingApiClient meetingApiClient;
+    private TaskApiClient taskApiClient;
     private File selectedFile;
     private String attachmentContent;
     private String attachmentFilename;
@@ -66,6 +71,7 @@ public class MeetingFormController {
     public void initialize() {
         apiClient = ApiClient.getInstance();
         meetingApiClient = MeetingApiClient.getInstance();
+        taskApiClient = TaskApiClient.getInstance();
         setupForm();
         setupFileHandling();
     }
@@ -223,11 +229,16 @@ public class MeetingFormController {
             var currentUser = apiClient.getCurrentUser();
             String author = currentUser != null ? currentUser.getUsername() : "Unknown";
             String department = currentUser != null ? currentUser.getDepartmentName() : "Unknown";
+            Long userId = currentUser != null ? currentUser.getUserId() : 1;
 
             // 회의 시간 설정
             LocalDate selectedDate = datePicker.getValue();
             LocalDateTime startTime = selectedDate.atStartOfDay().plusHours(9); // 오전 9시
             LocalDateTime endTime = startTime.plusHours(1); // 1시간 회의
+
+
+//            LocalDateTime startTaskTime = startDatePicker1.getValue();
+//            LocalDateTime endTaskTime = endDatePicker1.plusHours(1); // 1시간 회의
 
             MeetingApiClient.MeetingDto createdMeeting;
 
@@ -280,6 +291,21 @@ public class MeetingFormController {
 
                     createdMeeting = meetingApiClient.createMeeting(meetingDto);
                 }
+                TaskDto taskDto = new TaskDto();
+                taskDto.setTitle(titleField.getText().trim());
+                taskDto.setDescription(scheduleContentArea1.getText());
+                taskDto.setStatus(TaskStatus.TODO);
+                taskDto.setTaskType(TaskType.TASK);
+                taskDto.setAssignedBy(userId);
+                taskDto.setStartDate(startDatePicker1.getValue());
+                taskDto.setEndDate(endDatePicker1.getValue());
+
+
+                taskApiClient.createTask(taskDto);
+
+
+
+
             }
 
             if (createdMeeting != null) {
@@ -421,14 +447,14 @@ public class MeetingFormController {
             }
             
             // 현재 사용자의 부서명 가져오기
-            String currentUserDepartment = currentUser.getDepartmentName();
-            if (currentUserDepartment == null || currentUserDepartment.trim().isEmpty()) {
-                new Alert(Alert.AlertType.ERROR, "부서 정보를 가져올 수 없습니다.").showAndWait();
-                return;
-            }
+            Integer currentUserDepartmentId = currentUser.getDepartmentId();
+//            if (currentUserDepartment == null || currentUserDepartment.trim().isEmpty()) {
+//                new Alert(Alert.AlertType.ERROR, "부서 정보를 가져올 수 없습니다.").showAndWait();
+//                return;
+//            }
             
             // 부서의 모든 사용자 목록 가져오기 (실제 API 호출)
-            List<User> departmentUsers = apiClient.getUsersByDepartment(currentUserDepartment);
+            List<User> departmentUsers = apiClient.getUsersByDepartment(currentUserDepartmentId);
             if (departmentUsers == null || departmentUsers.isEmpty()) {
                 new Alert(Alert.AlertType.INFORMATION, "해당 부서에 다른 사용자가 없습니다.").showAndWait();
                 return;
@@ -439,11 +465,6 @@ public class MeetingFormController {
             List<User> availableUsers = new ArrayList<>();
             
             for (User user : departmentUsers) {
-                // 현재 사용자는 제외
-                if (user.getUserId().equals(currentUser.getUserId())) {
-                    continue;
-                }
-                
                 String userDisplay = String.format("%s (%s)", 
                     user.getUsername(), 
                     user.getPosition() != null ? user.getPosition().getPositionName() : "직급 없음");
