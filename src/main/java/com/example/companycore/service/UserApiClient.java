@@ -364,6 +364,12 @@ public class UserApiClient extends BaseApiClient {
                         System.out.println("✅ UserUpdateResponse에서 userInfo 필드 파싱 성공!");
                         JsonNode userInfoNode = rootNode.get("userInfo");
                         User user = objectMapper.treeToValue(userInfoNode, User.class);
+                        // departmentName을 명시적으로 설정
+                        if (userInfoNode.has("department") && userInfoNode.get("department").has("departmentName")) {
+                            user.setDepartmentName(userInfoNode.get("department").get("departmentName").asText());
+                        } else if (userInfoNode.has("departmentName")) {
+                            user.setDepartmentName(userInfoNode.get("departmentName").asText());
+                        }
                         return user;
                     } else if (rootNode.has("data")) {
                         System.out.println("✅ UserUpdateResponse에서 data 필드 파싱 성공!");
@@ -372,6 +378,12 @@ public class UserApiClient extends BaseApiClient {
                             System.out.println("✅ data 필드에서 파싱 성공!");
                             JsonNode userInfoNode = dataNode.get("userInfo");
                             User user = objectMapper.treeToValue(userInfoNode, User.class);
+                            // departmentName을 명시적으로 설정
+                            if (userInfoNode.has("department") && userInfoNode.get("department").has("departmentName")) {
+                                user.setDepartmentName(userInfoNode.get("department").get("departmentName").asText());
+                            } else if (userInfoNode.has("departmentName")) {
+                                user.setDepartmentName(userInfoNode.get("departmentName").asText());
+                            }
                             return user;
                         } else {
                             System.out.println("❌ data 필드가 null입니다!");
@@ -381,6 +393,13 @@ public class UserApiClient extends BaseApiClient {
                         // 직접 User로 파싱 시도
                         System.out.println("✅ 직접 User 파싱 성공!");
                         User user = objectMapper.readValue(response.body(), User.class);
+                        // departmentName을 명시적으로 설정
+                        JsonNode responseNode = objectMapper.readTree(response.body());
+                        if (responseNode.has("department") && responseNode.get("department").has("departmentName")) {
+                            user.setDepartmentName(responseNode.get("department").get("departmentName").asText());
+                        } else if (responseNode.has("departmentName")) {
+                            user.setDepartmentName(responseNode.get("departmentName").asText());
+                        }
                         return user;
                     }
 

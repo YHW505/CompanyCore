@@ -160,6 +160,34 @@ public class FileUtil {
     }
 
     /**
+     * MIME 타입으로부터 파일 확장자 추정
+     * @param contentType MIME 타입
+     * @return 파일 확장자 (예: ".pdf", ".jpg"), 알 수 없으면 null
+     */
+    public static String getExtensionFromContentType(String contentType) {
+        if (contentType == null || contentType.trim().isEmpty()) {
+            return null;
+        }
+        String lowerContentType = contentType.toLowerCase();
+        if (lowerContentType.contains("pdf")) return ".pdf";
+        if (lowerContentType.contains("word") || lowerContentType.contains("document")) return ".docx";
+        if (lowerContentType.contains("excel") || lowerContentType.contains("spreadsheet")) return ".xlsx";
+        if (lowerContentType.contains("powerpoint") || lowerContentType.contains("presentation")) return ".pptx";
+        if (lowerContentType.contains("text/plain")) return ".txt";
+        if (lowerContentType.contains("image/jpeg")) return ".jpg";
+        if (lowerContentType.contains("image/png")) return ".png";
+        if (lowerContentType.contains("image/gif")) return ".gif";
+        if (lowerContentType.contains("application/zip")) return ".zip";
+        if (lowerContentType.contains("application/x-rar-compressed")) return ".rar";
+        // 기타 일반적인 타입
+        if (lowerContentType.contains("image/")) return ".jpg"; // 기본 이미지 확장자
+        if (lowerContentType.contains("text/")) return ".txt"; // 기본 텍스트 확장자
+        if (lowerContentType.contains("application/octet-stream")) return ".bin"; // 이진 파일
+        
+        return null; // 알 수 없는 타입
+    }
+
+    /**
      * 파일명이 유효한지 검사
      * @param filename 검사할 파일명
      * @return 유효 여부
