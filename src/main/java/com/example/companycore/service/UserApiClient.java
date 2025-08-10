@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.time.LocalDate;
+
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
@@ -477,10 +479,53 @@ public class UserApiClient extends BaseApiClient {
      */
     public User createUser(User user) {
         try {
-            String json = objectMapper.writeValueAsString(user);
-            System.out.println("사용자 생성 요청 JSON:");
+            // Manually create a JSON object to match the server's expectations
+            ObjectNode requestBody = objectMapper.createObjectNode();
+            requestBody.put("employeeCode", user.getEmployeeCode());
+            requestBody.put("username", user.getUsername());
+
+            // Server expects date as a JSON array due to @JsonFormat(shape = JsonFormat.Shape.ARRAY)
+            if (user.getJoinDate() != null) {
+                LocalDate date = user.getJoinDate();
+                requestBody.putArray("joinDate")
+                           .add(date.getYear())
+                           .add(date.getMonthValue())
+                           .add(date.getDayOfMonth());
+            }
+
+            requestBody.put("password", user.getPassword());
+            requestBody.put("email", user.getEmail());
+            requestBody.put("phone", user.getPhone());
+            requestBody.put("address", user.getAddress());
+
+            // Send IDs for department and position
+            requestBody.put("departmentId", user.getDepartmentId());
+            requestBody.put("positionId", user.getPositionId());
+
+            requestBody.put("role", user.getRole() != null ? user.getRole().name() : null);
+
+            // Server expects Integer for booleans
+            if (user.getIsFirstLogin() != null) {
+                requestBody.put("isFirstLogin", user.getIsFirstLogin() ? 1 : 0);
+            }
+            if (user.getIsActive() != null) {
+                requestBody.put("isActive", user.getIsActive() ? 1 : 0);
+            }
+
+            if (user.getBirthDate() != null) {
+                 LocalDate date = user.getBirthDate();
+                 requestBody.putArray("birthDate")
+                           .add(date.getYear())
+                           .add(date.getMonthValue())
+                           .add(date.getDayOfMonth());
+            }
+
+            // Do NOT send userId or createdAt
+
+            String json = objectMapper.writeValueAsString(requestBody);
+            System.out.println("Final Corrected User Creation Request JSON:");
             System.out.println(json);
-            
+
             HttpRequest request = createAuthenticatedRequestBuilder("/users/create")
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .header("Content-Type", "application/json")
