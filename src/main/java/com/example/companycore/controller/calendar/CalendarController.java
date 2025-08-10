@@ -19,6 +19,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import com.example.companycore.service.ApiClient;
 import com.example.companycore.service.MeetingApiClient;
@@ -249,7 +252,7 @@ public class CalendarController implements Initializable {
             Label itemLabel = new Label(allItemsToDisplay.get(i));
             // Style for imported tasks (e.g., green background)
             if (allItemsToDisplay.get(i).endsWith(" (업무)")) {
-                itemLabel.setStyle("-fx-font-size: 8px; -fx-text-fill: white; -fx-background-color: #28a745; -fx-padding: 1 3; -fx-background-radius: 2;");
+                itemLabel.setStyle("-fx-font-size: 8px; -fx-text-fill: #3498db;"); // Plain text, light blue color
             } else { // Style for regular schedules (blue background)
                 itemLabel.setStyle("-fx-font-size: 8px; -fx-text-fill: white; -fx-background-color: #3498db; -fx-padding: 1 3; -fx-background-radius: 2;");
             }
@@ -309,22 +312,49 @@ public class CalendarController implements Initializable {
         // Show selected date info
         selectedDateLabel.setText("선택된 날짜: " + date.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")));
 
-        // Filter schedules for the selected date
-        List<Schedule> daySchedules = schedules.stream()
-                .filter(schedule -> schedule.getDate().equals(date))
-                .collect(Collectors.toList());
+        // Combine assigned schedules and imported tasks for the selected date
+        Set<Schedule> dayUniqueSchedules = new HashSet<>();
 
-        selectedDateScheduleCount.setText("일정: " + daySchedules.size() + "개");
+        // Add assigned schedules for the selected date
+        schedules.stream()
+                .filter(schedule -> schedule.getDate().equals(date))
+                .forEach(dayUniqueSchedules::add);
+
+        // Convert imported tasks to schedules for the selected date and add to the set
+        apiClient.getGlobalImportedTasks().stream()
+                .filter(task -> {
+                    LocalDate taskStartDate = task.getStartDate();
+                    LocalDate taskEndDate = task.getEndDate();
+                    return taskStartDate != null && taskEndDate != null &&
+                           !date.isBefore(taskStartDate) && !date.isAfter(taskEndDate);
+                })
+                .forEach(task -> {
+                    String time = "하루 종일"; // Placeholder
+                    String category = task.getTaskType() != null ? task.getTaskType().toString() : "업무";
+                    dayUniqueSchedules.add(new Schedule(
+                        task.getTitle(),
+                        date, // Use the clicked date
+                        time,
+                        "온라인", // Placeholder
+                        category,
+                        "Imported" // Indicate it's an imported task
+                    ));
+                });
+
+        List<Schedule> daySchedulesToDisplay = new ArrayList<>(dayUniqueSchedules);
+        daySchedulesToDisplay.sort((s1, s2) -> s1.getTitle().compareTo(s2.getTitle())); // Sort by title for consistent display
+
+        selectedDateScheduleCount.setText("일정: " + daySchedulesToDisplay.size() + "개");
         selectedDateInfo.setVisible(true);
 
         // Populate the tasks container for the selected date
         selectedDateTasksContainer.getChildren().clear(); // Clear previous tasks
-        if (daySchedules.isEmpty()) {
+        if (daySchedulesToDisplay.isEmpty()) {
             Label noTasksLabel = new Label("해당 날짜에 업무가 없습니다.");
             noTasksLabel.setStyle("-fx-padding: 10; -fx-text-fill: #7f8c8d;");
             selectedDateTasksContainer.getChildren().add(noTasksLabel);
         } else {
-            for (Schedule schedule : daySchedules) {
+            for (Schedule schedule : daySchedulesToDisplay) {
                 addSelectedDateTask(schedule);
             }
         }
@@ -366,12 +396,51 @@ public class CalendarController implements Initializable {
 
         // 현재 날짜 이후의 일정들을 가져와서 표시
         LocalDate today = LocalDate.now();
-        LocalDate threeDaysLater = today.plusDays(3);
-        List<Schedule> upcomingSchedules = schedules.stream()
-                .filter(schedule -> !schedule.getDate().isBefore(today) && schedule.getDate().isBefore(threeDaysLater))
+        LocalDate sevenDaysLater = today.plusDays(7);
+        // Combine assigned schedules and imported tasks into a Set for de-duplication
+        Set<Schedule> uniqueSchedules = new HashSet<>(schedules);
+
+        // Convert imported tasks to schedules and add to the set
+        for (Task task : apiClient.getGlobalImportedTasks()) {
+            LocalDate startDate = task.getStartDate();
+            LocalDate endDate = task.getEndDate();
+            if (startDate != null && endDate != null) {
+                for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+                    String time = "하루 종일"; // Placeholder
+                    String category = task.getTaskType() != null ? task.getTaskType().toString() : "업무";
+                    // For imported tasks, assignerName might not be directly available or relevant,
+                    // so we can use a placeholder or leave it null/empty.
+                    // Let's use "Imported" as assignerName for now.
+                    uniqueSchedules.add(new Schedule(
+                        task.getTitle(),
+                        date,
+                        time,
+                        "온라인", // Placeholder
+                        category,
+                        "Imported" // Indicate it's an imported task
+                    ));
+                }
+            }
+        }
+
+        LocalDate threeDaysLater = today.plusDays(4); // Changed to 4 to include 3 days from tomorrow
+        List<Schedule> filteredSchedules = uniqueSchedules.stream() // Use uniqueSchedules here
+                .filter(schedule -> schedule.getDate().isAfter(today) && schedule.getDate().isBefore(threeDaysLater))
                 .sorted((s1, s2) -> s1.getDate().compareTo(s2.getDate()))
-                .limit(5) // 최대 5개만 표시
                 .collect(Collectors.toList());
+
+        Set<String> displayedTitles = new HashSet<>();
+        List<Schedule> upcomingSchedules = new ArrayList<>();
+
+        for (Schedule schedule : filteredSchedules) {
+            if (!displayedTitles.contains(schedule.getTitle())) {
+                upcomingSchedules.add(schedule);
+                displayedTitles.add(schedule.getTitle());
+            }
+            if (upcomingSchedules.size() >= 5) { // Apply limit after de-duplication
+                break;
+            }
+        }
 
         for (Schedule schedule : upcomingSchedules) {
             addUpcomingSchedule(schedule.getTitle(),
@@ -499,6 +568,7 @@ public class CalendarController implements Initializable {
 
         taskItem.getChildren().addAll(titleLabel, dateLabel, statusLabel, descriptionLabel);
 
+        HBox buttonBox = new HBox(10); // Spacing between buttons
         Button importTaskButton = new Button("업무 가져오기");
         importTaskButton.setStyle("-fx-background-color: #5cb85c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-padding: 4 8;");
         importTaskButton.setOnAction(event -> {
@@ -507,7 +577,13 @@ public class CalendarController implements Initializable {
             updateMonthDisplay(); // Redraw calendar to show the task titles
             showAlert("업무 가져오기", "업무 '" + task.getTitle() + "'을(를) 달력에 표시했습니다.", Alert.AlertType.INFORMATION);
         });
-        taskItem.getChildren().add(importTaskButton); // Add the button to the VBox
+
+        Button removeTaskButton = new Button("달력에서 제거");
+        removeTaskButton.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-padding: 4 8;");
+        removeTaskButton.setOnAction(event -> handleRemoveTaskFromCalendar(task)); // Call new method
+
+        buttonBox.getChildren().addAll(importTaskButton, removeTaskButton);
+        taskItem.getChildren().add(buttonBox); // Add the HBox containing buttons to the VBox
 
         taskItem.setOnMouseClicked(event -> {
             // Existing click handler for the VBox, might be redundant with the button
@@ -516,6 +592,16 @@ public class CalendarController implements Initializable {
         });
 
         meetingNotesContainer.getChildren().add(taskItem);
+    }
+
+    /**
+     * 달력에서 업무를 제거하는 핸들러
+     * @param task 제거할 업무 객체
+     */
+    private void handleRemoveTaskFromCalendar(Task task) {
+        apiClient.removeGlobalImportedTask(task); // Assuming ApiClient has this method
+        updateMonthDisplay(); // Refresh calendar
+        showAlert("업무 제거", "업무 '" + task.getTitle() + "'을(를) 달력에서 제거했습니다.", Alert.AlertType.INFORMATION);
     }
 
     private void loadMyTasks() {
@@ -633,5 +719,22 @@ public class CalendarController implements Initializable {
         public String getLocation() { return location; }
         public String getCategory() { return category; }
         public String getAssignerName() { return assignerName; }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Schedule schedule = (Schedule) o;
+            return title.equals(schedule.title) &&
+                   date.equals(schedule.date) &&
+                   time.equals(schedule.time) &&
+                   location.equals(schedule.location) &&
+                   category.equals(schedule.category);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(title, date, time, location, category);
+        }
     }
 }

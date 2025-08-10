@@ -519,4 +519,8 @@ public class ApiClient {
     public void clearGlobalImportedTasks() {
         globalImportedTasks.clear();
     }
+
+    public void removeGlobalImportedTask(com.example.companycore.model.entity.Task task) {
+        globalImportedTasks.remove(task);
+    }
 }
