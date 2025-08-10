@@ -137,25 +137,24 @@ public class ApprovalDetailController {
         String attachmentFilename = approvalItem.getAttachmentFilename();
         Long attachmentSize = approvalItem.getAttachmentSize();
 
-        System.out.println("🔍 첨부파일 정보 확인:");
-        System.out.println("  - 파일명: " + attachmentFilename);
-        System.out.println("  - 파일 크기: " + attachmentSize);
-        System.out.println("  - 첨부파일 내용 존재: " + (approvalItem.getAttachmentContent() != null && !approvalItem.getAttachmentContent().isEmpty()));
+        // ✅ [수정] 첨부파일이 있는지 확인하는 조건을 더 엄격하게 변경
+        // 파일 이름이 null이 아니고, 비어있지 않으며, 문자열 "null"도 아니어야 합니다.
+        boolean hasAttachment = attachmentFilename != null &&
+                !attachmentFilename.trim().isEmpty() &&
+                !attachmentFilename.equalsIgnoreCase("null");
 
-        // 첨부파일이 하나만 있다고 가정
-        attachmentList.getChildren().clear();
+        if (hasAttachment) {
+            // 첨부파일이 있는 경우
+            attachmentContainer.setVisible(true);
+            attachmentList.getChildren().clear();
 
-        if ((attachmentFilename != null && !attachmentFilename.isEmpty()) ||
-                (attachmentSize != null && attachmentSize > 0)) {
-
-            String filename = (attachmentFilename != null && !attachmentFilename.isEmpty()) ? attachmentFilename : "첨부파일";
-            System.out.println(attachmentFilename+"adadasdasdasdasdasdadasd");
-
-            HBox attachmentItem = createAttachmentItem(filename, attachmentSize);
+            HBox attachmentItem = createAttachmentItem(attachmentFilename, attachmentSize);
             attachmentList.getChildren().add(attachmentItem);
+        } else {
+            // 첨부파일이 없는 경우
+            attachmentContainer.setVisible(false);
         }
     }
-
     /**
      * 첨부파일 항목을 생성합니다.
      * 

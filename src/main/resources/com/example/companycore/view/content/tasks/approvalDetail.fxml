@@ -74,8 +74,13 @@
     <!-- ==================== 첨부파일 섹션 ==================== -->
     <!-- 첨부파일 목록을 표시하는 리스트 뷰 -->
     <!-- 첨부파일 섹션 -->
-    <Label text="첨부파일:" />
-    <VBox fx:id="attachmentList" spacing="5" prefWidth="512.0" />
+    <VBox fx:id="attachmentContainer" spacing="5.0" visible="false">
+        <children>
+            <Label text="첨부파일:" />
+
+            <VBox fx:id="attachmentList" spacing="5" prefWidth="512.0" />
+        </children>
+    </VBox>
 
 
     <!-- ==================== 액션 버튼 ==================== -->
