@@ -143,6 +143,9 @@ public class MeetingListController {
         
         // 상세보기 버튼 설정
         setupActionColumn();
+        
+        // 테이블 다중 선택 활성화
+        meetingTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     }
 
     /**
@@ -462,54 +465,48 @@ public class MeetingListController {
      */
     @FXML
     public void handleDelete() {
-        MeetingItem selected = meetingTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            new Alert(Alert.AlertType.WARNING, "삭제할 회의를 선택하세요.").showAndWait();
+        ObservableList<MeetingItem> selectedItems = meetingTable.getSelectionModel().getSelectedItems();
+
+        if (selectedItems.isEmpty()) {
+            new Alert(Alert.AlertType.WARNING, "삭제할 회의를 하나 이상 선택하세요.").showAndWait();
             return;
         }
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("회의 삭제");
-        alert.setHeaderText("회의 삭제 확인");
-        alert.setContentText("정말로 '" + selected.getTitle() + "' 회의를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.");
+        alert.setHeaderText("회의 다중 삭제 확인");
+        alert.setContentText("정말로 선택된 " + selectedItems.size() + "개의 회의를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.");
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                // 서버에서 회의 삭제
-                boolean success = meetingApiClient.deleteMeeting(selected.getId());
-                
-                if (success) {
-                    // 성공 시 목록에서 제거
-                    fullData.remove(selected);
-                    viewData.remove(selected);
-                    
-                    // 성공 메시지 표시
-                    Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
-                    successAlert.setTitle("삭제 완료");
-                    successAlert.setHeaderText("회의 삭제 완료");
-                    successAlert.setContentText("회의가 성공적으로 삭제되었습니다.");
-                    successAlert.showAndWait();
-                    
-                    // 테이블 새로고침
-                    updatePagination();
-                } else {
-                    // 실패 메시지 표시
-                    Alert errorAlert = new Alert(Alert.AlertType.ERROR);
-                    errorAlert.setTitle("삭제 실패");
-                    errorAlert.setHeaderText("회의 삭제 실패");
-                    errorAlert.setContentText("회의 삭제 중 오류가 발생했습니다.");
-                    errorAlert.showAndWait();
+            List<MeetingItem> successfullyDeleted = new ArrayList<>();
+            List<String> failedDeletions = new ArrayList<>();
+
+            for (MeetingItem item : selectedItems) {
+                try {
+                    boolean success = meetingApiClient.deleteMeeting(item.getId());
+                    if (success) {
+                        successfullyDeleted.add(item);
+                    } else {
+                        failedDeletions.add(item.getTitle());
+                    }
+                } catch (Exception e) {
+                    failedDeletions.add(item.getTitle() + " (오류: " + e.getMessage() + ")");
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
-                System.err.println("회의 삭제 중 오류 발생: " + e.getMessage());
-                e.printStackTrace();
-                
-                Alert errorAlert = new Alert(Alert.AlertType.ERROR);
-                errorAlert.setTitle("삭제 실패");
-                errorAlert.setHeaderText("회의 삭제 실패");
-                errorAlert.setContentText("회의 삭제 중 오류가 발생했습니다: " + e.getMessage());
-                errorAlert.showAndWait();
+            }
+
+            // UI 및 데이터 소스에서 삭제
+            fullData.removeAll(successfullyDeleted);
+            viewData.removeAll(successfullyDeleted);
+            updatePagination();
+
+            // 결과 알림
+            if (failedDeletions.isEmpty()) {
+                new Alert(Alert.AlertType.INFORMATION, selectedItems.size() + "개의 회의가 성공적으로 삭제되었습니다.").showAndWait();
+            } else {
+                String failedTitles = String.join(", ", failedDeletions);
+                new Alert(Alert.AlertType.ERROR, "일부 회의 삭제에 실패했습니다: " + failedTitles).showAndWait();
             }
         }
     }
