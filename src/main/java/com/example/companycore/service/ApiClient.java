@@ -4,7 +4,9 @@ import com.example.companycore.model.dto.LoginRequest;
 import com.example.companycore.model.dto.LoginResponse;
 import com.example.companycore.model.dto.ApprovalDto;
 import com.example.companycore.model.entity.User;
+import com.example.companycore.model.entity.Task;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,6 +23,9 @@ public class ApiClient {
     private final MeetingApiClient meetingApiClient;
     private final ApprovalApiClient approvalApiClient;
     private final NoticeApiClient noticeApiClient;
+
+    // 캘린더에 가져온 업무를 유지하기 위한 전역 리스트
+    private List<com.example.companycore.model.entity.Task> globalImportedTasks = new ArrayList<>();
 
     private ApiClient() {
         this.userApiClient = UserApiClient.getInstance();
@@ -498,5 +503,20 @@ public class ApiClient {
 
     public NoticeApiClient getNoticeApiClient() {
         return noticeApiClient;
+    }
+
+    // 캘린더에 가져온 업무 관련 메서드
+    public List<com.example.companycore.model.entity.Task> getGlobalImportedTasks() {
+        return globalImportedTasks;
+    }
+
+    public void addGlobalImportedTask(com.example.companycore.model.entity.Task task) {
+        if (!globalImportedTasks.contains(task)) {
+            globalImportedTasks.add(task);
+        }
+    }
+
+    public void clearGlobalImportedTasks() {
+        globalImportedTasks.clear();
     }
 }

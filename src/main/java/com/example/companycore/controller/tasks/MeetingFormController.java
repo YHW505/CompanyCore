@@ -7,6 +7,7 @@ import com.example.companycore.model.entity.Enum.TaskType;
 import com.example.companycore.service.ApiClient;
 import com.example.companycore.service.MeetingApiClient;
 import com.example.companycore.service.TaskApiClient;
+import com.example.companycore.service.UserApiClient;
 import com.example.companycore.util.FileUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -448,6 +449,7 @@ public class MeetingFormController {
             
             // 현재 사용자의 부서명 가져오기
             Integer currentUserDepartmentId = currentUser.getDepartmentId();
+            System.out.println("currentUserDepartmentId ========= " + currentUserDepartmentId);
 //            if (currentUserDepartment == null || currentUserDepartment.trim().isEmpty()) {
 //                new Alert(Alert.AlertType.ERROR, "부서 정보를 가져올 수 없습니다.").showAndWait();
 //                return;
@@ -471,7 +473,7 @@ public class MeetingFormController {
                 userDisplayList.add(userDisplay);
                 availableUsers.add(user);
             }
-            
+
             // 참여자 선택 다이얼로그 생성
             Dialog<List<User>> dialog = new Dialog<>();
             dialog.setTitle("참여자 선택");
