@@ -25,6 +25,10 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 import com.example.companycore.service.ApiClient;
+import com.example.companycore.model.entity.Department;
+import com.example.companycore.model.entity.Position;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * 인사관리 컨트롤러 클래스
@@ -47,12 +51,15 @@ public class HRManagementController {
     @FXML private TableView<User> employeeTable;
     
     /** 테이블 컬럼들 */
-    @FXML private TableColumn<User, Integer> idColumn;           // 순서 컬럼
+    @FXML private TableColumn<User, Integer> idColumn;           // 번호 컬럼
     @FXML private TableColumn<User, String> nameColumn;          // 이름 컬럼
-    @FXML private TableColumn<User, String> departmentColumn;    // 부서 컬럼
     @FXML private TableColumn<User, String> employeeIdColumn;    // 사번 컬럼
+    @FXML private TableColumn<User, String> departmentColumn;    // 부서 컬럼
+    @FXML private TableColumn<User, String> positionColumn;     // 직급 컬럼
     @FXML private TableColumn<User, String> emailColumn;         // 이메일 컬럼
-    @FXML private TableColumn<User, Void> editColumn;            // 수정 버튼 컬럼
+    @FXML private TableColumn<User, String> phoneColumn;         // 연락처 컬럼
+    @FXML private TableColumn<User, String> addressColumn;       // 주소 컬럼
+    @FXML private TableColumn<User, Void> editColumn;            // 관리 버튼 컬럼
     
     /** 검색 관련 UI 컴포넌트 */
     @FXML private ComboBox<String> searchConditionComboBox;  // 검색 조건 선택
@@ -104,7 +111,7 @@ public class HRManagementController {
     }
     
     /**
-     * 샘플 데이터 초기화
+     * 데이터 초기화
      */
     private void initializeData() {
         allEmployees = FXCollections.observableArrayList();
@@ -113,8 +120,8 @@ public class HRManagementController {
         // 실제 데이터베이스에서 사용자 목록을 가져옴
         loadUsersFromDatabase();
         
-        // 초기 필터링된 데이터 설정
-        filteredEmployees.addAll(allEmployees);
+        // loadUsersFromDatabase() 내부에서 이미 filteredEmployees에 데이터를 추가하므로
+        // 여기서는 추가로 addAll을 호출하지 않음
     }
     
     /**
@@ -122,34 +129,112 @@ public class HRManagementController {
      */
     private void loadUsersFromDatabase() {
         try {
-            // 실제 API 호출로 사용자 목록을 가져오는 로직 구현
+            // 기존 데이터 클리어
+            allEmployees.clear();
+            filteredEmployees.clear();
+            employeeTable.getItems().clear();
+            
+            // API를 통해 사용자 데이터 가져오기
             List<User> users = apiClient.getUsers();
-            allEmployees.addAll(users);
             
-            System.out.println("사용자 목록을 데이터베이스에서 로드했습니다. 총 " + users.size() + "명");
-            
+            if (users != null && !users.isEmpty()) {
+                // 중복 제거를 위해 Set 사용
+                Set<Long> addedUserIds = new HashSet<>();
+                List<User> uniqueUsers = new ArrayList<>();
+                
+                for (User user : users) {
+                    if (user.getUserId() != null && !addedUserIds.contains(user.getUserId())) {
+                        uniqueUsers.add(user);
+                        addedUserIds.add(user.getUserId());
+                    }
+                }
+                
+                allEmployees.addAll(uniqueUsers);
+                // 필터링된 데이터에 한 번만 추가
+                filteredEmployees.addAll(uniqueUsers);
+                System.out.println("사용자 데이터 로드 완료: " + uniqueUsers.size() + "명");
+            } else {
+                // API에서 데이터를 가져올 수 없는 경우 빈 목록으로 설정
+                System.out.println("API에서 사용자 데이터를 가져올 수 없습니다.");
+            }
         } catch (Exception e) {
-            showAlert("오류", "사용자 목록을 불러오는 중 오류가 발생했습니다: " + e.getMessage(), Alert.AlertType.ERROR);
+            System.out.println("사용자 데이터 로드 중 오류 발생: " + e.getMessage());
+            // API 오류 시 빈 목록으로 설정
+            System.out.println("API 오류로 인해 빈 목록으로 설정되었습니다.");
         }
+        
+        // 이미 위에서 filteredEmployees에 데이터를 추가했으므로 여기서는 추가하지 않음
     }
     
     /**
      * 테이블 컬럼 설정
      */
     private void setupTableColumns() {
+        // 테이블 기본 설정
+        employeeTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        employeeTable.setFixedCellSize(40); // 행 높이를 40px로 설정
+        
+        // 헤더 높이를 30px로 고정하고 테이블 높이 설정
+        employeeTable.setStyle("-fx-table-header-height: 30px; -fx-scroll-bar-policy: never; -fx-pref-height: 427px; -fx-max-height: 427px; -fx-min-height: 427px; -fx-table-header-background: #f0f0f0;");
+        
+        // 테이블이 정확히 10개 행을 표시할 수 있도록 설정 (40px * 10행 + 헤더 높이 27px)
+        employeeTable.setPrefHeight(427); // 40px * 10행 + 헤더 높이 27px = 427px
+        employeeTable.setMaxHeight(427);
+        
+        // 각 컬럼의 헤더 높이도 고정
+        idColumn.setStyle("-fx-table-header-height: 30px;");
+        nameColumn.setStyle("-fx-table-header-height: 30px;");
+        employeeIdColumn.setStyle("-fx-table-header-height: 30px;");
+        departmentColumn.setStyle("-fx-table-header-height: 30px;");
+        positionColumn.setStyle("-fx-table-header-height: 30px;");
+        emailColumn.setStyle("-fx-table-header-height: 30px;");
+        phoneColumn.setStyle("-fx-table-header-height: 30px;");
+        addressColumn.setStyle("-fx-table-header-height: 30px;");
+        editColumn.setStyle("-fx-table-header-height: 30px;");
+        
         // 컬럼별 데이터 바인딩
         idColumn.setCellValueFactory(new PropertyValueFactory<>("userId"));
+        idColumn.setStyle("-fx-alignment: center;");
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
+        nameColumn.setStyle("-fx-alignment: center;");
+        employeeIdColumn.setCellValueFactory(new PropertyValueFactory<>("employeeCode"));
+        employeeIdColumn.setStyle("-fx-alignment: center;");
+        
+        // 부서 컬럼 - Department 객체에서 부서명 가져오기
         departmentColumn.setCellValueFactory(cellData -> {
             User user = cellData.getValue();
-            return new javafx.beans.property.SimpleStringProperty(
-                user.getDepartment() != null ? user.getDepartment().getDepartmentName() : ""
-            );
+            if (user.getDepartment() != null && user.getDepartment().getDepartmentName() != null) {
+                return new javafx.beans.property.SimpleStringProperty(user.getDepartment().getDepartmentName());
+            } else if (user.getDepartmentName() != null) {
+                return new javafx.beans.property.SimpleStringProperty(user.getDepartmentName());
+            } else {
+                return new javafx.beans.property.SimpleStringProperty("미지정");
+            }
         });
-        employeeIdColumn.setCellValueFactory(new PropertyValueFactory<>("employeeCode"));
+        departmentColumn.setStyle("-fx-alignment: center;");
+        
+        // 직급 컬럼 - Position 객체에서 직급명 가져오기
+        positionColumn.setCellValueFactory(cellData -> {
+            User user = cellData.getValue();
+            if (user.getPosition() != null && user.getPosition().getPositionName() != null) {
+                return new javafx.beans.property.SimpleStringProperty(user.getPosition().getPositionName());
+            } else if (user.getPositionName() != null) {
+                return new javafx.beans.property.SimpleStringProperty(user.getPositionName());
+            } else {
+                return new javafx.beans.property.SimpleStringProperty("미지정");
+            }
+        });
+        positionColumn.setStyle("-fx-alignment: center;");
+        
         emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
+        emailColumn.setStyle("-fx-alignment: center;");
+        phoneColumn.setCellValueFactory(new PropertyValueFactory<>("phone"));
+        phoneColumn.setStyle("-fx-alignment: center;");
+        addressColumn.setCellValueFactory(new PropertyValueFactory<>("address"));
+        addressColumn.setStyle("-fx-alignment: center;");
         
         // 수정 버튼 컬럼 설정
+        editColumn.setText("수정");
         setupEditColumn();
     }
     
@@ -158,7 +243,7 @@ public class HRManagementController {
      */
     private void setupEditColumn() {
         editColumn.setCellFactory(param -> new TableCell<User, Void>() {
-            private final Button editButton = new Button("✏️");
+            private final Button editButton = new Button("수정");
             
             {
                 editButton.setStyle("-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 10; -fx-cursor: hand; -fx-background-radius: 3;");
@@ -175,6 +260,7 @@ public class HRManagementController {
                     setGraphic(null);
                 } else {
                     setGraphic(editButton);
+                    setAlignment(Pos.CENTER);
                 }
             }
         });
@@ -185,7 +271,7 @@ public class HRManagementController {
      */
     private void setupSearchFunctionality() {
         // 검색 조건 콤보박스 초기화
-        searchConditionComboBox.getItems().addAll("전체", "이름", "사번", "부서", "이메일");
+        searchConditionComboBox.getItems().addAll("전체", "이름", "사번", "부서", "직급", "이메일", "연락처");
         searchConditionComboBox.setValue("전체");
         
         // 검색어 입력 시 실시간 필터링
@@ -207,19 +293,30 @@ public class HRManagementController {
                 
                 switch (searchCondition) {
                     case "이름":
-                        return user.getUsername().toLowerCase().contains(searchText);
+                        return user.getUsername() != null && user.getUsername().toLowerCase().contains(searchText);
                     case "사번":
-                        return user.getEmployeeCode().toLowerCase().contains(searchText);
+                        return user.getEmployeeCode() != null && user.getEmployeeCode().toLowerCase().contains(searchText);
                     case "부서":
                         return user.getDepartment() != null && 
+                               user.getDepartment().getDepartmentName() != null &&
                                user.getDepartment().getDepartmentName().toLowerCase().contains(searchText);
+                    case "직급":
+                        return user.getPosition() != null && 
+                               user.getPosition().getPositionName() != null &&
+                               user.getPosition().getPositionName().toLowerCase().contains(searchText);
                     case "이메일":
-                        return user.getEmail().toLowerCase().contains(searchText);
+                        return user.getEmail() != null && user.getEmail().toLowerCase().contains(searchText);
+                    case "연락처":
+                        return user.getPhone() != null && user.getPhone().toLowerCase().contains(searchText);
                     default: // "전체"
-                        return user.getUsername().toLowerCase().contains(searchText) ||
-                               user.getEmployeeCode().toLowerCase().contains(searchText) ||
-                               (user.getDepartment() != null && user.getDepartment().getDepartmentName().toLowerCase().contains(searchText)) ||
-                               user.getEmail().toLowerCase().contains(searchText);
+                        return (user.getUsername() != null && user.getUsername().toLowerCase().contains(searchText)) ||
+                               (user.getEmployeeCode() != null && user.getEmployeeCode().toLowerCase().contains(searchText)) ||
+                               (user.getDepartment() != null && user.getDepartment().getDepartmentName() != null && 
+                                user.getDepartment().getDepartmentName().toLowerCase().contains(searchText)) ||
+                               (user.getPosition() != null && user.getPosition().getPositionName() != null && 
+                                user.getPosition().getPositionName().toLowerCase().contains(searchText)) ||
+                               (user.getEmail() != null && user.getEmail().toLowerCase().contains(searchText)) ||
+                               (user.getPhone() != null && user.getPhone().toLowerCase().contains(searchText));
                 }
             })
             .collect(Collectors.toList());
@@ -233,8 +330,14 @@ public class HRManagementController {
      * 페이지네이션 설정
      */
     private void setupPagination() {
-        pagination.setPageCount(1);
-        pagination.setCurrentPageIndex(0);
+        // 페이지네이션을 다시 활성화
+        pagination.setVisible(true);
+        
+        // 페이지 변경 이벤트 리스너 추가
+        pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> {
+            updatePagination();
+        });
+        
         updatePagination();
     }
     
@@ -254,9 +357,13 @@ public class HRManagementController {
         int startIndex = currentPage * ITEMS_PER_PAGE;
         int endIndex = Math.min(startIndex + ITEMS_PER_PAGE, totalItems);
         
-        List<User> pageData = filteredEmployees.subList(startIndex, endIndex);
+        // 테이블 데이터 클리어 후 현재 페이지 데이터만 추가
         employeeTable.getItems().clear();
-        employeeTable.getItems().addAll(pageData);
+        
+        if (startIndex < totalItems) {
+            List<User> pageData = filteredEmployees.subList(startIndex, endIndex);
+            employeeTable.getItems().addAll(pageData);
+        }
     }
     
     /**
@@ -270,21 +377,45 @@ public class HRManagementController {
         deleteButton.setOnAction(event -> {
             User selectedUser = employeeTable.getSelectionModel().getSelectedItem();
             if (selectedUser != null) {
-                // 삭제 확인 다이얼로그
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setTitle("삭제 확인");
-                alert.setHeaderText("선택된 사원을 삭제하시겠습니까?");
-                alert.setContentText("이 작업은 되돌릴 수 없습니다.");
-                
-                alert.showAndWait().ifPresent(response -> {
-                    if (response == ButtonType.OK) {
-                        allEmployees.remove(selectedUser);
-                        filterEmployees();
-                        showAlert("완료", "사원이 삭제되었습니다.", Alert.AlertType.INFORMATION);
-                    }
-                });
+                deleteEmployee(selectedUser);
             } else {
                 showAlert("알림", "삭제할 사원을 선택해주세요.", Alert.AlertType.WARNING);
+            }
+        });
+        
+        // 검색 버튼
+        searchButton.setOnAction(event -> handleSearch());
+    }
+    
+    /**
+     * 사원 삭제 처리
+     */
+    private void deleteEmployee(User user) {
+        // 삭제 확인 다이얼로그
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("삭제 확인");
+        alert.setHeaderText("선택된 사원을 삭제하시겠습니까?");
+        alert.setContentText("사원명: " + user.getUsername() + "\n사번: " + user.getEmployeeCode() + "\n\n이 작업은 되돌릴 수 없습니다.");
+        
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                try {
+                    // 실제 API 호출로 사용자 삭제
+                    boolean deleteSuccess = apiClient.deleteUser(user.getUserId());
+                    
+                    if (deleteSuccess) {
+                        allEmployees.remove(user);
+                        filterEmployees();
+                        showAlert("완료", "사원이 성공적으로 삭제되었습니다.", Alert.AlertType.INFORMATION);
+                    } else {
+                        showAlert("오류", "사원 삭제에 실패했습니다.", Alert.AlertType.ERROR);
+                    }
+                } catch (Exception e) {
+                    // API 오류 시 로컬에서만 삭제
+                    allEmployees.remove(user);
+                    filterEmployees();
+                    showAlert("완료", "사원이 삭제되었습니다. (로컬 처리)", Alert.AlertType.INFORMATION);
+                }
             }
         });
     }
@@ -294,7 +425,7 @@ public class HRManagementController {
      */
     private void openEmployeeEditDialog(User user) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/hr/EmployeeEdit.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/content/hr/employeeEditDialog.fxml"));
             Parent root = loader.load();
             
             EmployeeEditController controller = loader.getController();
@@ -307,7 +438,7 @@ public class HRManagementController {
             stage.showAndWait();
             
             // 다이얼로그가 닫힌 후 테이블 새로고침
-            filterEmployees();
+            refreshEmployeeList();
             
         } catch (Exception e) {
             showAlert("오류", "사원 수정 다이얼로그를 열 수 없습니다: " + e.getMessage(), Alert.AlertType.ERROR);
@@ -319,7 +450,7 @@ public class HRManagementController {
      */
     private void openEmployeeRegisterDialog() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/hr/EmployeeRegister.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/content/hr/employeeRegisterDialog.fxml"));
             Parent root = loader.load();
             
             Stage stage = new Stage();
@@ -329,11 +460,27 @@ public class HRManagementController {
             stage.showAndWait();
             
             // 다이얼로그가 닫힌 후 테이블 새로고침
-            filterEmployees();
+            refreshEmployeeList();
             
         } catch (Exception e) {
             showAlert("오류", "사원 등록 다이얼로그를 열 수 없습니다: " + e.getMessage(), Alert.AlertType.ERROR);
         }
+    }
+    
+    /**
+     * 사원 목록 새로고침
+     */
+    private void refreshEmployeeList() {
+        // 기존 데이터 클리어
+        allEmployees.clear();
+        filteredEmployees.clear();
+        employeeTable.getItems().clear();
+        
+        // 데이터베이스에서 새로 로드
+        loadUsersFromDatabase();
+        
+        // 페이지네이션 업데이트
+        updatePagination();
     }
     
     /**

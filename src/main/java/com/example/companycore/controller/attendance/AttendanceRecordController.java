@@ -1,11 +1,18 @@
 package com.example.companycore.controller.attendance;
 
+import com.example.companycore.model.entity.User;
+import com.example.companycore.service.UserApiClient;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Pagination;
+import javafx.scene.layout.Region;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import com.example.companycore.model.dto.AttendanceDto;
 import com.example.companycore.model.entity.Attendance;
 import com.example.companycore.service.ApiClient;
@@ -20,42 +27,34 @@ public class AttendanceRecordController implements Initializable {
     private VBox tableData;
     
     @FXML
-    private Button page1Button;
-    
-    @FXML
-    private Button page2Button;
-    
-    @FXML
-    private Button page3Button;
-    
-    @FXML
-    private Button page4Button;
-    
-    @FXML
-    private Button page40Button;
-    
-    @FXML
-    private Button prevButton;
-    
-    @FXML
-    private Button nextButton;
+    private Pagination pagination;
     
     private int currentPage = 1;
-    private int totalPages = 40;
+    private int totalPages = 1;
+    private int visibleRowCount = 10;
     private List<AttendanceDto> attendanceRecords = new ArrayList<>();
+    private ObservableList<AttendanceDto> viewData = FXCollections.observableArrayList();
     private ApiClient apiClient = ApiClient.getInstance();
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        setupPaginationHandlers();
+        System.out.println("=== AttendanceRecordController 초기화 시작 ===");
+        setupPagination();
         loadAttendanceRecordsFromServer();
-        loadPageData(currentPage);
+        updatePagination();
+        System.out.println("=== AttendanceRecordController 초기화 완료 ===");
     }
     
     private void loadAttendanceRecordsFromServer() {
         try {
             // 실제 API 호출
-            List<Attendance> attendanceList = apiClient.getUserAttendance(1L);
+            User currentUser = UserApiClient.getInstance().getCurrentUser();
+//            if (currentUser == null) {
+//                showAlert(Alert.AlertType.ERROR, "오류", "사용자 정보를 가져올 수 없습니다.");
+//                return;
+//            }
+            long userId = currentUser.getUserId();
+            List<Attendance> attendanceList = apiClient.getUserAttendance(userId);
             
             // Attendance 엔티티를 AttendanceDto로 변환
             attendanceRecords.clear();
@@ -63,6 +62,9 @@ public class AttendanceRecordController implements Initializable {
                 AttendanceDto dto = convertToDto(attendance);
                 attendanceRecords.add(dto);
             }
+            
+            viewData.clear();
+            viewData.addAll(attendanceRecords);
             
             System.out.println("출근 기록 데이터 로드 완료: " + attendanceRecords.size() + "개");
         } catch (Exception e) {
@@ -83,52 +85,81 @@ public class AttendanceRecordController implements Initializable {
         );
     }
     
-    private void setupPaginationHandlers() {
-        // 페이지 버튼 클릭 이벤트
-        page1Button.setOnAction(e -> loadPage(1));
-        page2Button.setOnAction(e -> loadPage(2));
-        page3Button.setOnAction(e -> loadPage(3));
-        page4Button.setOnAction(e -> loadPage(4));
-        page40Button.setOnAction(e -> loadPage(40));
-        
-        // 이전/다음 버튼 클릭 이벤트
-        prevButton.setOnAction(e -> {
-            if (currentPage > 1) {
-                loadPage(currentPage - 1);
-            }
-        });
-        
-        nextButton.setOnAction(e -> {
-            if (currentPage < totalPages) {
-                loadPage(currentPage + 1);
-            }
-        });
+    /**
+     * 페이지네이션 UI를 구성하고 설정
+     */
+    private void setupPagination() {
+        System.out.println("=== 페이지네이션 설정 시작 ===");
+        pagination.setVisible(true);
+        pagination.setPageCount(1);
+        pagination.setCurrentPageIndex(0);
+        pagination.setPageFactory(this::createPage);
+        System.out.println("페이지네이션 설정 완료 - visible: " + pagination.isVisible() + ", pageCount: " + pagination.getPageCount());
+        updatePagination();
     }
     
-    private void loadPage(int page) {
-        currentPage = page;
-        loadPageData(page);
-        updatePaginationUI();
-    }
-    
-    private void loadPageData(int page) {
-        // 테이블 데이터를 클리어
-        tableData.getChildren().clear();
+    /**
+     * 페이지네이션 업데이트
+     */
+    private void updatePagination() {
+        int totalPages = (int) Math.ceil((double) viewData.size() / visibleRowCount);
+        pagination.setPageCount(Math.max(1, totalPages));
         
-        // 페이지네이션 로직
-        int pageSize = 10;
-        int startIndex = (page - 1) * pageSize;
-        int endIndex = Math.min(startIndex + pageSize, attendanceRecords.size());
+        // 페이지네이션을 명시적으로 보이도록 설정
+        pagination.setVisible(true);
         
-        if (startIndex < attendanceRecords.size()) {
-            List<AttendanceDto> pageData = attendanceRecords.subList(startIndex, endIndex);
-            for (AttendanceDto record : pageData) {
-                addAttendanceRow(record);
-            }
+        // 현재 페이지가 총 페이지 수를 초과하면 마지막 페이지로 설정
+        if (pagination.getCurrentPageIndex() >= totalPages) {
+            pagination.setCurrentPageIndex(Math.max(0, totalPages - 1));
         }
         
-        // 빈 행으로 채우기
-        int remainingRows = 10 - (endIndex - startIndex);
+        // 첫 페이지 데이터 로드
+        if (viewData.size() > 0) {
+            int startIndex = 0;
+            int endIndex = Math.min(visibleRowCount, viewData.size());
+            List<AttendanceDto> pageData = viewData.subList(startIndex, endIndex);
+            loadPageData(pageData);
+            System.out.println("페이지네이션 업데이트: " + pageData.size() + "개 항목 (전체: " + viewData.size() + "개)");
+        } else {
+            tableData.getChildren().clear();
+            System.out.println("페이지네이션 업데이트: 빈 목록");
+        }
+    }
+    
+    /**
+     * 페이지 생성
+     */
+    private Region createPage(int pageIndex) {
+        // 페이지 인덱스가 유효한지 확인
+        int totalPages = (int) Math.ceil((double) viewData.size() / visibleRowCount);
+        if (pageIndex >= totalPages) {
+            return new Region();
+        }
+        
+        // 현재 페이지의 데이터 계산
+        int startIndex = pageIndex * visibleRowCount;
+        int endIndex = Math.min(startIndex + visibleRowCount, viewData.size());
+        
+        // 현재 페이지의 데이터만 테이블에 설정
+        List<AttendanceDto> pageData = viewData.subList(startIndex, endIndex);
+        loadPageData(pageData);
+        
+        System.out.println("페이지 " + (pageIndex + 1) + " 로드: " + pageData.size() + "개 항목 (전체: " + viewData.size() + "개)");
+        
+        return new Region();
+    }
+    
+    private void loadPageData(List<AttendanceDto> pageData) {
+        // 기존 데이터 클리어
+        tableData.getChildren().clear();
+        
+        // 현재 페이지의 데이터만 표시
+        for (AttendanceDto record : pageData) {
+            addAttendanceRow(record);
+        }
+        
+        // 빈 행으로 채우기 (10개 행 고정)
+        int remainingRows = visibleRowCount - pageData.size();
         for (int i = 0; i < remainingRows; i++) {
             addTableRow("", "", "", "", "#f8f9fa", "#6c757d");
         }
@@ -193,7 +224,8 @@ public class AttendanceRecordController implements Initializable {
     
     private void addTableRow(String date, String clockIn, String clockOut, String status, String buttonColor, String textColor) {
         HBox row = new HBox();
-        row.setStyle("-fx-padding: 15 25; -fx-border-color: #e9ecef; -fx-border-width: 0 0 1 0;");
+        row.setAlignment(javafx.geometry.Pos.CENTER); // 세로 중앙 정렬 추가
+        row.setStyle("-fx-padding: 10; -fx-border-color: #e9ecef; -fx-border-width: 0 0 1 0; -fx-min-height: 50; -fx-pref-height: 50;");
         
         Label dateLabel = new Label(date);
         dateLabel.setStyle("-fx-alignment: CENTER; -fx-min-width: 280; -fx-pref-width: 280;");
@@ -204,38 +236,21 @@ public class AttendanceRecordController implements Initializable {
         Label clockOutLabel = new Label(clockOut);
         clockOutLabel.setStyle("-fx-alignment: CENTER; -fx-min-width: 280; -fx-pref-width: 280;");
         
-        Button statusButton = new Button(status);
-        statusButton.setStyle(String.format("-fx-background-color: %s; -fx-text-fill: %s; -fx-font-weight: bold; -fx-padding: 6 15; -fx-alignment: CENTER; -fx-cursor: hand; -fx-min-width: 160; -fx-pref-width: 160;", buttonColor, textColor));
+        // 빈 행인지 확인 (모든 필드가 비어있는 경우)
+        boolean isEmptyRow = date.isEmpty() && clockIn.isEmpty() && clockOut.isEmpty() && status.isEmpty();
         
-        row.getChildren().addAll(dateLabel, clockInLabel, clockOutLabel, statusButton);
+        if (isEmptyRow) {
+            // 빈 행인 경우 상태 버튼을 숨김
+            row.getChildren().addAll(dateLabel, clockInLabel, clockOutLabel);
+        } else {
+            // 데이터가 있는 행인 경우 상태 버튼 표시
+            Button statusButton = new Button(status);
+            statusButton.setStyle(String.format("-fx-background-color: %s; -fx-text-fill: %s; -fx-font-weight: bold; -fx-padding: 6 15; -fx-alignment: CENTER; -fx-cursor: hand; -fx-min-width: 160; -fx-pref-width: 160;", buttonColor, textColor));
+            row.getChildren().addAll(dateLabel, clockInLabel, clockOutLabel, statusButton);
+        }
+        
         tableData.getChildren().add(row);
     }
     
-    private void updatePaginationUI() {
-        // 모든 페이지 버튼 스타일 초기화
-        page1Button.setStyle("-fx-background-color: transparent; -fx-text-fill: #6c757d; -fx-font-weight: bold; -fx-padding: 8 12; -fx-cursor: hand;");
-        page2Button.setStyle("-fx-background-color: transparent; -fx-text-fill: #6c757d; -fx-font-weight: bold; -fx-padding: 8 12; -fx-cursor: hand;");
-        page3Button.setStyle("-fx-background-color: transparent; -fx-text-fill: #6c757d; -fx-font-weight: bold; -fx-padding: 8 12; -fx-cursor: hand;");
-        page4Button.setStyle("-fx-background-color: transparent; -fx-text-fill: #6c757d; -fx-font-weight: bold; -fx-padding: 8 12; -fx-cursor: hand;");
-        page40Button.setStyle("-fx-background-color: transparent; -fx-text-fill: #6c757d; -fx-font-weight: bold; -fx-padding: 8 12; -fx-cursor: hand;");
-        
-        // 현재 페이지 버튼 하이라이트
-        switch (currentPage) {
-            case 1:
-                page1Button.setStyle("-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 12; -fx-cursor: hand;");
-                break;
-            case 2:
-                page2Button.setStyle("-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 12; -fx-cursor: hand;");
-                break;
-            case 3:
-                page3Button.setStyle("-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 12; -fx-cursor: hand;");
-                break;
-            case 4:
-                page4Button.setStyle("-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 12; -fx-cursor: hand;");
-                break;
-            case 40:
-                page40Button.setStyle("-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 12; -fx-cursor: hand;");
-                break;
-        }
-    }
+
 } 

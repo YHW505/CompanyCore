@@ -13,6 +13,26 @@ public class Message {
     private final StringProperty content;
     private final BooleanProperty isRead;
     private final ObjectProperty<LocalDateTime> sentAt;
+    
+    // 첨부파일 관련 필드들
+    private final StringProperty attachmentContentType;
+    private final LongProperty attachmentSize;
+    private final StringProperty attachmentContent;
+    private final StringProperty attachmentFilename;
+    
+    // 사용자 정보 필드들
+    private final StringProperty senderName;
+    private final StringProperty senderEmployeeCode;
+    private final StringProperty senderPositionName;
+    private final StringProperty senderDepartmentName;
+    private final StringProperty senderEmail;
+    private final StringProperty receiverName;
+    private final StringProperty receiverEmployeeCode;
+    private final StringProperty receiverPositionName;
+    private final StringProperty receiverDepartmentName;
+    private final StringProperty receiverEmail;
+
+
 
     public Message() {
         this.messageId = new SimpleIntegerProperty();
@@ -23,6 +43,24 @@ public class Message {
         this.content = new SimpleStringProperty();
         this.isRead = new SimpleBooleanProperty(false);
         this.sentAt = new SimpleObjectProperty<>();
+        
+        // 첨부파일 관련 필드들 초기화
+        this.attachmentContentType = new SimpleStringProperty();
+        this.attachmentSize = new SimpleLongProperty();
+        this.attachmentContent = new SimpleStringProperty();
+        this.attachmentFilename = new SimpleStringProperty();
+        
+        // 사용자 정보 필드들 초기화
+        this.senderName = new SimpleStringProperty();
+        this.senderEmployeeCode = new SimpleStringProperty();
+        this.senderPositionName = new SimpleStringProperty();
+        this.senderDepartmentName = new SimpleStringProperty();
+        this.senderEmail = new SimpleStringProperty();
+        this.receiverName = new SimpleStringProperty();
+        this.receiverEmployeeCode = new SimpleStringProperty();
+        this.receiverPositionName = new SimpleStringProperty();
+        this.receiverDepartmentName = new SimpleStringProperty();
+        this.receiverEmail = new SimpleStringProperty();
     }
 
     public Message(Integer messageId, Long senderId, Long receiverId, MessageType messageType,
@@ -35,6 +73,24 @@ public class Message {
         this.content = new SimpleStringProperty(content);
         this.isRead = new SimpleBooleanProperty(isRead);
         this.sentAt = new SimpleObjectProperty<>(sentAt);
+        
+        // 첨부파일 관련 필드들 초기화
+        this.attachmentContentType = new SimpleStringProperty();
+        this.attachmentSize = new SimpleLongProperty();
+        this.attachmentContent = new SimpleStringProperty();
+        this.attachmentFilename = new SimpleStringProperty();
+        
+        // 사용자 정보 필드들 초기화
+        this.senderName = new SimpleStringProperty();
+        this.senderEmployeeCode = new SimpleStringProperty();
+        this.senderPositionName = new SimpleStringProperty();
+        this.senderDepartmentName = new SimpleStringProperty();
+        this.senderEmail = new SimpleStringProperty();
+        this.receiverName = new SimpleStringProperty();
+        this.receiverEmployeeCode = new SimpleStringProperty();
+        this.receiverPositionName = new SimpleStringProperty();
+        this.receiverDepartmentName = new SimpleStringProperty();
+        this.receiverEmail = new SimpleStringProperty();
     }
 
     // MessageId
@@ -51,6 +107,17 @@ public class Message {
     public Long getReceiverId() { return receiverId.get(); }
     public void setReceiverId(Long receiverId) { this.receiverId.set(receiverId); }
     public LongProperty receiverIdProperty() { return receiverId; }
+
+    // ReceiverEmail
+    public String getReceiverEmail() { return receiverEmail.get(); }
+    public void setReceiverEmail(String receiverEmail) { this.receiverEmail.set(receiverEmail); }
+    public StringProperty receiverEmailProperty() { return receiverEmail; }
+
+    // SenderEmail
+    public String getSenderEmail() { return senderEmail.get(); }
+    public void setSenderEmail(String senderEmail) { this.senderEmail.set(senderEmail); }
+    public StringProperty senderEmailProperty() { return senderEmail; }
+
 
     // MessageType
     public MessageType getMessageType() { return messageType.get(); }
@@ -77,6 +144,57 @@ public class Message {
     public void setSentAt(LocalDateTime sentAt) { this.sentAt.set(sentAt); }
     public ObjectProperty<LocalDateTime> sentAtProperty() { return sentAt; }
 
+    // 첨부파일 관련 Getter/Setter
+    public String getAttachmentContentType() { return attachmentContentType.get(); }
+    public void setAttachmentContentType(String attachmentContentType) { this.attachmentContentType.set(attachmentContentType); }
+    public StringProperty attachmentContentTypeProperty() { return attachmentContentType; }
+
+    public Long getAttachmentSize() { return attachmentSize.get(); }
+    public void setAttachmentSize(Long attachmentSize) { this.attachmentSize.set(attachmentSize); }
+    public LongProperty attachmentSizeProperty() { return attachmentSize; }
+
+    public String getAttachmentContent() { return attachmentContent.get(); }
+    public void setAttachmentContent(String attachmentContent) { this.attachmentContent.set(attachmentContent); }
+    public StringProperty attachmentContentProperty() { return attachmentContent; }
+
+    public String getAttachmentFilename() { return attachmentFilename.get(); }
+    public void setAttachmentFilename(String attachmentFilename) { this.attachmentFilename.set(attachmentFilename); }
+    public StringProperty attachmentFilenameProperty() { return attachmentFilename; }
+
+    // 사용자 정보 관련 Getter/Setter
+    public String getSenderName() { return senderName.get(); }
+    public void setSenderName(String senderName) { this.senderName.set(senderName); }
+    public StringProperty senderNameProperty() { return senderName; }
+
+    public String getSenderEmployeeCode() { return senderEmployeeCode.get(); }
+    public void setSenderEmployeeCode(String senderEmployeeCode) { this.senderEmployeeCode.set(senderEmployeeCode); }
+    public StringProperty senderEmployeeCodeProperty() { return senderEmployeeCode; }
+
+    public String getSenderPositionName() { return senderPositionName.get(); }
+    public void setSenderPositionName(String senderPositionName) { this.senderPositionName.set(senderPositionName); }
+    public StringProperty senderPositionNameProperty() { return senderPositionName; }
+
+    public String getSenderDepartmentName() { return senderDepartmentName.get(); }
+    public void setSenderDepartmentName(String senderDepartmentName) { this.senderDepartmentName.set(senderDepartmentName); }
+    public StringProperty senderDepartmentNameProperty() { return senderDepartmentName; }
+
+    public String getReceiverName() { return receiverName.get(); }
+    public void setReceiverName(String receiverName) { this.receiverName.set(receiverName); }
+    public StringProperty receiverNameProperty() { return receiverName; }
+
+    public String getReceiverEmployeeCode() { return receiverEmployeeCode.get(); }
+    public void setReceiverEmployeeCode(String receiverEmployeeCode) { this.receiverEmployeeCode.set(receiverEmployeeCode); }
+    public StringProperty receiverEmployeeCodeProperty() { return receiverEmployeeCode; }
+
+    public String getReceiverPositionName() { return receiverPositionName.get(); }
+    public void setReceiverPositionName(String receiverPositionName) { this.receiverPositionName.set(receiverPositionName); }
+    public StringProperty receiverPositionNameProperty() { return receiverPositionName; }
+
+    public String getReceiverDepartmentName() { return receiverDepartmentName.get(); }
+    public void setReceiverDepartmentName(String receiverDepartmentName) { this.receiverDepartmentName.set(receiverDepartmentName); }
+    public StringProperty receiverDepartmentNameProperty() { return receiverDepartmentName; }
+
+
     @Override
     public String toString() {
         return "Message{" +
@@ -88,6 +206,10 @@ public class Message {
                 ", content='" + content.get() + '\'' +
                 ", isRead=" + isRead.get() +
                 ", sentAt=" + sentAt.get() +
+                ", hasAttachment=" + (attachmentContent.get() != null && !attachmentContent.get().isEmpty()) +
+                ", attachmentSize=" + attachmentSize.get() +
+                ", senderName='" + senderName.get() + '\'' +
+                ", receiverName='" + receiverName.get() + '\'' +
                 '}';
     }
 }
