@@ -7,6 +7,7 @@ import com.example.companycore.model.entity.Enum.TaskType;
 import com.example.companycore.service.ApiClient;
 import com.example.companycore.service.MeetingApiClient;
 import com.example.companycore.service.TaskApiClient;
+import com.example.companycore.service.UserApiClient;
 import com.example.companycore.util.FileUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -26,6 +27,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
+
 import com.example.companycore.model.entity.User;
 
 /**
@@ -55,6 +58,8 @@ public class MeetingFormController {
     @FXML private TextArea scheduleContentArea1;
     @FXML private Button addParticipantBtn1;
     @FXML private ListView<String> participantList1;
+
+    @FXML private List<Long> selectedUsersForUpload;
 
     private ApiClient apiClient;
     private MeetingApiClient meetingApiClient;
@@ -294,14 +299,15 @@ public class MeetingFormController {
                 TaskDto taskDto = new TaskDto();
                 taskDto.setTitle(titleField.getText().trim());
                 taskDto.setDescription(scheduleContentArea1.getText());
-                taskDto.setStatus(TaskStatus.TODO);
-                taskDto.setTaskType(TaskType.TASK);
+//                taskDto.setStatus(TaskStatus.TODO);
+                taskDto.setTaskType("TASK");
                 taskDto.setAssignedBy(userId);
                 taskDto.setStartDate(startDatePicker1.getValue());
                 taskDto.setEndDate(endDatePicker1.getValue());
+                taskDto.setAssigneeIds(selectedUsersForUpload);
+                System.out.println(taskDto);
 
-
-                taskApiClient.createTask(taskDto);
+                taskApiClient.createTask(taskDto, currentUser.getUserId());
 
 
 
@@ -448,6 +454,7 @@ public class MeetingFormController {
             
             // 현재 사용자의 부서명 가져오기
             Integer currentUserDepartmentId = currentUser.getDepartmentId();
+            System.out.println("currentUserDepartmentId ========= " + currentUserDepartmentId);
 //            if (currentUserDepartment == null || currentUserDepartment.trim().isEmpty()) {
 //                new Alert(Alert.AlertType.ERROR, "부서 정보를 가져올 수 없습니다.").showAndWait();
 //                return;
@@ -471,7 +478,7 @@ public class MeetingFormController {
                 userDisplayList.add(userDisplay);
                 availableUsers.add(user);
             }
-            
+
             // 참여자 선택 다이얼로그 생성
             Dialog<List<User>> dialog = new Dialog<>();
             dialog.setTitle("참여자 선택");
@@ -503,6 +510,10 @@ public class MeetingFormController {
                             selectedUsers.add(availableUsers.get(i));
                         }
                     }
+                    selectedUsersForUpload = selectedUsers.stream()
+                            .map(User::getUserId)
+                            .collect(Collectors.toList());
+                    System.out.println(selectedUsersForUpload);
                     return selectedUsers;
                 }
                 return null;

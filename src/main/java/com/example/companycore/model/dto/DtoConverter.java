@@ -68,15 +68,16 @@ public class DtoConverter {
         return new TaskDto(
             task.getTaskId(),
             task.getAssignedBy(),
-            task.getAssignedTo(),
-            task.getTaskType(),
+            task.getAssignedTo(), // Add assignedTo
+            task.getTaskType() != null ? task.getTaskType().toString() : null,
             task.getTitle(),
             task.getDescription(),
             task.getAttachment(),
             task.getStatus(),
             task.getStartDate(),
             task.getEndDate(),
-            task.getCreatedAt()
+            task.getCreatedAt(),
+            task.getAssigneeIds() // Add assigneeIds
         );
     }
 
@@ -90,7 +91,11 @@ public class DtoConverter {
         task.setTaskId(taskDto.getTaskId());
         task.setAssignedBy(taskDto.getAssignedBy());
         task.setAssignedTo(taskDto.getAssignedTo());
-        task.setTaskType(taskDto.getTaskType());
+        if (taskDto.getTaskType() != null) {
+            task.setTaskType(taskDto.getTaskType());
+        } else {
+            task.setTaskType(null); // Or handle as appropriate for your application
+        }
         task.setTitle(taskDto.getTitle());
         task.setDescription(taskDto.getDescription());
         task.setAttachment(taskDto.getAttachment());
@@ -98,6 +103,7 @@ public class DtoConverter {
         task.setStartDate(taskDto.getStartDate());
         task.setEndDate(taskDto.getEndDate());
         task.setCreatedAt(taskDto.getCreatedAt());
+        task.setAssigneeIds(taskDto.getAssigneeIds()); // Add assigneeIds
         
         return task;
     }

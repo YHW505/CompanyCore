@@ -5,12 +5,13 @@ import com.example.companycore.model.entity.Enum.TaskType;
 import javafx.beans.property.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class Task {
     private final IntegerProperty taskId;
     private final LongProperty assignedBy;
-    private final LongProperty assignedTo;
-    private final ObjectProperty<TaskType> taskType;
+    private final ObjectProperty<List<Long>> assignedTo;
+    private final StringProperty taskType;
     private final StringProperty title;
     private final StringProperty description;
     private final StringProperty attachment;
@@ -18,12 +19,13 @@ public class Task {
     private final ObjectProperty<LocalDate> startDate;
     private final ObjectProperty<LocalDate> endDate;
     private final ObjectProperty<LocalDateTime> createdAt;
+    private final ObjectProperty<List<Long>> assigneeIds;
 
     public Task() {
         this.taskId = new SimpleIntegerProperty();
         this.assignedBy = new SimpleLongProperty();
-        this.assignedTo = new SimpleLongProperty();
-        this.taskType = new SimpleObjectProperty<>();
+        this.assignedTo = new SimpleObjectProperty<>();
+        this.taskType = new SimpleStringProperty();
         this.title = new SimpleStringProperty();
         this.description = new SimpleStringProperty();
         this.attachment = new SimpleStringProperty();
@@ -31,15 +33,16 @@ public class Task {
         this.startDate = new SimpleObjectProperty<>();
         this.endDate = new SimpleObjectProperty<>();
         this.createdAt = new SimpleObjectProperty<>();
+        this.assigneeIds = new SimpleObjectProperty<>();
     }
 
-    public Task(Integer taskId, Long assignedBy, Long assignedTo, TaskType taskType, 
+    public Task(Integer taskId, Long assignedBy, List<Long> assignedTo, String taskType,
                 String title, String description, String attachment, TaskStatus status,
-                LocalDate startDate, LocalDate endDate, LocalDateTime createdAt) {
+                LocalDate startDate, LocalDate endDate, LocalDateTime createdAt, List<Long> assigneeIds) {
         this.taskId = new SimpleIntegerProperty(taskId);
         this.assignedBy = new SimpleLongProperty(assignedBy);
-        this.assignedTo = new SimpleLongProperty(assignedTo);
-        this.taskType = new SimpleObjectProperty<>(taskType);
+        this.assignedTo = new SimpleObjectProperty<>(assignedTo);
+        this.taskType = new SimpleStringProperty(taskType);
         this.title = new SimpleStringProperty(title);
         this.description = new SimpleStringProperty(description);
         this.attachment = new SimpleStringProperty(attachment);
@@ -47,6 +50,7 @@ public class Task {
         this.startDate = new SimpleObjectProperty<>(startDate);
         this.endDate = new SimpleObjectProperty<>(endDate);
         this.createdAt = new SimpleObjectProperty<>(createdAt);
+        this.assigneeIds = new SimpleObjectProperty<>(assigneeIds);
     }
 
     // TaskId
@@ -60,14 +64,14 @@ public class Task {
     public LongProperty assignedByProperty() { return assignedBy; }
 
     // AssignedTo
-    public Long getAssignedTo() { return assignedTo.get(); }
-    public void setAssignedTo(Long assignedTo) { this.assignedTo.set(assignedTo); }
-    public LongProperty assignedToProperty() { return assignedTo; }
+    public List<Long> getAssignedTo() { return assignedTo.get(); }
+    public void setAssignedTo(List<Long> assignedTo) { this.assignedTo.set(assignedTo); }
+    public ObjectProperty<List<Long>> assignedToProperty() { return assignedTo; }
 
     // TaskType
-    public TaskType getTaskType() { return taskType.get(); }
-    public void setTaskType(TaskType taskType) { this.taskType.set(taskType); }
-    public ObjectProperty<TaskType> taskTypeProperty() { return taskType; }
+    public String getTaskType() { return taskType.get(); }
+    public void setTaskType(String taskType) { this.taskType.set(taskType); }
+    public StringProperty taskTypeProperty() { return taskType; }
 
     // Title
     public String getTitle() { return title.get(); }
@@ -104,17 +108,22 @@ public class Task {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt.set(createdAt); }
     public ObjectProperty<LocalDateTime> createdAtProperty() { return createdAt; }
 
+    // AssigneeIds
+    public List<Long> getAssigneeIds() { return assigneeIds.get(); }
+    public void setAssigneeIds(List<Long> assigneeIds) { this.assigneeIds.set(assigneeIds); }
+    public ObjectProperty<List<Long>> assigneeIdsProperty() { return assigneeIds; }
+
     @Override
     public String toString() {
-        return "Task{" +
-                "taskId=" + taskId.get() +
-                ", assignedBy=" + assignedBy.get() +
-                ", assignedTo=" + assignedTo.get() +
-                ", taskType=" + taskType.get() +
-                ", title='" + title.get() + '\'' +
-                ", status=" + status.get() +
-                ", startDate=" + startDate.get() +
-                ", endDate=" + endDate.get() +
+        return "Task{"
+                + "taskId=" + taskId.get() + 
+                ", assignedBy=" + assignedBy.get() + 
+                ", assignedTo=" + assignedTo.get() + 
+                ", taskType='" + taskType.get() + "'" + 
+                ", title='" + title.get() + "'" + 
+                ", status=" + status.get() + 
+                ", startDate=" + startDate.get() + 
+                ", endDate=" + endDate.get() + 
                 '}';
     }
 }
