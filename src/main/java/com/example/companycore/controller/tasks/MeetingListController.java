@@ -270,60 +270,71 @@ public class MeetingListController {
     void loadDataFromServer() {
         // 로딩 인디케이터 표시
         showLoading(true);
-        
+
         // 백그라운드에서 데이터 로드
         javafx.concurrent.Task<Void> loadTask = new javafx.concurrent.Task<>() {
             @Override
             protected Void call() throws Exception {
+                // 현재 사용자 정보 및 부서 ID 가져오기
+                ApiClient apiClient = ApiClient.getInstance();
+                com.example.companycore.model.entity.User currentUser = apiClient.getCurrentUser();
+                String userDepartmentName = (currentUser != null) ? currentUser.getDepartmentName() : null;
+
+                if (userDepartmentName == null) {
+                    System.out.println("사용자 부서 ID를 찾을 수 없어 회의록을 필터링할 수 없습니다.");
+                    javafx.application.Platform.runLater(() -> {
+                        fullData.clear();
+                        viewData.clear();
+                        updatePagination();
+                        showLoading(false);
+                    });
+                    return null;
+                }
+
                 MeetingApiClient meetingApiClient = MeetingApiClient.getInstance();
-                // 간단한 API로 데이터 로드 (성능 최적화)
                 List<MeetingApiClient.MeetingDto> meetings = meetingApiClient.getAllMeetingsSimple();
-                
+
+                final List<MeetingItem> filteredMeetings = new ArrayList<>();
+                if (meetings != null) {
+                    for (MeetingApiClient.MeetingDto meetingDto : meetings) {
+                        // 사용자의 부서 ID와 회의록의 부서 ID가 일치하는 경우에만 추가
+                        if (userDepartmentName.equals(meetingDto.getDepartment())) {
+                            String title = meetingDto.getTitle() != null ? meetingDto.getTitle() : "제목 없음";
+                            String department = meetingDto.getDepartment() != null ? meetingDto.getDepartment() : "Unknown";
+                            String author = meetingDto.getAuthor() != null ? meetingDto.getAuthor() : "Unknown";
+                            String date = meetingDto.getStartTime() != null ?
+                                    meetingDto.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) : "Unknown";
+
+                            MeetingItem item = new MeetingItem(
+                                    meetingDto.getMeetingId(),
+                                    title,
+                                    department,
+                                    author,
+                                    date,
+                                    meetingDto.getDescription() != null ? meetingDto.getDescription() : "",
+                                    meetingDto.getLocation() != null ? meetingDto.getLocation() : "",
+                                    meetingDto.getAttachmentContent() != null ? meetingDto.getAttachmentContent() : "",
+                                    meetingDto.getAttachmentPath() != null ? meetingDto.getAttachmentPath() : "",
+                                    meetingDto.getAttachmentSize(),
+                                    meetingDto.getAttachmentFilename() != null ? meetingDto.getAttachmentFilename() : "",
+                                    meetingDto.getAttachmentContentType() != null ? meetingDto.getAttachmentContentType() : ""
+                            );
+                            filteredMeetings.add(item);
+                        }
+                    }
+                }
+
                 // UI 업데이트는 Platform.runLater에서 수행
                 javafx.application.Platform.runLater(() -> {
                     fullData.clear();
                     viewData.clear();
-                    
-                    if (meetings != null) {
-                        for (MeetingApiClient.MeetingDto meetingDto : meetings) {
-                            // MeetingDto에서 사용 가능한 정보만 추출
-                            String title = meetingDto.getTitle() != null ? meetingDto.getTitle() : "제목 없음";
-                            String department = meetingDto.getDepartment() != null ? meetingDto.getDepartment() : "Unknown";
-                            String author = meetingDto.getAuthor() != null ? meetingDto.getAuthor() : "Unknown";
-                            String date = meetingDto.getStartTime() != null ? 
-                                meetingDto.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) : "Unknown";
-                            
-                            // 첨부파일 정보 추출
-                            String attachmentContent = meetingDto.getAttachmentContent() != null ? meetingDto.getAttachmentContent() : "";
-                            String attachmentPath = meetingDto.getAttachmentPath() != null ? meetingDto.getAttachmentPath() : "";
-                            Long attachmentSize = meetingDto.getAttachmentSize();
-                            String attachmentFilename = meetingDto.getAttachmentFilename() != null ? meetingDto.getAttachmentFilename() : "";
-                            String attachmentContentType = meetingDto.getAttachmentContentType() != null ? meetingDto.getAttachmentContentType() : "";
-                            
-                            MeetingItem item = new MeetingItem(
-                                meetingDto.getMeetingId(),
-                                title,
-                                department,
-                                author,
-                                date,
-                                meetingDto.getDescription() != null ? meetingDto.getDescription() : "",
-                                meetingDto.getLocation() != null ? meetingDto.getLocation() : "",
-                                attachmentContent,
-                                attachmentPath,
-                                attachmentSize,
-                                attachmentFilename,
-                                attachmentContentType
-                            );
-                            fullData.add(item);
-                        }
-                    }
-                    
+                    fullData.addAll(filteredMeetings);
                     viewData.addAll(fullData);
-                    System.out.println("서버에서 회의 데이터 로드 완료: " + fullData.size() + "개");
+                    System.out.println("서버에서 부서 ID로 필터링된 회의 데이터 로드 완료: " + fullData.size() + "개");
                     updatePagination();
                     showLoading(false);
                 });
-                
+
                 return null;
             }
         };
