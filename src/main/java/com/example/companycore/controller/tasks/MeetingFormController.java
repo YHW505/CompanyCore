@@ -27,6 +27,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
+
 import com.example.companycore.model.entity.User;
 
 /**
@@ -56,6 +58,8 @@ public class MeetingFormController {
     @FXML private TextArea scheduleContentArea1;
     @FXML private Button addParticipantBtn1;
     @FXML private ListView<String> participantList1;
+
+    @FXML private List<Long> selectedUsersForUpload;
 
     private ApiClient apiClient;
     private MeetingApiClient meetingApiClient;
@@ -295,14 +299,15 @@ public class MeetingFormController {
                 TaskDto taskDto = new TaskDto();
                 taskDto.setTitle(titleField.getText().trim());
                 taskDto.setDescription(scheduleContentArea1.getText());
-                taskDto.setStatus(TaskStatus.TODO);
-                taskDto.setTaskType(TaskType.TASK);
+//                taskDto.setStatus(TaskStatus.TODO);
+                taskDto.setTaskType("TASK");
                 taskDto.setAssignedBy(userId);
                 taskDto.setStartDate(startDatePicker1.getValue());
                 taskDto.setEndDate(endDatePicker1.getValue());
+                taskDto.setAssigneeIds(selectedUsersForUpload);
+                System.out.println(taskDto);
 
-
-                taskApiClient.createTask(taskDto);
+                taskApiClient.createTask(taskDto, currentUser.getUserId());
 
 
 
@@ -505,6 +510,10 @@ public class MeetingFormController {
                             selectedUsers.add(availableUsers.get(i));
                         }
                     }
+                    selectedUsersForUpload = selectedUsers.stream()
+                            .map(User::getUserId)
+                            .collect(Collectors.toList());
+                    System.out.println(selectedUsersForUpload);
                     return selectedUsers;
                 }
                 return null;

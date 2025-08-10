@@ -379,10 +379,11 @@ public class TaskApiClient extends BaseApiClient {
     /**
      * 새 작업을 생성합니다.
      */
-    public TaskDto createTask(TaskDto taskDto) {
+    public TaskDto createTask(TaskDto taskDto, Long userId) {
         try {
             String json = objectMapper.writeValueAsString(taskDto);
             HttpRequest request = createAuthenticatedRequestBuilder("/tasks")
+                    .header("User-Id", userId.toString())   // User-Id 헤더 추가
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 

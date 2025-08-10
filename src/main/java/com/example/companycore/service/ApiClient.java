@@ -212,8 +212,8 @@ public class ApiClient {
         return taskApiClient.filterTasks(assignedTo, assignedBy, status, taskType, startDate, endDate, page, size, sortBy, sortDir);
     }
 
-    public com.example.companycore.model.dto.TaskDto createTask(com.example.companycore.model.dto.TaskDto taskDto) {
-        return taskApiClient.createTask(taskDto);
+    public com.example.companycore.model.dto.TaskDto createTask(com.example.companycore.model.dto.TaskDto taskDto, Long userId) {
+        return taskApiClient.createTask(taskDto, userId);
     }
 
     public boolean updateTask(Long taskId, com.example.companycore.model.entity.Task task) {
