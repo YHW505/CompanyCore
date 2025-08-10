@@ -169,7 +169,7 @@ public class ApprovalApiClient extends BaseApiClient {
             );
             String jsonBody = objectMapper.writeValueAsString(requestBody);
 
-            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/approvals/" + approvalId + "/reject");
+            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/approvals/reject/" + approvalId);
             HttpRequest request = builder
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .header("Content-Type", "application/json")
