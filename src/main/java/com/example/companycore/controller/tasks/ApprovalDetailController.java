@@ -149,6 +149,7 @@ public class ApprovalDetailController {
                 (attachmentSize != null && attachmentSize > 0)) {
 
             String filename = (attachmentFilename != null && !attachmentFilename.isEmpty()) ? attachmentFilename : "첨부파일";
+            System.out.println(attachmentFilename+"adadasdasdasdasdasdadasd");
 
             HBox attachmentItem = createAttachmentItem(filename, attachmentSize);
             attachmentList.getChildren().add(attachmentItem);
