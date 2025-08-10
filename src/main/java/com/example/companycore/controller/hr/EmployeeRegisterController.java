@@ -60,7 +60,7 @@ public class EmployeeRegisterController {
     
     private static int nextEmployeeId = 2534013; // 다음 사번
     
-    private ApiClient apiClient;
+    private ApiClient apiClient; // Added APIClient instance
     
     @FXML
     public void initialize() {
@@ -124,11 +124,6 @@ public class EmployeeRegisterController {
             return false;
         }
         
-        if (passwordField.getText().trim().isEmpty()) {
-            showAlert("입력 오류", "비밀번호를 입력해주세요.", Alert.AlertType.ERROR);
-            return false;
-        }
-        
         // 이메일 형식 검증
         if (!isValidEmail(emailTextField.getText().trim())) {
             showAlert("입력 오류", "올바른 이메일 형식을 입력해주세요.", Alert.AlertType.ERROR);
@@ -161,35 +156,14 @@ public class EmployeeRegisterController {
             // 새 사원 객체 생성 (User Entity 사용)
             User newEmployee = new User();
             
-            // 기본 정보 설정 - null 체크 추가
-            String employeeCode = employeeIdTextField.getText().trim();
-            String username = nameTextField.getText().trim();
-            String email = emailTextField.getText().trim();
-            String phone = phoneNumberTextField.getText().trim();
-            String password = passwordField.getText();
-            String address = addressTextField.getText().trim();
-            String department = departmentTextField.getText().trim();
-            String position = positionTextField.getText().trim();
-            
-            // 필수 필드 검증
-            if (employeeCode.isEmpty() || username.isEmpty() || email.isEmpty() || password.isEmpty()) {
-                showAlert("오류", "필수 필드를 모두 입력해주세요.", Alert.AlertType.ERROR);
-                return;
-            }
-            
-            // User 객체 설정
+            // 기본 정보 설정
             newEmployee.setUserId((long) nextEmployeeId);
-            newEmployee.setEmployeeCode(employeeCode);
-            newEmployee.setUsername(username);
+            newEmployee.setEmployeeCode(employeeIdTextField.getText().trim());
+            newEmployee.setUsername(nameTextField.getText().trim());
             newEmployee.setJoinDate(LocalDate.now()); // 입사일은 오늘로 설정
-            newEmployee.setPassword(password);
-            newEmployee.setEmail(email);
-            newEmployee.setPhone(phone.isEmpty() ? null : phone);
-            newEmployee.setAddress(address.isEmpty() ? null : address);
-            
-            // 부서와 직급 정보 설정
-            newEmployee.setDepartmentName(department.isEmpty() ? null : department);
-            newEmployee.setPositionName(position.isEmpty() ? null : position);
+            newEmployee.setPassword(passwordField.getText());
+            newEmployee.setEmail(emailTextField.getText().trim());
+            newEmployee.setPhone(phoneNumberTextField.getText().trim());
             
             // 기본값 설정
             newEmployee.setRole(Role.EMPLOYEE); // 기본 역할은 사원
@@ -204,15 +178,6 @@ public class EmployeeRegisterController {
             // 생년월일은 선택사항이므로 null로 설정
             newEmployee.setBirthDate(null);
             
-            System.out.println("생성할 사용자 정보:");
-            System.out.println("사번: " + newEmployee.getEmployeeCode());
-            System.out.println("이름: " + newEmployee.getUsername());
-            System.out.println("이메일: " + newEmployee.getEmail());
-            System.out.println("전화번호: " + newEmployee.getPhone());
-            System.out.println("주소: " + newEmployee.getAddress());
-            System.out.println("부서: " + newEmployee.getDepartmentName());
-            System.out.println("직급: " + newEmployee.getPositionName());
-            
             // 실제 API 호출로 사용자 생성
             User createdUser = apiClient.createUser(newEmployee);
             
@@ -226,8 +191,6 @@ public class EmployeeRegisterController {
             }
             
         } catch (Exception e) {
-            System.out.println("사원 등록 중 예외 발생: " + e.getMessage());
-            e.printStackTrace();
             showAlert("오류", "사원 등록 중 오류가 발생했습니다: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }

@@ -3,66 +3,74 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import java.net.URL?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.example.companycore.controller.attendance.LeaveApprovalController"
-      prefHeight="785.0" prefWidth="819.0" spacing="20" style="-fx-padding: 20;">
+      spacing="20" style="-fx-padding: 20;" VBox.vgrow="ALWAYS">
     
     <!-- 상단 헤더 -->
-    <HBox alignment="CENTER_LEFT" spacing="20">
+    <HBox alignment="CENTER_LEFT" spacing="15">
+        <Label text="📅" style="-fx-font-size: 24px;"/>
         <Label text="휴가 승인" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="🔍" style="-fx-background-color: transparent; -fx-font-size: 18px; -fx-cursor: hand;"/>
     </HBox>
     
-    <!-- 메인 콘텐츠 -->
-    <VBox prefHeight="635.0" prefWidth="779.0" spacing="20"
-          style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20;
-                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);"
-          alignment="CENTER">
+    <!-- 테이블 컨테이너 -->
+    <VBox spacing="15" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
         
-        <!-- 검색 및 필터 영역 -->
-        <HBox spacing="10" alignment="CENTER_RIGHT">
-            <Region HBox.hgrow="ALWAYS" />
+        <!-- 테이블 헤더 -->
+        <HBox spacing="0" style="-fx-background-color: #f8f9fa; -fx-background-radius: 5; -fx-padding: 15;">
+            <!-- 체크박스 -->
+            <CheckBox fx:id="selectAllCheckBox" style="-fx-min-width: 50; -fx-alignment: CENTER;"/>
+            
+            <!-- 휴가 종류 -->
+            <Label text="휴가 종류" style="-fx-min-width: 200; -fx-pref-width: 200; -fx-alignment: CENTER; -fx-font-weight: bold; -fx-text-fill: #495057;"/>
+            
+            <!-- 사번 -->
+            <Label text="사번" style="-fx-min-width: 150; -fx-pref-width: 150; -fx-alignment: CENTER; -fx-font-weight: bold; -fx-text-fill: #495057;"/>
+            
+            <!-- 사원이름 -->
+            <Label text="사원이름" style="-fx-min-width: 200; -fx-pref-width: 200; -fx-alignment: CENTER; -fx-font-weight: bold; -fx-text-fill: #495057;"/>
+            
+            <!-- 일자 -->
+            <Label text="일자" style="-fx-min-width: 200; -fx-pref-width: 200; -fx-alignment: CENTER; -fx-font-weight: bold; -fx-text-fill: #495057;"/>
+            
+            <!-- 거부/승인 -->
+            <Label text="거부/승인" style="-fx-min-width: 200; -fx-pref-width: 200; -fx-alignment: CENTER; -fx-font-weight: bold; -fx-text-fill: #495057;"/>
         </HBox>
         
-        <!-- 테이블 -->
-        <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);" alignment="CENTER">
-            <!-- 테이블 헤더 -->
-            <HBox style="-fx-background-color: #f8f9fa; -fx-padding: 15 25; -fx-border-color: #e9ecef; -fx-border-width: 0 0 1 0;" alignment="CENTER">
-                <VBox style="-fx-min-width: 50; -fx-pref-width: 50; -fx-min-height: 50; -fx-pref-height: 50;" alignment="CENTER">
-                    <CheckBox fx:id="selectAllCheckBox" style="-fx-alignment: CENTER; -fx-padding: 0;"/>
-                </VBox>
-                <Label text="휴가 종류" style="-fx-font-weight: bold; -fx-alignment: CENTER; -fx-min-width: 200; -fx-pref-width: 200;"/>
-                <Label text="사번" style="-fx-font-weight: bold; -fx-alignment: CENTER; -fx-min-width: 150; -fx-pref-width: 150;"/>
-                <Label text="사원이름" style="-fx-font-weight: bold; -fx-alignment: CENTER; -fx-min-width: 200; -fx-pref-width: 200;"/>
-                <Label text="일자" style="-fx-font-weight: bold; -fx-alignment: CENTER; -fx-min-width: 200; -fx-pref-width: 200;"/>
-                <Label text="거부/승인" style="-fx-font-weight: bold; -fx-alignment: CENTER; -fx-min-width: 200; -fx-pref-width: 200;"/>
-            </HBox>
-            
-            <!-- 테이블 데이터 -->
-            <VBox fx:id="tableData" spacing="0" prefHeight="427.0" maxHeight="427" alignment="CENTER">
-                <!-- 동적으로 생성될 데이터 -->
-            </VBox>
+        <!-- 테이블 데이터 -->
+        <VBox fx:id="tableData" spacing="0" VBox.vgrow="ALWAYS">
+            <!-- 데이터 행들이 동적으로 추가됨 -->
         </VBox>
         
-        <!-- 삭제 버튼 -->
-        <HBox spacing="20" alignment="CENTER_RIGHT">
-            <Region HBox.hgrow="ALWAYS" />
-            <Button fx:id="deleteButton" mnemonicParsing="false" text="삭제"
-                    style="-fx-background-color: #444951; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;" />
-            <Region prefWidth="80" />
-        </HBox>
-        
-        <!-- 페이지네이션 -->
-        <HBox spacing="20" alignment="CENTER">
-            <Region HBox.hgrow="ALWAYS" />
-            <Pagination fx:id="pagination" prefHeight="45.0" prefWidth="600.0"
-                        style="-fx-page-information-visible: false; -fx-arrows-visible: true; -fx-background-color: transparent;">
-                <stylesheets>
-                    <URL value="@../common/pagination.css" />
-                </stylesheets>
-            </Pagination>
-            <Region HBox.hgrow="ALWAYS" />
+        <!-- 페이지네이션과 삭제 버튼 -->
+        <HBox spacing="10" style="-fx-padding: 20 0 0 0;">
+            <!-- 페이지네이션 (중앙) -->
+            <HBox alignment="CENTER" spacing="10" HBox.hgrow="ALWAYS">
+                <Button fx:id="prevButton" text="← Prev 10" style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16; -fx-cursor: hand; -fx-background-radius: 5;"/>
+                
+                <HBox spacing="5">
+                    <Button fx:id="page1Button" text="1" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-weight: bold; -fx-min-width: 35; -fx-padding: 8 12; -fx-cursor: hand; -fx-background-radius: 5;"/>
+                    <Button fx:id="page2Button" text="2" style="-fx-background-color: #f8f9fa; -fx-text-fill: #495057; -fx-font-weight: bold; -fx-min-width: 35; -fx-padding: 8 12; -fx-cursor: hand; -fx-background-radius: 5;"/>
+                    <Button fx:id="page3Button" text="3" style="-fx-background-color: #f8f9fa; -fx-text-fill: #495057; -fx-font-weight: bold; -fx-min-width: 35; -fx-padding: 8 12; -fx-cursor: hand; -fx-background-radius: 5;"/>
+                    <Button fx:id="page4Button" text="4" style="-fx-background-color: #f8f9fa; -fx-text-fill: #495057; -fx-font-weight: bold; -fx-min-width: 35; -fx-padding: 8 12; -fx-cursor: hand; -fx-background-radius: 5;"/>
+                    <Button fx:id="page5Button" text="5" style="-fx-background-color: #f8f9fa; -fx-text-fill: #495057; -fx-font-weight: bold; -fx-min-width: 35; -fx-padding: 8 12; -fx-cursor: hand; -fx-background-radius: 5;"/>
+                    <Button fx:id="page6Button" text="6" style="-fx-background-color: #f8f9fa; -fx-text-fill: #495057; -fx-font-weight: bold; -fx-min-width: 35; -fx-padding: 8 12; -fx-cursor: hand; -fx-background-radius: 5;"/>
+                    <Button fx:id="page7Button" text="7" style="-fx-background-color: #f8f9fa; -fx-text-fill: #495057; -fx-font-weight: bold; -fx-min-width: 35; -fx-padding: 8 12; -fx-cursor: hand; -fx-background-radius: 5;"/>
+                    <Button fx:id="page8Button" text="8" style="-fx-background-color: #f8f9fa; -fx-text-fill: #495057; -fx-font-weight: bold; -fx-min-width: 35; -fx-padding: 8 12; -fx-cursor: hand; -fx-background-radius: 5;"/>
+                    <Button fx:id="page9Button" text="9" style="-fx-background-color: #f8f9fa; -fx-text-fill: #495057; -fx-font-weight: bold; -fx-min-width: 35; -fx-padding: 8 12; -fx-cursor: hand; -fx-background-radius: 5;"/>
+                    <Button fx:id="page10Button" text="10" style="-fx-background-color: #f8f9fa; -fx-text-fill: #495057; -fx-font-weight: bold; -fx-min-width: 35; -fx-padding: 8 12; -fx-cursor: hand; -fx-background-radius: 5;"/>
+                    <Label text="..." style="-fx-font-weight: bold; -fx-text-fill: #495057;"/>
+                    <Button fx:id="page20Button" text="20" style="-fx-background-color: #f8f9fa; -fx-text-fill: #495057; -fx-font-weight: bold; -fx-min-width: 35; -fx-padding: 8 12; -fx-cursor: hand; -fx-background-radius: 5;"/>
+                </HBox>
+                
+                <Button fx:id="nextButton" text="Next 10 →" style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16; -fx-cursor: hand; -fx-background-radius: 5;"/>
+            </HBox>
+            
+            <!-- 삭제 버튼 (오른쪽) -->
+            <Button fx:id="deleteButton" text="🗑️ 삭제" style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-cursor: hand; -fx-background-radius: 5;"/>
         </HBox>
         
     </VBox>

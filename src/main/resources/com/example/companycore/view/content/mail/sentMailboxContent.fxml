@@ -11,8 +11,6 @@
     <!-- 상단 헤더 -->
     <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: #6c5ce7; -fx-padding: 15 20; -fx-background-radius: 10;">
         <Label text="Company Core mail" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Button text="✉️ 메일쓰기" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16; -fx-cursor: hand; -fx-background-radius: 5;" onAction="#handleComposeMail"/>
     </HBox>
     
     <!-- 메인 콘텐츠 -->

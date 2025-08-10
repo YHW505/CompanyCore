@@ -4,7 +4,6 @@ import com.example.companycore.model.entity.Enum.TaskStatus;
 import com.example.companycore.model.entity.Enum.TaskType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * Task 정보를 전달하기 위한 DTO 클래스
@@ -15,8 +14,8 @@ import java.util.List;
 public class TaskDto {
     private Integer taskId;
     private Long assignedBy;
-    private List<Long> assignedTo;
-    private String taskType;
+    private Long assignedTo;
+    private TaskType taskType;
     private String title;
     private String description;
     private String attachment;
@@ -24,23 +23,14 @@ public class TaskDto {
     private LocalDate startDate;
     private LocalDate endDate;
     private LocalDateTime createdAt;
-    private List<Long> assigneeIds;
-
-    public List<Long> getAssigneeIds() {
-        return assigneeIds;
-    }
-
-    public void setAssigneeIds(List<Long> assigneeIds) {
-        this.assigneeIds = assigneeIds;
-    }
 
     // 기본 생성자
     public TaskDto() {}
 
     // 생성자
-    public TaskDto(Integer taskId, Long assignedBy, List<Long> assignedTo, String taskType,
+    public TaskDto(Integer taskId, Long assignedBy, Long assignedTo, TaskType taskType,
                    String title, String description, String attachment, TaskStatus status,
-                   LocalDate startDate, LocalDate endDate, LocalDateTime createdAt, List<Long> assigneeIds) {
+                   LocalDate startDate, LocalDate endDate, LocalDateTime createdAt) {
         this.taskId = taskId;
         this.assignedBy = assignedBy;
         this.assignedTo = assignedTo;
@@ -52,7 +42,6 @@ public class TaskDto {
         this.startDate = startDate;
         this.endDate = endDate;
         this.createdAt = createdAt;
-        this.assigneeIds = assigneeIds;
     }
 
     // ==================== Getter/Setter 메서드 ====================
@@ -63,11 +52,11 @@ public class TaskDto {
     public Long getAssignedBy() { return assignedBy; }
     public void setAssignedBy(Long assignedBy) { this.assignedBy = assignedBy; }
 
-    public List<Long> getAssignedTo() { return assignedTo; }
-    public void setAssignedTo(List<Long> assignedTo) { this.assignedTo = assignedTo; }
+    public Long getAssignedTo() { return assignedTo; }
+    public void setAssignedTo(Long assignedTo) { this.assignedTo = assignedTo; }
 
-    public String getTaskType() { return taskType; }
-    public void setTaskType(String taskType) { this.taskType = taskType; }
+    public TaskType getTaskType() { return taskType; }
+    public void setTaskType(TaskType taskType) { this.taskType = taskType; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
@@ -92,16 +81,15 @@ public class TaskDto {
 
     @Override
     public String toString() {
-        return "TaskDto{"
-                + "taskId=" + taskId + ", "
-                + "assignedBy=" + assignedBy + ", "
-                + "assignedTo=" + assignedTo + ", "
-                + "taskType='" + taskType + "'" + ", "
-                + "title='" + title + "'" + ", "
-                + "status=" + status + ", "
-                + "startDate=" + startDate + ", "
-                + "endDate=" + endDate + ", "
-                + "assigneeIds=" + assigneeIds + 
+        return "TaskDto{" +
+                "taskId=" + taskId +
+                ", assignedBy=" + assignedBy +
+                ", assignedTo=" + assignedTo +
+                ", taskType=" + taskType +
+                ", title='" + title + '\'' +
+                ", status=" + status +
+                ", startDate=" + startDate +
+                ", endDate=" + endDate +
                 '}';
     }
-}
+} 

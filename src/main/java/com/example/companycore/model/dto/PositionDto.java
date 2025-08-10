@@ -23,11 +23,6 @@ public class PositionDto {
         this.levelOrder = levelOrder;
     }
 
-    // 문자열로부터 생성하는 생성자 (Jackson 역직렬화용)
-    public PositionDto(String positionName) {
-        this.positionName = positionName;
-    }
-
     // ==================== Getter/Setter 메서드 ====================
 
     public Integer getPositionId() { return positionId; }

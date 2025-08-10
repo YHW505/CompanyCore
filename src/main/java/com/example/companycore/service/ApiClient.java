@@ -2,12 +2,6 @@ package com.example.companycore.service;
 
 import com.example.companycore.model.dto.LoginRequest;
 import com.example.companycore.model.dto.LoginResponse;
-import com.example.companycore.model.dto.ApprovalDto;
-import com.example.companycore.model.entity.User;
-import com.example.companycore.model.entity.Task;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 통합 API 클라이언트
@@ -20,12 +14,6 @@ public class ApiClient {
     private final AttendanceApiClient attendanceApiClient;
     private final LeaveApiClient leaveApiClient;
     private final MessageApiClient messageApiClient;
-    private final MeetingApiClient meetingApiClient;
-    private final ApprovalApiClient approvalApiClient;
-    private final NoticeApiClient noticeApiClient;
-
-    // 캘린더에 가져온 업무를 유지하기 위한 전역 리스트
-    private List<com.example.companycore.model.entity.Task> globalImportedTasks = new ArrayList<>();
 
     private ApiClient() {
         this.userApiClient = UserApiClient.getInstance();
@@ -33,9 +21,6 @@ public class ApiClient {
         this.attendanceApiClient = AttendanceApiClient.getInstance();
         this.leaveApiClient = LeaveApiClient.getInstance();
         this.messageApiClient = MessageApiClient.getInstance();
-        this.meetingApiClient = MeetingApiClient.getInstance();
-        this.approvalApiClient = ApprovalApiClient.getInstance();
-        this.noticeApiClient = NoticeApiClient.getInstance();
     }
 
     public static ApiClient getInstance() {
@@ -57,15 +42,12 @@ public class ApiClient {
     public boolean authenticate(String employeeCode, String password) {
         boolean result = userApiClient.authenticate(employeeCode, password);
         if (result) {
-            // All API clients share the token
+            // 모든 API 클라이언트에 토큰 공유
             String token = userApiClient.getAuthToken();
             taskApiClient.setAuthToken(token);
             attendanceApiClient.setAuthToken(token);
             leaveApiClient.setAuthToken(token);
             messageApiClient.setAuthToken(token);
-            meetingApiClient.setAuthToken(token);
-            approvalApiClient.setAuthToken(token);
-            noticeApiClient.setAuthToken(token);
         }
         return result;
     }
@@ -80,33 +62,10 @@ public class ApiClient {
 
     public void clearToken() {
         userApiClient.clearToken();
-//        taskApiClient.clearToken();
-//        attendanceApiClient.clearToken();
-//        leaveApiClient.clearToken();
-//        messageApiClient.clearToken();
-//        meetingApiClient.clearToken();
-//        approvalApiClient.clearToken();
-//        noticeApiClient.clearToken();
-    }
-    
-    /**
-     * 토큰 유효성 검증
-     * @return 토큰이 유효한지 여부
-     */
-    public boolean validateToken() {
-        return userApiClient.validateToken();
-    }
-    
-    /**
-     * 로그아웃 처리
-     * @return 로그아웃 성공 여부
-     */
-    public boolean logout() {
-        boolean result = userApiClient.logout();
-        if (result) {
-            clearToken();
-        }
-        return result;
+        taskApiClient.clearToken();
+        attendanceApiClient.clearToken();
+        leaveApiClient.clearToken();
+        messageApiClient.clearToken();
     }
 
     // User API 관련 메서드들
@@ -122,65 +81,16 @@ public class ApiClient {
         return userApiClient.updateUser(user);
     }
 
-    public boolean changePassword(String currentPassword, String newPassword, Long userId) {
-        return userApiClient.changePassword(currentPassword, newPassword, userId);
+    public boolean changePassword(String currentPassword, String newPassword) {
+        return userApiClient.changePassword(currentPassword, newPassword);
     }
 
     public com.example.companycore.model.entity.User createUser(com.example.companycore.model.entity.User user) {
         return userApiClient.createUser(user);
     }
 
-    public boolean deleteUser(Long userId) {
-        return userApiClient.deleteUser(userId);
-    }
-
     public java.util.List<com.example.companycore.model.dto.NoticeItem> getNotices() {
-        return noticeApiClient.getAllNotices();
-    }
-
-    // 새로 추가된 User API 메서드들
-    public com.example.companycore.model.entity.User getUserById(Long userId) {
-        return userApiClient.getUserById(userId);
-    }
-
-    public com.example.companycore.model.entity.User getUserByEmail(String email) {
-        return userApiClient.getUserByEmailAsUser(email);
-    }
-
-    public com.example.companycore.model.entity.User getUserByEmployeeCode(String employeeCode) {
-        return userApiClient.getUserByEmployeeCode(employeeCode);
-    }
-
-    public java.util.List<com.example.companycore.model.entity.User> getUsersByDepartment(Integer departmentId) {
-        return userApiClient.getUsersByDepartment(departmentId);
-    }
-
-    public java.util.List<com.example.companycore.model.entity.User> getUsersByRole(String role) {
-        return userApiClient.getUsersByRole(role);
-    }
-
-    public java.util.List<com.example.companycore.model.entity.User> searchUsersByName(String name) {
-        return userApiClient.searchUsersByName(name);
-    }
-
-    public java.util.List<com.example.companycore.model.entity.User> getActiveUsers() {
-        return userApiClient.getActiveUsers();
-    }
-
-    public java.util.List<com.example.companycore.model.entity.User> filterUsers(String department, String role, String status, String position, Integer page, Integer size) {
-        return userApiClient.filterUsers(department, role, status, position, page, size);
-    }
-
-    public boolean updateFirstLoginStatus() {
-        return userApiClient.updateFirstLoginStatus();
-    }
-
-    public boolean checkEmailExists(String email) {
-        return userApiClient.checkEmailExists(email);
-    }
-
-    public boolean checkEmployeeCodeExists(String employeeCode) {
-        return userApiClient.checkEmployeeCodeExists(employeeCode);
+        return userApiClient.getNotices();
     }
 
     // Task API 관련 메서드들
@@ -205,15 +115,16 @@ public class ApiClient {
     }
 
     public java.util.List<com.example.companycore.model.entity.Task> filterTasks(Long assignedTo, Long assignedBy, 
-                                                                               String status, String taskType,
-                                                                               String startDate, String endDate, 
-                                                                               Integer page, Integer size,
-                                                                               String sortBy, String sortDir) {
-        return taskApiClient.filterTasks(assignedTo, assignedBy, status, taskType, startDate, endDate, page, size, sortBy, sortDir);
+                                                                                String status, String taskType,
+                                                                                String startDate, String endDate, 
+                                                                                Integer page, Integer size,
+                                                                                String sortBy, String sortDir) {
+        return taskApiClient.filterTasks(assignedTo, assignedBy, status, taskType, 
+                                       startDate, endDate, page, size, sortBy, sortDir);
     }
 
-    public com.example.companycore.model.dto.TaskDto createTask(com.example.companycore.model.dto.TaskDto taskDto, Long userId) {
-        return taskApiClient.createTask(taskDto, userId);
+    public com.example.companycore.model.entity.Task createTask(com.example.companycore.model.entity.Task task) {
+        return taskApiClient.createTask(task);
     }
 
     public boolean updateTask(Long taskId, com.example.companycore.model.entity.Task task) {
@@ -285,7 +196,7 @@ public class ApiClient {
         return attendanceApiClient.getAttendanceById(attendanceId);
     }
 
-    // API 클라이언트 접근자들
+    // 개별 API 클라이언트 접근자
     public UserApiClient getUserApiClient() {
         return userApiClient;
     }
@@ -332,7 +243,7 @@ public class ApiClient {
     }
 
     public java.util.List<com.example.companycore.model.dto.LeaveRequestDto> searchLeaveRequests(String status, String type, Long userId, 
-                                                                                              String startDate, String endDate) {
+                                                                                               String startDate, String endDate) {
         return leaveApiClient.searchLeaveRequests(status, type, userId, startDate, endDate);
     }
 
@@ -350,15 +261,15 @@ public class ApiClient {
     }
 
     public java.util.List<com.example.companycore.model.dto.MessageDto> getMessages(Long userId, String type, String messageType, 
-                                                                                  String keyword, Boolean unreadOnly) {
+                                                                                   String keyword, Boolean unreadOnly) {
         return messageApiClient.getMessages(userId, type, messageType, keyword, unreadOnly);
     }
 
-    public com.example.companycore.model.dto.MessageDto getMessageById(Integer messageId, Long userId) {
+    public com.example.companycore.model.dto.MessageDto getMessageById(Long messageId, Long userId) {
         return messageApiClient.getMessageById(messageId, userId);
     }
 
-    public boolean updateMessageStatus(Integer messageId, Long userId, String action) {
+    public boolean updateMessageStatus(Long messageId, Long userId, String action) {
         return messageApiClient.updateMessageStatus(messageId, userId, action);
     }
 
@@ -366,7 +277,7 @@ public class ApiClient {
         return messageApiClient.bulkUpdateMessages(userId, messageIds, action);
     }
 
-    public com.example.companycore.model.dto.MessageDto replyToMessage(Integer messageId, Long userId, String title, String content) {
+    public com.example.companycore.model.dto.MessageDto replyToMessage(Long messageId, Long userId, String title, String content) {
         return messageApiClient.replyToMessage(messageId, userId, title, content);
     }
 
@@ -396,131 +307,5 @@ public class ApiClient {
 
     public MessageApiClient getMessageApiClient() {
         return messageApiClient;
-    }
-
-    // Meeting API 관련 메서드들
-    public java.util.List<MeetingApiClient.MeetingDto> getAllMeetings() {
-        return meetingApiClient.getAllMeetings();
-    }
-
-    public MeetingApiClient.MeetingDto getMeetingById(Long meetingId) {
-        return meetingApiClient.getMeetingById(meetingId);
-    }
-
-    public MeetingApiClient.MeetingDto createMeeting(MeetingApiClient.MeetingDto meetingDto) {
-        return meetingApiClient.createMeeting(meetingDto);
-    }
-
-    public MeetingApiClient.MeetingDto updateMeeting(Long meetingId, MeetingApiClient.MeetingDto meetingDto) {
-        return meetingApiClient.updateMeeting(meetingId, meetingDto);
-    }
-
-    public boolean deleteMeeting(Long meetingId) {
-        return meetingApiClient.deleteMeeting(meetingId);
-    }
-
-    public java.util.List<MeetingApiClient.MeetingDto> getMeetingsByDate(String date) {
-        return meetingApiClient.getMeetingsByDate(date);
-    }
-
-    public java.util.List<MeetingApiClient.MeetingDto> getMeetingsByLocation(String location) {
-        return meetingApiClient.getMeetingsByLocation(location);
-    }
-
-    public MeetingApiClient getMeetingApiClient() {
-        return meetingApiClient;
-    }
-
-    // Approval API 관련 메서드들
-    public ApprovalDto createApproval(ApprovalDto approvalDto) {
-        return approvalApiClient.createApproval(approvalDto);
-    }
-
-    public ApprovalDto approveApproval(Long approvalId) {
-        return approvalApiClient.approveApproval(approvalId);
-    }
-
-    public ApprovalDto rejectApproval(Long approvalId, String rejectionReason) {
-        return approvalApiClient.rejectApproval(approvalId, rejectionReason);
-    }
-
-    public ApprovalDto getApprovalById(Long approvalId) {
-        return approvalApiClient.getApprovalById(approvalId);
-    }
-
-    public java.util.List<ApprovalDto> getMyRequests() {
-        return approvalApiClient.getMyRequests();
-    }
-
-    public java.util.List<ApprovalDto> getMyApprovals() {
-        return approvalApiClient.getMyApprovals();
-    }
-
-    public java.util.List<ApprovalDto> getMyPending() {
-        return approvalApiClient.getMyPending();
-    }
-
-    public java.util.List<ApprovalDto> getAllApprovals() {
-        return approvalApiClient.getAllApprovals();
-    }
-
-    public boolean deleteApproval(Long approvalId) {
-        return approvalApiClient.deleteApproval(approvalId);
-    }
-
-    public java.util.List<ApprovalDto> searchApprovalsByTitle(String title) {
-        return approvalApiClient.searchApprovalsByTitle(title);
-    }
-
-    public ApprovalApiClient getApprovalApiClient() {
-        return approvalApiClient;
-    }
-
-    // Notice API 관련 메서드들
-    public java.util.List<com.example.companycore.model.dto.NoticeItem> getAllNotices() {
-        return noticeApiClient.getAllNotices();
-    }
-
-    public java.util.List<com.example.companycore.model.dto.NoticeItem> getAllNoticesSimple() {
-        return noticeApiClient.getAllNoticesSimple();
-    }
-
-    public com.example.companycore.model.dto.NoticeItem getNoticeById(Long noticeId) {
-        return noticeApiClient.getNoticeById(noticeId);
-    }
-
-    public com.example.companycore.model.dto.NoticeItem createNotice(com.example.companycore.model.dto.NoticeItem notice) {
-        return noticeApiClient.createNotice(notice);
-    }
-
-    public com.example.companycore.model.dto.NoticeItem updateNotice(Long noticeId, com.example.companycore.model.dto.NoticeItem notice) {
-        return noticeApiClient.updateNotice(noticeId, notice);
-    }
-
-    public boolean deleteNotice(Long noticeId) {
-        return noticeApiClient.deleteNotice(noticeId);
-    }
-
-    public NoticeApiClient getNoticeApiClient() {
-        return noticeApiClient;
-    }
-
-    // 캘린더에 가져온 업무 관련 메서드
-    public List<com.example.companycore.model.entity.Task> getGlobalImportedTasks() {
-        return globalImportedTasks;
-    }
-
-    public void addGlobalImportedTask(com.example.companycore.model.entity.Task task) {
-        if (!globalImportedTasks.contains(task)) {
-            globalImportedTasks.add(task);
-        }
-    }
-
-    public void clearGlobalImportedTasks() {
-        globalImportedTasks.clear();
-    }
-
-    public void removeGlobalImportedTask(com.example.companycore.model.entity.Task task) {
-        globalImportedTasks.remove(task);
     }
 }

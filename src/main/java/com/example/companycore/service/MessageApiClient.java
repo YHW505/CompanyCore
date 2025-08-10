@@ -6,36 +6,20 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
-
 
 /**
- * 📦 메시지 관련 API 클라이언트 클래스
- * - 메시지 전송
- * - 메시지 단건/목록 조회
- * - 메시지 상태 변경 (읽음, 삭제 등)
- * - 답장
- * - 대화 내역 조회
- * - 대시보드 정보 조회
- *
- * 이 클래스는 싱글턴 패턴으로 구현되어 있어,
- * 어디서든 동일 인스턴스로 접근 가능합니다.
+ * 메시지 관련 API 클라이언트
+ * 메시지 전송, 조회, 상태 변경, 답장 등
  */
 public class MessageApiClient extends BaseApiClient {
-
-    // 싱글턴 인스턴스
     private static MessageApiClient instance;
 
-    // 생성자 비공개 (외부 생성 방지)
     private MessageApiClient() {
-        super(); // BaseApiClient (공통 인증/요청 기능)
+        super();
     }
 
-    // 인스턴스 생성 및 반환 (싱글턴)
     public static MessageApiClient getInstance() {
         if (instance == null) {
             synchronized (MessageApiClient.class) {
@@ -47,62 +31,53 @@ public class MessageApiClient extends BaseApiClient {
         return instance;
     }
 
-    // ------------------------------------------------------------------------
-
     /**
-     * ✅ 메시지를 전송합니다 (POST /messages).
-     * @param message 전송할 메시지 객체
-     * @param senderId 보낸 사람의 사용자 ID (Header)
-     * @return 성공 시 서버 응답 메시지 객체, 실패 시 null
+     * 새로운 메시지를 전송합니다.
      */
     public MessageDto sendMessage(MessageDto message, Long senderId) {
         try {
-            String json = objectMapper.writeValueAsString(message); // 메시지를 JSON 문자열로 변환
-
+            String json = objectMapper.writeValueAsString(message);
             HttpRequest request = createAuthenticatedRequestBuilder("/messages")
-                    .header("Content-Type", "application/json")
                     .header("User-Id", senderId.toString())
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-            if (response.statusCode() == 200 || response.statusCode() == 201) {
-                if (response.body() != null && !response.body().isBlank()) {
-                    return objectMapper.readValue(response.body(), MessageDto.class);
-                } else {
-                    System.out.println("⚠️ 응답 본문이 비어 있습니다.");
+            if (response.statusCode() == 201 || response.statusCode() == 200) {
+                try {
+                    MessageDto sentMessage = objectMapper.readValue(response.body(), MessageDto.class);
+                    System.out.println("메시지 전송 성공!");
+                    return sentMessage;
+                } catch (Exception e) {
+                    System.out.println("전송된 메시지 파싱 실패: " + e.getMessage());
+                    return null;
                 }
             } else {
-                System.out.println("❌ 메시지 전송 실패 - 상태 코드: " + response.statusCode());
+                System.out.println("메시지 전송 실패 - 상태 코드: " + response.statusCode());
+                System.out.println("오류 응답: " + response.body());
+                return null;
             }
         } catch (Exception e) {
-            System.out.println("❌ 메시지 전송 중 예외 발생: " + e.getMessage());
+            System.out.println("메시지 전송 중 예외 발생: " + e.getMessage());
+            return null;
         }
-        return null;
     }
 
-    // ------------------------------------------------------------------------
-
     /**
-     * ✅ 메시지 목록을 조회합니다 (GET /messages).
-     * @param userId 사용자 ID (조회 기준)
-     * @param type sent, received, all 중 하나
-     * @param messageType optional - 일반/공지 등 메시지 분류
-     * @param keyword 검색 키워드
-     * @param unreadOnly true면 안 읽은 메시지만 조회
-     * @return 메시지 DTO 리스트
+     * 메시지 목록을 조회합니다.
      */
-    public List<MessageDto> getMessages(Long userId, String type, String messageType,
-                                        String keyword, Boolean unreadOnly) {
+    public List<MessageDto> getMessages(Long userId, String type, String messageType, 
+                                      String keyword, Boolean unreadOnly) {
         try {
             StringBuilder endpoint = new StringBuilder("/messages?");
+            
             if (type != null) endpoint.append("type=").append(type).append("&");
             if (messageType != null) endpoint.append("messageType=").append(messageType).append("&");
             if (keyword != null) endpoint.append("keyword=").append(keyword).append("&");
             if (unreadOnly != null) endpoint.append("unreadOnly=").append(unreadOnly).append("&");
 
-            // 끝에 남은 & 제거
+            // 마지막 & 제거
             if (endpoint.charAt(endpoint.length() - 1) == '&') {
                 endpoint.setLength(endpoint.length() - 1);
             }
@@ -114,276 +89,162 @@ public class MessageApiClient extends BaseApiClient {
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-            if (response.statusCode() == 200 && response.body() != null && !response.body().trim().isEmpty()) {
-                return objectMapper.readValue(response.body(),
-                        objectMapper.getTypeFactory().constructCollectionType(List.class, MessageDto.class));
+            if (response.statusCode() == 200) {
+                if (response.body() == null || response.body().trim().isEmpty()) {
+                    return new ArrayList<>();
+                }
+
+                try {
+                    List<MessageDto> messages = objectMapper.readValue(response.body(),
+                            objectMapper.getTypeFactory().constructCollectionType(List.class, MessageDto.class));
+                    return messages;
+                } catch (Exception e) {
+                    System.out.println("메시지 목록 파싱 실패: " + e.getMessage());
+                    return new ArrayList<>();
+                }
             } else {
+                System.out.println("메시지 목록 요청 실패 - 상태 코드: " + response.statusCode());
                 return new ArrayList<>();
             }
         } catch (Exception e) {
-            System.out.println("메시지 목록 요청 실패: " + e.getMessage());
+            System.out.println("메시지 목록 요청 중 예외 발생: " + e.getMessage());
             return new ArrayList<>();
         }
     }
 
-    public List<MessageDto> getReceiveMessagesById(Long userId) {
+    /**
+     * 특정 메시지를 조회합니다.
+     */
+    public MessageDto getMessageById(Long messageId, Long userId) {
         try {
-            String endpoint = "/messages?type=received";
-
+            String endpoint = "/messages/" + messageId;
             HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
                     .header("User-Id", userId.toString())
                     .GET()
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println("응답: " + response.body()); // 디버깅용
 
-            if (response.statusCode() == 200 && response.body() != null && !response.body().trim().isEmpty()) {
-                // JSON 응답을 Map으로 파싱
-                Map<String, Object> responseMap = objectMapper.readValue(response.body(), Map.class);
-
-                // success 확인
-                Boolean success = (Boolean) responseMap.get("success");
-                if (success != null && success) {
-                    // data 배열 추출
-                    List<Map<String, Object>> dataList = (List<Map<String, Object>>) responseMap.get("data");
-
-                    // MessageDto 리스트로 변환
-                    List<MessageDto> messageDtos = new ArrayList<>();
-                    for (Map<String, Object> item : dataList) {
-                        MessageDto dto = convertToMessageDto(item);
-                        messageDtos.add(dto);
-                    }
-                    return messageDtos;
-                }
-            }
-            return new ArrayList<>();
-
-        } catch (Exception e) {
-            System.out.println("메시지 목록 요청 실패: " + e.getMessage());
-            e.printStackTrace(); // 상세 에러 확인
-            return new ArrayList<>();
-        }
-    }
-
-//  public List<MessageDto> getReceiveMessagesById(Long userId) {
-//        try {
-////            StringBuilder endpoint = new StringBuilder("/messages?");
-////            String type = "received";
-//            String endpoint = "/messages?type=received";
-//
-//            HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
-//                    .header("User-Id", userId.toString())
-//                    .GET()
-//                    .build();
-//
-//            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-//            System.out.println(response);
-//
-//            if (response.statusCode() == 200 && response.body() != null && !response.body().trim().isEmpty()) {
-//                return objectMapper.readValue(response.body(),
-//                        objectMapper.getTypeFactory().constructCollectionType(List.class, MessageDto.class));
-//            } else {
-//                return new ArrayList<>();
-//            }
-//        } catch (Exception e) {
-//            System.out.println("메시지 목록 요청 실패: " + e.getMessage());
-//            return new ArrayList<>();
-//        }
-//    }
-
-public List<MessageDto> getSentMessagesById(Long userId) {
-    try {
-        String endpoint = "/messages?type=sent";
-
-        HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
-                .header("User-Id", userId.toString())
-                .GET()
-                .build();
-
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        System.out.println("보낸 메시지 응답: " + response.body()); // 디버깅용
-
-        if (response.statusCode() == 200 && response.body() != null && !response.body().trim().isEmpty()) {
-            // JSON 응답을 Map으로 파싱
-            Map<String, Object> responseMap = objectMapper.readValue(response.body(), Map.class);
-
-            // success 확인
-            Boolean success = (Boolean) responseMap.get("success");
-            if (success != null && success) {
-                // data 배열 추출
-                List<Map<String, Object>> dataList = (List<Map<String, Object>>) responseMap.get("data");
-
-                if (dataList != null) {
-                    // MessageDto 리스트로 변환
-                    List<MessageDto> messageDtos = new ArrayList<>();
-                    for (Map<String, Object> item : dataList) {
-                        MessageDto dto = convertToMessageDto(item);
-                        messageDtos.add(dto);
-                    }
-                    return messageDtos;
-                }
-            }
-        }
-        return new ArrayList<>();
-
-    } catch (Exception e) {
-        System.out.println("보낸 메시지 목록 요청 실패: " + e.getMessage());
-        e.printStackTrace(); // 상세 에러 확인
-        return new ArrayList<>();
-    }
-}
-
-//    public List<MessageDto> getSentMessagesById(Long userId) {
-//        try {
-//            String endpoint = "/messages?type=sent";
-//
-//            HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
-//                    .header("User-Id", userId.toString())
-//                    .GET()
-//                    .build();
-//
-//            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-//
-//            if (response.statusCode() == 200 && response.body() != null && !response.body().trim().isEmpty()) {
-//                return objectMapper.readValue(response.body(),
-//                        objectMapper.getTypeFactory().constructCollectionType(List.class, MessageDto.class));
-//            } else {
-//                return new ArrayList<>();
-//            }
-//        } catch (Exception e) {
-//            System.out.println("메시지 목록 요청 실패: " + e.getMessage());
-//            return new ArrayList<>();
-//        }
-//    }
-
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * ✅ 단일 메시지를 ID로 조회합니다 (GET /messages/{id}).
-     * @param messageId 메시지 ID
-     * @param userId 사용자 ID (헤더에 포함)
-     * @return 메시지 DTO 객체
-     */
-    public MessageDto getMessageById(Integer messageId, Long userId) {
-        try {
-            System.out.println(userId);
-            HttpRequest request = createAuthenticatedRequestBuilder("/messages/" + messageId)
-                    .header("User-Id", userId.toString())
-                    .GET()
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 200 && response.body() != null && !response.body().trim().isEmpty()) {
-                // JSON 응답을 Map으로 파싱
-                Map<String, Object> responseMap = objectMapper.readValue(response.body(), Map.class);
-
-                // success 확인
-                Boolean success = (Boolean) responseMap.get("success");
-                if (success != null && success) {
-                    // data 객체 추출
-                    Map<String, Object> data = (Map<String, Object>) responseMap.get("data");
-
-                    if (data != null) {
-                        // MessageDto로 변환
-                        System.out.println(data);
-                        return convertToMessageDto(data);
-                    }
+            if (response.statusCode() == 200) {
+                try {
+                    MessageDto message = objectMapper.readValue(response.body(), MessageDto.class);
+                    return message;
+                } catch (Exception e) {
+                    System.out.println("메시지 파싱 실패: " + e.getMessage());
+                    return null;
                 }
             } else {
-                System.out.println("❌ 메시지 조회 실패 - 상태 코드: " + response.statusCode());
-            }
-        } catch (Exception e) {
-            System.out.println("❌ 메시지 조회 중 예외 발생: " + e.getMessage());
-        }
-        return null;
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * ✅ 메시지 상태 업데이트 (PUT /messages/{id}).
-     * 예: 읽음 처리, 삭제 등
-     */
-    public boolean updateMessageStatus(Integer messageId, Long userId, String action) {
-        try {
-            ObjectNode body = objectMapper.createObjectNode();
-            body.put("action", action); // 예: "read", "delete"
-
-            HttpRequest request = createAuthenticatedRequestBuilder("/messages/" + messageId)
-                    .header("User-Id", userId.toString())
-                    .PUT(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            return response.statusCode() == 200;
-        } catch (Exception e) {
-            System.out.println("❌ 메시지 상태 변경 중 예외 발생: " + e.getMessage());
-            return false;
-        }
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * ✅ 메시지 여러 개를 일괄 업데이트합니다 (PUT /messages/bulk).
-     * 예: 다중 삭제, 읽음 처리
-     */
-    public boolean bulkUpdateMessages(Long userId, List<Long> messageIds, String action) {
-        try {
-            ObjectNode body = objectMapper.createObjectNode();
-            body.put("action", action);
-            body.set("messageIds", objectMapper.valueToTree(messageIds));
-
-            HttpRequest request = createAuthenticatedRequestBuilder("/messages/bulk")
-                    .header("User-Id", userId.toString())
-                    .PUT(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            return response.statusCode() == 200;
-        } catch (Exception e) {
-            System.out.println("❌ 메시지 일괄 처리 중 예외 발생: " + e.getMessage());
-            return false;
-        }
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * ✅ 특정 메시지에 답장합니다 (POST /messages/{id}/reply).
-     */
-    public MessageDto replyToMessage(Integer messageId, Long userId, String title, String content) {
-        try {
-            ObjectNode body = objectMapper.createObjectNode();
-            body.put("title", title);
-            body.put("content", content);
-
-            HttpRequest request = createAuthenticatedRequestBuilder("/messages/" + messageId + "/reply")
-                    .header("User-Id", userId.toString())
-                    .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 200 || response.statusCode() == 201) {
-                return objectMapper.readValue(response.body(), MessageDto.class);
-            } else {
-                System.out.println("❌ 답장 실패 - 상태 코드: " + response.statusCode());
+                System.out.println("메시지 조회 실패 - 상태 코드: " + response.statusCode());
                 return null;
             }
         } catch (Exception e) {
-            System.out.println("❌ 메시지 답장 중 예외 발생: " + e.getMessage());
+            System.out.println("메시지 조회 중 예외 발생: " + e.getMessage());
             return null;
         }
     }
 
-    // ------------------------------------------------------------------------
+    /**
+     * 메시지 상태를 변경합니다 (읽음 처리 또는 삭제).
+     */
+    public boolean updateMessageStatus(Long messageId, Long userId, String action) {
+        try {
+            ObjectNode requestBody = objectMapper.createObjectNode();
+            requestBody.put("action", action);
+
+            String json = objectMapper.writeValueAsString(requestBody);
+            String endpoint = "/messages/" + messageId;
+            HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
+                    .header("User-Id", userId.toString())
+                    .PUT(HttpRequest.BodyPublishers.ofString(json))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                System.out.println("메시지 상태 변경 성공!");
+                return true;
+            } else {
+                System.out.println("메시지 상태 변경 실패 - 상태 코드: " + response.statusCode());
+                System.out.println("오류 응답: " + response.body());
+                return false;
+            }
+        } catch (Exception e) {
+            System.out.println("메시지 상태 변경 중 예외 발생: " + e.getMessage());
+            return false;
+        }
+    }
 
     /**
-     * ✅ 특정 사용자와의 대화 내역을 조회합니다.
+     * 여러 메시지를 일괄 처리합니다.
+     */
+    public boolean bulkUpdateMessages(Long userId, List<Long> messageIds, String action) {
+        try {
+            ObjectNode requestBody = objectMapper.createObjectNode();
+            requestBody.put("action", action);
+            requestBody.set("messageIds", objectMapper.valueToTree(messageIds));
+
+            String json = objectMapper.writeValueAsString(requestBody);
+            HttpRequest request = createAuthenticatedRequestBuilder("/messages/bulk")
+                    .header("User-Id", userId.toString())
+                    .PUT(HttpRequest.BodyPublishers.ofString(json))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                System.out.println("메시지 일괄 처리 성공!");
+                return true;
+            } else {
+                System.out.println("메시지 일괄 처리 실패 - 상태 코드: " + response.statusCode());
+                System.out.println("오류 응답: " + response.body());
+                return false;
+            }
+        } catch (Exception e) {
+            System.out.println("메시지 일괄 처리 중 예외 발생: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 메시지에 답장합니다.
+     */
+    public MessageDto replyToMessage(Long messageId, Long userId, String title, String content) {
+        try {
+            ObjectNode requestBody = objectMapper.createObjectNode();
+            requestBody.put("title", title);
+            requestBody.put("content", content);
+
+            String json = objectMapper.writeValueAsString(requestBody);
+            String endpoint = "/messages/" + messageId + "/reply";
+            HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
+                    .header("User-Id", userId.toString())
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 201 || response.statusCode() == 200) {
+                try {
+                    MessageDto replyMessage = objectMapper.readValue(response.body(), MessageDto.class);
+                    System.out.println("메시지 답장 성공!");
+                    return replyMessage;
+                } catch (Exception e) {
+                    System.out.println("답장 메시지 파싱 실패: " + e.getMessage());
+                    return null;
+                }
+            } else {
+                System.out.println("메시지 답장 실패 - 상태 코드: " + response.statusCode());
+                System.out.println("오류 응답: " + response.body());
+                return null;
+            }
+        } catch (Exception e) {
+            System.out.println("메시지 답장 중 예외 발생: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * 특정 사용자와의 대화 내역을 조회합니다.
      */
     public List<MessageDto> getConversation(Long userId, Long otherUserId) {
         try {
@@ -395,180 +256,85 @@ public List<MessageDto> getSentMessagesById(Long userId) {
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-            if (response.statusCode() == 200 && response.body() != null && !response.body().isBlank()) {
-                return objectMapper.readValue(response.body(),
-                        objectMapper.getTypeFactory().constructCollectionType(List.class, MessageDto.class));
+            if (response.statusCode() == 200) {
+                if (response.body() == null || response.body().trim().isEmpty()) {
+                    return new ArrayList<>();
+                }
+
+                try {
+                    List<MessageDto> messages = objectMapper.readValue(response.body(),
+                            objectMapper.getTypeFactory().constructCollectionType(List.class, MessageDto.class));
+                    return messages;
+                } catch (Exception e) {
+                    System.out.println("대화 내역 파싱 실패: " + e.getMessage());
+                    return new ArrayList<>();
+                }
+            } else {
+                System.out.println("대화 내역 요청 실패 - 상태 코드: " + response.statusCode());
+                return new ArrayList<>();
             }
         } catch (Exception e) {
-            System.out.println("❌ 대화 내역 조회 중 예외 발생: " + e.getMessage());
+            System.out.println("대화 내역 요청 중 예외 발생: " + e.getMessage());
+            return new ArrayList<>();
         }
-        return new ArrayList<>();
     }
 
-    // ------------------------------------------------------------------------
-
     /**
-     * ✅ 메시지 대시보드 정보 조회 (GET /messages/dashboard).
+     * 메시지 대시보드 정보를 가져옵니다.
      */
     public JsonNode getMessageDashboard(Long userId) {
         try {
-            HttpRequest request = createAuthenticatedRequestBuilder("/messages/dashboard")
-                    .header("User-Id", userId.toString())
-                    .GET()
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 200) {
-                return objectMapper.readTree(response.body());
-            }
-        } catch (Exception e) {
-            System.out.println("❌ 대시보드 요청 중 예외 발생: " + e.getMessage());
-        }
-        return null;
-    }
-
-    // ------------------------------------------------------------------------
-
-    // 아래는 getMessages()를 특정 목적에 맞게 래핑한 메서드들
-
-    public List<MessageDto> getReceivedMessages(Long userId, String messageType, String keyword, Boolean unreadOnly) {
-        return getMessages(userId, "received", messageType, keyword, unreadOnly);
-    }
-
-    public List<MessageDto> getSentMessages(Long userId, String messageType, String keyword) {
-        return getMessages(userId, "sent", messageType, keyword, null);
-    }
-
-    public List<MessageDto> getAllMessages(Long userId, String messageType, String keyword) {
-        return getMessages(userId, "all", messageType, keyword, null);
-    }
-
-    public List<MessageDto> getUnreadMessages(Long userId) {
-        return getMessages(userId, "received", null, null, true);
-    }
-
-    /**
-     * ✅ 메시지를 삭제합니다 (DELETE /messages/{messageId}).
-     * @param messageId 삭제할 메시지 ID
-     * @param userId 사용자 ID (헤더로 전달)
-     * @return 삭제 성공 여부
-     */
-    public boolean deleteMessageById(Integer messageId, Long userId) {
-        try {
-            HttpRequest request = createAuthenticatedRequestBuilder("/messages/" + messageId)
-                    .header("User-Id", userId.toString())
-                    .DELETE()
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 200 || response.statusCode() == 204) {
-                System.out.println("✅ 메시지 삭제 성공: ID = " + messageId);
-                return true;
-            } else {
-                System.out.println("❌ 메시지 삭제 실패 - 상태 코드: " + response.statusCode());
-            }
-        } catch (Exception e) {
-            System.out.println("❌ 메시지 삭제 중 예외 발생: " + e.getMessage());
-        }
-        return false;
-    }
-
-    /**
-     * ✅ 첨부파일을 다운로드합니다 (GET /messages/{messageId}/attachment/download).
-     * @param messageId 메시지 ID
-     * @param userId 사용자 ID (헤더로 전달)
-     * @return 첨부파일의 바이트 배열, 실패 시 null
-     */
-    public byte[] downloadAttachment(Integer messageId, Long userId) {
-        try {
-            String endpoint = String.format("/messages/%d/attachment/download", messageId);
+            String endpoint = "/messages/dashboard";
             HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
                     .header("User-Id", userId.toString())
                     .GET()
                     .build();
 
-            HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200) {
-                return response.body();
+                try {
+                    JsonNode dashboard = objectMapper.readTree(response.body());
+                    return dashboard;
+                } catch (Exception e) {
+                    System.out.println("대시보드 파싱 실패: " + e.getMessage());
+                    return null;
+                }
             } else {
-                System.out.println("❌ 첨부파일 다운로드 실패 - 상태 코드: " + response.statusCode());
+                System.out.println("대시보드 요청 실패 - 상태 코드: " + response.statusCode());
                 return null;
             }
         } catch (Exception e) {
-            System.out.println("❌ 첨부파일 다운로드 중 예외 발생: " + e.getMessage());
-            e.printStackTrace();
+            System.out.println("대시보드 요청 중 예외 발생: " + e.getMessage());
             return null;
         }
     }
 
-    // Map을 MessageDto로 변환하는 헬퍼 메서드 (공통으로 사용)
-    private MessageDto convertToMessageDto(Map<String, Object> item) {
-        MessageDto dto = new MessageDto();
-
-        try {
-            // messageId 변환 (Object -> Integer)
-            Object messageIdObj = item.get("messageId");
-            if (messageIdObj instanceof Long) {
-                dto.setMessageId(((Long) messageIdObj).intValue());
-            } else if (messageIdObj instanceof Integer) {
-                dto.setMessageId((Integer) messageIdObj);
-            }
-
-            // 기본 필드들
-            dto.setTitle((String) item.get("title"));
-            dto.setContent((String) item.get("content"));
-            dto.setSenderName((String) item.get("senderName"));
-            dto.setReceiverName((String) item.get("receiverName"));
-            dto.setIsRead((Boolean) item.get("isRead"));
-            dto.setMessageType((String) item.get("messageType"));
-
-            // ID 정보
-            Object senderIdObj = item.get("senderId");
-            if (senderIdObj instanceof Integer) {
-                dto.setSenderId(((Integer) senderIdObj).longValue());
-            } else if (senderIdObj instanceof Long) {
-                dto.setSenderId((Long) senderIdObj);
-            }
-
-            Object receiverIdObj = item.get("receiverId");
-            if (receiverIdObj instanceof Integer) {
-                dto.setReceiverId(((Integer) receiverIdObj).longValue());
-            } else if (receiverIdObj instanceof Long) {
-                dto.setReceiverId((Long) receiverIdObj);
-            }
-
-            // 이메일 정보
-            dto.setSenderEmail((String) item.get("senderEmail"));
-            dto.setReceiverEmail((String) item.get("receiverEmail"));
-
-            // 첨부파일 정보
-            dto.setAttachmentContentType((String) item.get("attachmentContentType"));
-            dto.setAttachmentSize(item.get("attachmentSize") != null ? ((Number) item.get("attachmentSize")).longValue() : null);
-            dto.setAttachmentContent((String) item.get("attachmentContent"));
-            dto.setAttachmentFilename((String) item.get("attachmentFilename"));
-
-            // 사용자 상세 정보
-            dto.setSenderEmployeeCode((String) item.get("senderEmployeeCode"));
-            dto.setSenderPositionName((String) item.get("senderPositionName"));
-            dto.setSenderDepartmentName((String) item.get("senderDepartmentName"));
-            dto.setReceiverEmployeeCode((String) item.get("receiverEmployeeCode"));
-            dto.setReceiverPositionName((String) item.get("receiverPositionName"));
-            dto.setReceiverDepartmentName((String) item.get("receiverDepartmentName"));
-
-            // LocalDateTime 변환
-            String sentAtStr = (String) item.get("sentAt");
-            if (sentAtStr != null && !sentAtStr.isEmpty()) {
-                dto.setSentAt(LocalDateTime.parse(sentAtStr));
-            }
-
-        } catch (Exception e) {
-            System.out.println("MessageDto 변환 중 오류: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return dto;
+    /**
+     * 받은 메시지를 조회합니다.
+     */
+    public List<MessageDto> getReceivedMessages(Long userId, String messageType, String keyword, Boolean unreadOnly) {
+        return getMessages(userId, "received", messageType, keyword, unreadOnly);
     }
-}
+
+    /**
+     * 보낸 메시지를 조회합니다.
+     */
+    public List<MessageDto> getSentMessages(Long userId, String messageType, String keyword) {
+        return getMessages(userId, "sent", messageType, keyword, null);
+    }
+
+    /**
+     * 모든 메시지를 조회합니다.
+     */
+    public List<MessageDto> getAllMessages(Long userId, String messageType, String keyword) {
+        return getMessages(userId, "all", messageType, keyword, null);
+    }
+
+    /**
+     * 읽지 않은 메시지만 조회합니다.
+     */
+    public List<MessageDto> getUnreadMessages(Long userId) {
+        return getMessages(userId, "received", null, null, true);
+    }
+} 

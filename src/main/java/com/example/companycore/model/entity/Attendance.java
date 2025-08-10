@@ -2,6 +2,7 @@ package com.example.companycore.model.entity;
 
 import com.example.companycore.model.entity.Enum.AttendanceStatus;
 import javafx.beans.property.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -10,7 +11,7 @@ public class Attendance {
     private final LongProperty userId;
     private final ObjectProperty<LocalDateTime> checkIn;
     private final ObjectProperty<LocalDateTime> checkOut;
-    private final StringProperty workHours;
+    private final ObjectProperty<BigDecimal> workHours;
     private final ObjectProperty<LocalDate> workDate;
     private final ObjectProperty<AttendanceStatus> status;
 
@@ -19,18 +20,18 @@ public class Attendance {
         this.userId = new SimpleLongProperty();
         this.checkIn = new SimpleObjectProperty<>();
         this.checkOut = new SimpleObjectProperty<>();
-        this.workHours = new SimpleStringProperty();
+        this.workHours = new SimpleObjectProperty<>();
         this.workDate = new SimpleObjectProperty<>();
         this.status = new SimpleObjectProperty<>();
     }
 
     public Attendance(Integer attendanceId, Long userId, LocalDateTime checkIn, LocalDateTime checkOut,
-                     String workHours, LocalDate workDate, AttendanceStatus status) {
+                     BigDecimal workHours, LocalDate workDate, AttendanceStatus status) {
         this.attendanceId = new SimpleIntegerProperty(attendanceId);
         this.userId = new SimpleLongProperty(userId);
         this.checkIn = new SimpleObjectProperty<>(checkIn);
         this.checkOut = new SimpleObjectProperty<>(checkOut);
-        this.workHours = new SimpleStringProperty(workHours);
+        this.workHours = new SimpleObjectProperty<>(workHours);
         this.workDate = new SimpleObjectProperty<>(workDate);
         this.status = new SimpleObjectProperty<>(status);
     }
@@ -56,9 +57,9 @@ public class Attendance {
     public ObjectProperty<LocalDateTime> checkOutProperty() { return checkOut; }
 
     // WorkHours
-    public String getWorkHours() { return workHours.get(); }
-    public void setWorkHours(String workHours) { this.workHours.set(workHours); }
-    public StringProperty workHoursProperty() { return workHours; }
+    public BigDecimal getWorkHours() { return workHours.get(); }
+    public void setWorkHours(BigDecimal workHours) { this.workHours.set(workHours); }
+    public ObjectProperty<BigDecimal> workHoursProperty() { return workHours; }
 
     // WorkDate
     public LocalDate getWorkDate() { return workDate.get(); }

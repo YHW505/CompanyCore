@@ -1,8 +1,5 @@
 package com.example.companycore.controller.attendance;
 
-import com.example.companycore.model.entity.User;
-import com.example.companycore.model.dto.LeaveRequestDto;
-import com.example.companycore.service.ApiClient;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -52,50 +49,11 @@ public class LeaveApplicationController implements Initializable {
     private Button cancelButton;
     
     private List<File> attachedFiles = new ArrayList<>();
-    private ApiClient apiClient;
-    private User currentUser;
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        apiClient = ApiClient.getInstance();
         setupEventHandlers();
-        loadCurrentUser();
-    }
-    
-    /**
-     * 현재 로그인된 사용자 정보를 로드합니다.
-     */
-    private void loadCurrentUser() {
-        try {
-            System.out.println("현재 사용자 정보 로드 시작...");
-            
-            // 백그라운드에서 사용자 정보 로드
-            javafx.concurrent.Task<User> loadUserTask = new javafx.concurrent.Task<User>() {
-                @Override
-                protected User call() throws Exception {
-                    return apiClient.getCurrentUser();
-                }
-            };
-            
-            loadUserTask.setOnSucceeded(e -> {
-                currentUser = loadUserTask.getValue();
-                if (currentUser != null) {
-                    setupInitialData();
-                    System.out.println("사용자 정보 로드 완료: " + currentUser.getUsername());
-                } else {
-                    showError("사용자 정보를 불러올 수 없습니다.");
-                }
-            });
-            
-            loadUserTask.setOnFailed(e -> {
-                showError("사용자 정보 로드 중 오류가 발생했습니다.");
-            });
-            
-            new Thread(loadUserTask).start();
-            
-        } catch (Exception e) {
-            showError("사용자 정보 로드 중 오류가 발생했습니다: " + e.getMessage());
-        }
+        setupInitialData();
     }
     
     private void setupEventHandlers() {
@@ -112,14 +70,12 @@ public class LeaveApplicationController implements Initializable {
     }
     
     private void setupInitialData() {
-        // 현재 사용자 정보로 사번 필드 설정
-        if (currentUser != null) {
-            employeeIdField.setText(currentUser.getEmployeeCode());
-        }
+        // 사번 필드는 읽기 전용으로 설정
         employeeIdField.setEditable(false);
+        employeeIdField.clear();
         
         // 휴가 종류 콤보박스 초기화
-        leaveTypeComboBox.getItems().addAll("연차", "반차", "병가", "개인사유", "공가", "출산휴가", "육아휴가", "특별휴가");
+        leaveTypeComboBox.getItems().addAll("연차", "병가", "공가", "반차", "특별휴가");
         leaveTypeComboBox.setValue(null);
         
         // 기본 날짜 설정 - 빈 상태로 초기화
@@ -220,94 +176,15 @@ public class LeaveApplicationController implements Initializable {
             return;
         }
         
-        // 휴가 요청 DTO 생성
-        LeaveRequestDto leaveRequest = createLeaveRequestDto();
+        // 휴가 요청 처리
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("휴가 요청");
+        alert.setHeaderText(null);
+        alert.setContentText("휴가 요청이 성공적으로 제출되었습니다.");
+        alert.showAndWait();
         
-        // 백그라운드에서 휴가 요청 제출
-        javafx.concurrent.Task<LeaveRequestDto> submitTask = new javafx.concurrent.Task<LeaveRequestDto>() {
-            @Override
-            protected LeaveRequestDto call() throws Exception {
-                return apiClient.createLeaveRequest(leaveRequest);
-            }
-        };
-        
-        submitTask.setOnSucceeded(e -> {
-            LeaveRequestDto createdRequest = submitTask.getValue();
-            if (createdRequest != null) {
-                showSuccess("휴가 요청이 성공적으로 제출되었습니다.");
-                clearForm();
-            } else {
-                showError("휴가 요청 제출에 실패했습니다.");
-            }
-        });
-        
-        submitTask.setOnFailed(e -> {
-            showError("휴가 요청 제출 중 오류가 발생했습니다: " + submitTask.getException().getMessage());
-        });
-        
-        new Thread(submitTask).start();
-    }
-    
-    /**
-     * 휴가 요청 DTO를 생성합니다.
-     */
-    private LeaveRequestDto createLeaveRequestDto() {
-        LeaveRequestDto leaveRequest = new LeaveRequestDto();
-        
-        // 사용자 ID 설정
-        if (currentUser != null) {
-            leaveRequest.setEmployeeId(currentUser.getUserId().toString());
-        }
-        
-        // 휴가 종류 설정
-        String leaveType = leaveTypeComboBox.getValue();
-        switch (leaveType) {
-            case "연차":
-                leaveRequest.setLeaveType("ANNUAL");
-                break;
-            case "반차":
-                leaveRequest.setLeaveType("HALF_DAY");
-                break;
-            case "병가":
-                leaveRequest.setLeaveType("SICK");
-                break;
-            case "개인사유":
-                leaveRequest.setLeaveType("PERSONAL");
-                break;
-            case "공가":
-                leaveRequest.setLeaveType("OFFICIAL");
-                break;
-            case "출산휴가":
-                leaveRequest.setLeaveType("MATERNITY");
-                break;
-            case "육아휴가":
-                leaveRequest.setLeaveType("PATERNITY");
-                break;
-            case "특별휴가":
-                leaveRequest.setLeaveType("SPECIAL");
-                break;
-            default:
-                leaveRequest.setLeaveType("ANNUAL");
-        }
-        
-        // 날짜 설정 - 문자열 형식으로 변환
-        LocalDate startDate = startDatePicker.getValue();
-        LocalDate endDate = endDatePicker.getValue();
-        
-        if (startDate != null) {
-            leaveRequest.setStartDate(startDate);
-        }
-        if (endDate != null) {
-            leaveRequest.setEndDate(endDate);
-        }
-        
-        // 사유 설정
-        leaveRequest.setReason(reasonTextArea.getText().trim());
-        
-        // 상태는 PENDING으로 설정 (서버에서 처리)
-        leaveRequest.setStatus("PENDING");
-        
-        return leaveRequest;
+        // 폼 초기화
+        clearForm();
     }
     
     private boolean validateForm() {
@@ -329,18 +206,6 @@ public class LeaveApplicationController implements Initializable {
             return false;
         }
         
-        // 시작일이 종료일보다 늦은 경우
-        if (startDatePicker.getValue().isAfter(endDatePicker.getValue())) {
-            showError("시작일은 종료일보다 빠를 수 없습니다.");
-            return false;
-        }
-        
-        // 시작일이 오늘보다 이전인 경우
-        if (startDatePicker.getValue().isBefore(LocalDate.now())) {
-            showError("시작일은 오늘 이후로 설정해주세요.");
-            return false;
-        }
-        
         // 사유 검증
         if (reasonTextArea.getText() == null || reasonTextArea.getText().trim().isEmpty()) {
             showError("휴가 사유를 입력해주세요.");
@@ -352,15 +217,7 @@ public class LeaveApplicationController implements Initializable {
     
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("오류");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-    
-    private void showSuccess(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("성공");
+        alert.setTitle("입력 오류");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();

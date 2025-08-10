@@ -21,11 +21,6 @@ public class DepartmentDto {
         this.departmentName = departmentName;
     }
 
-    // 문자열로부터 생성하는 생성자 (Jackson 역직렬화용)
-    public DepartmentDto(String departmentName) {
-        this.departmentName = departmentName;
-    }
-
     // ==================== Getter/Setter 메서드 ====================
 
     public Integer getDepartmentId() { return departmentId; }
