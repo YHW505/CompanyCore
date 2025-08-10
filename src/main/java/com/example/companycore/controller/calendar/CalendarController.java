@@ -378,13 +378,12 @@ public class CalendarController implements Initializable {
             e.printStackTrace();
         }
 
-        // 최신 회의록 2-3개 표시
-        List<MeetingNote> recentMeetings = meetingNotes.stream()
+        // 모든 회의록 표시
+        List<MeetingNote> allMeetings = meetingNotes.stream()
                 .sorted((m1, m2) -> m2.getDate().compareTo(m1.getDate())) // 최신순 정렬
-                .limit(3) // 최대 3개만 표시
                 .collect(Collectors.toList());
 
-        for (MeetingNote meeting : recentMeetings) {
+        for (MeetingNote meeting : allMeetings) {
             addMeetingNote(meeting.getTitle(),
                           meeting.getDate().toString(),
                           meeting.getParticipants(),

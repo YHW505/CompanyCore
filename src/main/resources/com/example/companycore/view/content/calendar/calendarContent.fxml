@@ -88,17 +88,18 @@
         </HBox>
 
         <!-- 하단 - 회의록 -->
-        <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2); -fx-min-height: 200;">
+        <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
             <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 15 0;">
-                <Label style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="최신 회의록" />
-                <Button fx:id="refreshMeetingsButton" onAction="#handleRefreshMeetings" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16;" text="새로고침" />
+                <Label style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="회의록" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button fx:id="refreshMeetingsButton" onAction="#handleRefreshMeetings" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 10;" text="새로고침" />
             </HBox>
 
-            <HBox spacing="20">
-                <VBox fx:id="meetingNotesContainer" spacing="15" HBox.hgrow="ALWAYS">
+            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;">
+                <VBox fx:id="meetingNotesContainer" spacing="15" style="-fx-padding: 5;">
                     <!-- 동적으로 생성되는 회의록 항목들 -->
                 </VBox>
-            </HBox>
+            </ScrollPane>
         </VBox>
     </VBox>
 </ScrollPane>
