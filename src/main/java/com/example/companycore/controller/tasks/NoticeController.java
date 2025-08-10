@@ -462,6 +462,7 @@ public class NoticeController {
      * 공지사항 상세 보기 다이얼로그 열기
      */
     private void openNoticeDetailDialog(NoticeItem notice) {
+        System.out.println("<<<<< LATEST CODE MARKER: openNoticeDetailDialog CALLED >>>>>");
         try {
             // FXML 로더 생성
             FXMLLoader loader = new FXMLLoader();
@@ -471,6 +472,17 @@ public class NoticeController {
                 throw new RuntimeException("FXML 파일을 찾을 수 없습니다: noticeDetailDialog.fxml");
             }
             
+            // --- FIX START ---
+            // 상세보기를 위해 서버로부터 완전한 공지사항 정보를 다시 가져옵니다.
+            System.out.println("상세보기를 위해 ID(" + notice.getNoticeId() + ")의 전체 정보를 다시 요청합니다.");
+            NoticeItem fullNoticeItem = apiClient.getNoticeById(notice.getNoticeId());
+
+            if (fullNoticeItem == null) {
+                showAlert("오류", "공지사항의 전체 정보를 불러오는 데 실패했습니다.", Alert.AlertType.ERROR);
+                return;
+            }
+            // --- FIX END ---
+
             Parent root = loader.load();
             
             NoticeDetailController detailController = loader.getController();
@@ -478,8 +490,8 @@ public class NoticeController {
                 throw new RuntimeException("NoticeDetailController를 찾을 수 없습니다.");
             }
             
-            // 공지사항 데이터 설정
-            detailController.setNoticeItem(notice);
+            // 완전한 정보가 담긴 공지사항 객체를 컨트롤러에 설정합니다.
+            detailController.setNoticeItem(fullNoticeItem);
             
             // 다이얼로그 스테이지 생성
             Stage dialogStage = new Stage();

@@ -134,62 +134,41 @@ public class NoticeDetailController {
      */
     private void processAttachments() {
         attachmentFiles.clear();
-        
-        if (noticeItem.hasAttachments()) {
-            // 실제 첨부파일이 있는 경우
-            if (noticeItem.getAttachmentFilename() != null && !noticeItem.getAttachmentFilename().isEmpty()) {
-                String filename = noticeItem.getAttachmentFilename();
-                Long attachmentSize = noticeItem.getAttachmentSize();
-                
-                // 디버깅 로그
-                System.out.println("첨부파일 정보: " + filename + ", 크기: " + attachmentSize);
-                
-                String fileSize;
-                if (attachmentSize != null && attachmentSize > 0) {
-                    fileSize = formatFileSize(attachmentSize);
-                } else {
-                    // 크기 정보가 없으면 Base64 내용에서 크기 계산
-                    if (noticeItem.getAttachmentContent() != null && !noticeItem.getAttachmentContent().isEmpty()) {
-                        try {
-                            byte[] fileBytes = java.util.Base64.getDecoder().decode(noticeItem.getAttachmentContent());
-                            fileSize = formatFileSize(fileBytes.length);
-                            System.out.println("Base64에서 계산된 크기: " + fileBytes.length + " bytes");
-                        } catch (Exception e) {
-                            fileSize = "크기 정보 없음";
-                            System.out.println("Base64 디코딩 실패: " + e.getMessage());
-                        }
-                    } else {
+
+        // 사용자의 요청에 따라 hasAttachments 플래그를 무시하고 항상 첨부파일 필드를 확인하도록 수정
+        if (noticeItem.getAttachmentFilename() != null && !noticeItem.getAttachmentFilename().isEmpty()) {
+            String filename = noticeItem.getAttachmentFilename();
+            Long attachmentSize = noticeItem.getAttachmentSize();
+
+            // 디버깅 로그
+            System.out.println("첨부파일 강제 처리 모드: " + filename + ", 크기: " + attachmentSize);
+
+            String fileSize;
+            if (attachmentSize != null && attachmentSize > 0) {
+                fileSize = formatFileSize(attachmentSize);
+            } else {
+                // 크기 정보가 없으면 Base64 내용에서 크기 계산
+                if (noticeItem.getAttachmentContent() != null && !noticeItem.getAttachmentContent().isEmpty()) {
+                    try {
+                        byte[] fileBytes = java.util.Base64.getDecoder().decode(noticeItem.getAttachmentContent());
+                        fileSize = formatFileSize(fileBytes.length);
+                        System.out.println("Base64에서 계산된 크기: " + fileBytes.length + " bytes");
+                    } catch (Exception e) {
                         fileSize = "크기 정보 없음";
+                        System.out.println("Base64 디코딩 실패: " + e.getMessage());
                     }
+                } else {
+                    fileSize = "크기 정보 없음";
                 }
-                
-                attachmentFiles.add(filename + " (" + fileSize + ")");
-                attachmentSection.setVisible(true);
-                downloadButton.setVisible(true);
             }
+
+            attachmentFiles.add(filename);
+            attachmentSection.setVisible(true);
+            downloadButton.setVisible(true);
         } else {
-            // 내용에서 첨부파일 정보 추출 (기존 방식)
-            String content = noticeItem.getContent();
-            if (content != null && content.contains("[첨부파일]")) {
-                String[] parts = content.split("\\[첨부파일\\]");
-                if (parts.length > 1) {
-                    String attachmentInfo = parts[1];
-                    String[] lines = attachmentInfo.split("\n");
-                    
-                    for (String line : lines) {
-                        line = line.trim();
-                        if (line.startsWith("- ") && line.contains(" (")) {
-                            String filename = line.substring(2, line.lastIndexOf(" ("));
-                            attachmentFiles.add(filename);
-                        }
-                    }
-                    
-                    if (!attachmentFiles.isEmpty()) {
-                        attachmentSection.setVisible(true);
-                        downloadButton.setVisible(true);
-                    }
-                }
-            }
+            // 첨부파일 이름이 없는 경우, 첨부파일 섹션을 숨깁니다.
+            attachmentSection.setVisible(false);
+            downloadButton.setVisible(false);
         }
     }
     
