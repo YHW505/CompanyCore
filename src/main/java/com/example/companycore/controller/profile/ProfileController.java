@@ -175,7 +175,7 @@ public class ProfileController implements Initializable {
         // 기본 정보 업데이트 (상단과 하단 모두 업데이트)
         String userName = currentUser.getUsername();
         profileNameLabel.setText(userName);  // 상단 프로필 섹션
-        nameLabel.setText(userName);        // 하단 개인정보 섹션
+        nameLabel.setText(currentUser.getDepartmentName());        // 하단 개인정보 섹션
         roleLabel.setText(currentUser.getPositionName() != null ? currentUser.getPositionName() : "사원");
         employeeCodeLabel.setText(currentUser.getEmployeeCode());
         emailLabel.setText(currentUser.getEmail());
