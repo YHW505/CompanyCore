@@ -5,7 +5,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
+import javafx.scene.control.TextArea;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
@@ -23,7 +23,7 @@ public class ApprovalDetailController {
     @FXML private Label authorLabel;
     @FXML private Label dateLabel;
     @FXML private Label statusLabel;
-    @FXML private Text contentText;
+    @FXML private TextArea contentText;
     @FXML private VBox attachmentContainer;
     @FXML private VBox attachmentList;
 
@@ -137,29 +137,21 @@ public class ApprovalDetailController {
         String attachmentFilename = approvalItem.getAttachmentFilename();
         Long attachmentSize = approvalItem.getAttachmentSize();
 
-        // 디버깅 정보 출력
         System.out.println("🔍 첨부파일 정보 확인:");
         System.out.println("  - 파일명: " + attachmentFilename);
         System.out.println("  - 파일 크기: " + attachmentSize);
         System.out.println("  - 첨부파일 내용 존재: " + (approvalItem.getAttachmentContent() != null && !approvalItem.getAttachmentContent().isEmpty()));
 
-        // 첨부파일이 있는 경우 표시 (파일명이나 크기가 있으면)
-        if ((attachmentFilename != null && !attachmentFilename.isEmpty()) || 
-            (attachmentSize != null && attachmentSize > 0)) {
-            
-            attachmentContainer.setVisible(true);
-            attachmentList.getChildren().clear();
+        // 첨부파일이 하나만 있다고 가정
+        attachmentList.getChildren().clear();
 
-            // 실제 파일명 사용 (파일명이 없으면 기본값 사용)
-            String filename = attachmentFilename != null && !attachmentFilename.isEmpty() 
-                ? attachmentFilename 
-                : "첨부파일";
+        if ((attachmentFilename != null && !attachmentFilename.isEmpty()) ||
+                (attachmentSize != null && attachmentSize > 0)) {
 
-            // 첨부파일 항목 생성
+            String filename = (attachmentFilename != null && !attachmentFilename.isEmpty()) ? attachmentFilename : "첨부파일";
+
             HBox attachmentItem = createAttachmentItem(filename, attachmentSize);
             attachmentList.getChildren().add(attachmentItem);
-        } else {
-            attachmentContainer.setVisible(false);
         }
     }
 
@@ -174,27 +166,22 @@ public class ApprovalDetailController {
         HBox item = new HBox(10);
         item.setStyle("-fx-padding: 8; -fx-background-color: white; -fx-background-radius: 4;");
 
-        // 파일 아이콘 (📎)
         Label iconLabel = new Label("📎");
         iconLabel.setStyle("-fx-font-size: 16px;");
 
-        // 파일 정보 (파일명과 크기를 한 줄에 표시)
-        HBox fileInfo = new HBox(8);
         Label nameLabel = new Label(filename);
         nameLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #2c3e50;");
-        
+
         String sizeText = formatFileSize(fileSize != null ? fileSize : 0);
         Label sizeLabel = new Label("(" + sizeText + ")");
         sizeLabel.setStyle("-fx-text-fill: #6c757d; -fx-font-size: 12px;");
-        
-        fileInfo.getChildren().addAll(nameLabel, sizeLabel);
 
-        // 다운로드 버튼
         Button downloadBtn = new Button("다운로드");
         downloadBtn.setStyle("-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-padding: 4 8;");
         downloadBtn.setOnAction(e -> downloadAttachment(filename));
 
-        item.getChildren().addAll(iconLabel, fileInfo, downloadBtn);
+        item.getChildren().addAll(iconLabel, nameLabel, sizeLabel, downloadBtn);
+
         return item;
     }
 
@@ -329,7 +316,7 @@ public class ApprovalDetailController {
      * 닫기 버튼 클릭 시 호출되는 메서드
      */
     @FXML
-    private void handleClose() {
+    private void onClose() {
         Stage stage = getStage();
         stage.close();
     }

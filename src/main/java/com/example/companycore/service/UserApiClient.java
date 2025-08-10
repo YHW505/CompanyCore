@@ -364,11 +364,19 @@ public class UserApiClient extends BaseApiClient {
                         System.out.println("✅ UserUpdateResponse에서 userInfo 필드 파싱 성공!");
                         JsonNode userInfoNode = rootNode.get("userInfo");
                         User user = objectMapper.treeToValue(userInfoNode, User.class);
-                        // departmentName을 명시적으로 설정
-                        if (userInfoNode.has("department") && userInfoNode.get("department").has("departmentName")) {
-                            user.setDepartmentName(userInfoNode.get("department").get("departmentName").asText());
-                        } else if (userInfoNode.has("departmentName")) {
+                        // departmentId와 departmentName을 명시적으로 설정
+                        if (userInfoNode.has("departmentId")) {
+                            user.setDepartmentId(userInfoNode.get("departmentId").asInt());
+                        }
+                        if (userInfoNode.has("departmentName")) {
                             user.setDepartmentName(userInfoNode.get("departmentName").asText());
+                        }
+                        // Department 객체 생성 및 설정
+                        if (userInfoNode.has("departmentId") && userInfoNode.has("departmentName")) {
+                            Department department = new Department();
+                            department.setDepartmentId(userInfoNode.get("departmentId").asInt());
+                            department.setDepartmentName(userInfoNode.get("departmentName").asText());
+                            user.setDepartment(department);
                         }
                         return user;
                     } else if (rootNode.has("data")) {
