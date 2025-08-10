@@ -23,8 +23,12 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Optional;
 import com.example.companycore.model.dto.MeetingItem;
 import java.util.stream.Collectors;
+import com.example.companycore.service.MeetingApiClient;
+import com.example.companycore.service.ApiClient;
+
 
 /**
  * 회의 목록을 관리하는 컨트롤러 클래스
@@ -52,12 +56,15 @@ public class MeetingListController {
     @FXML private TableColumn<MeetingItem, String> colDepartment;  // 부서 컬럼
     @FXML private TableColumn<MeetingItem, String> colAuthor;      // 작성자 컬럼
     @FXML private TableColumn<MeetingItem, String> colDate;        // 날짜 컬럼
+    
     @FXML private TableColumn<MeetingItem, String> colAction;      // 액션 컬럼 (상세보기 버튼)
 
     /** 검색 관련 UI 컴포넌트 */
     @FXML private TextField searchField;        // 검색어 입력 필드
     @FXML private ComboBox<String> searchComboBox; // 검색 조건 선택 콤보박스
+    @FXML private ComboBox<String> departmentFilterComboBox; // 부서 필터 콤보박스
     @FXML private Pagination pagination;        // 페이지네이션 UI
+    @FXML private ProgressIndicator loadingIndicator; // 로딩 인디케이터
 
     // ==================== 데이터 관리 ====================
     
@@ -72,6 +79,9 @@ public class MeetingListController {
     
     /** 테스트 모드 플래그 (더미 데이터 사용 여부) */
     private static final boolean TEST_MODE = false;
+    
+    /** API 클라이언트 */
+    private MeetingApiClient meetingApiClient;
 
     // ==================== 초기화 메서드 ====================
     
@@ -81,14 +91,17 @@ public class MeetingListController {
      */
     @FXML
     public void initialize() {
+        // API 클라이언트 초기화
+        meetingApiClient = MeetingApiClient.getInstance();
+        
         // 테이블 기본 설정
         setupTable();
         
         // 검색 기능 초기화
         setupSearch();
         
-        // TODO: 데이터베이스에서 회의 데이터 로드
-        // loadMeetingsFromDatabase();
+        // 데이터베이스에서 회의 데이터 로드
+        loadMeetingsFromDatabase();
         
         // 페이지네이션 설정
         setupPagination();
@@ -103,27 +116,36 @@ public class MeetingListController {
      */
     private void setupTable() {
         // 테이블 기본 설정
-        meetingTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS); // 너비 자동 조정
-        meetingTable.setFixedCellSize(40); // 행 높이 고정
-
-        // 테이블의 높이에 따라 한 페이지에 표시할 행 개수 계산
-        visibleRowCount = (int) (meetingTable.getHeight() / meetingTable.getFixedCellSize());
-        if (visibleRowCount == 0) visibleRowCount = 10;
-
-        // 테이블 높이가 바뀔 때마다 페이지 수 재계산
-        meetingTable.heightProperty().addListener((obs, oldVal, newVal) -> {
-            int newCount = (int) (newVal.doubleValue() / meetingTable.getFixedCellSize());
-            if (newCount != visibleRowCount && newCount > 0) {
-                visibleRowCount = newCount;
-                resetPagingToFirstPage(); // 페이지 처음으로 리셋
-            }
-        });
+        meetingTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        meetingTable.setFixedCellSize(40); // 행 높이를 40px로 설정
+        
+        // 헤더 높이를 30px로 고정하고 테이블 높이 설정
+        meetingTable.setStyle("-fx-table-header-height: 30px; -fx-scroll-bar-policy: never; -fx-pref-height: 427px; -fx-max-height: 427px; -fx-min-height: 427px; -fx-table-header-background: #f0f0f0;");
+        
+        // 테이블이 정확히 10개 행을 표시할 수 있도록 설정 (40px * 10행 + 헤더 높이 27px)
+        meetingTable.setPrefHeight(427); // 40px * 10행 + 헤더 높이 27px = 427px
+        meetingTable.setMaxHeight(427);
+        
+        // 각 컬럼의 헤더 높이도 고정
+        colNumber.setStyle("-fx-table-header-height: 30px;");
+        colTitle.setStyle("-fx-table-header-height: 30px;");
+        colDepartment.setStyle("-fx-table-header-height: 30px;");
+        colAuthor.setStyle("-fx-table-header-height: 30px;");
+        colDate.setStyle("-fx-table-header-height: 30px;");
+        
+        colAction.setStyle("-fx-table-header-height: 30px;");
+        
+        // 고정된 행 수 설정
+        visibleRowCount = 10;
 
         // 컬럼 바인딩 설정
         setupColumnBindings();
         
         // 상세보기 버튼 설정
         setupActionColumn();
+        
+        // 테이블 다중 선택 활성화
+        meetingTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     }
 
     /**
@@ -137,29 +159,60 @@ public class MeetingListController {
                     + pagination.getCurrentPageIndex() * visibleRowCount;
             return new ReadOnlyStringWrapper(String.valueOf(index));
         });
+        colNumber.setStyle("-fx-alignment: center;");
 
         // 나머지 컬럼은 MeetingItem의 프로퍼티를 바인딩
         colTitle.setCellValueFactory(cd -> cd.getValue().titleProperty());
+        colTitle.setStyle("-fx-alignment: center-left;");
         colDepartment.setCellValueFactory(cd -> cd.getValue().departmentProperty());
+        colDepartment.setStyle("-fx-alignment: center;");
         colAuthor.setCellValueFactory(cd -> cd.getValue().authorProperty());
+        colAuthor.setStyle("-fx-alignment: center;");
         colDate.setCellValueFactory(cd -> cd.getValue().dateProperty());
+        colDate.setStyle("-fx-alignment: center;");
+        
+        
+        
+        // 액션 컬럼은 빈 문자열로 설정 (버튼이 표시되므로)
+        colAction.setCellValueFactory(cd -> new ReadOnlyStringWrapper(""));
+        colAction.setStyle("-fx-alignment: center;");
+        colAction.setPrefWidth(120); // 버튼들이 들어갈 공간 확보
     }
 
-    /**
-     * 액션 컬럼에 상세보기 버튼을 설정
-     */
-    private void setupActionColumn() {
-        colAction.setCellFactory(col -> new TableCell<>() {
-            private final Button detailBtn = new Button("상세보기");
+         /**
+      * 액션 컬럼에 상세보기, 수정 버튼을 설정
+      */
+     private void setupActionColumn() {
+         colAction.setCellFactory(col -> new TableCell<>() {
+             private final HBox buttonContainer = new HBox(5);
+             private final Button detailBtn = new Button("상세보기");
+             private final Button editBtn = new Button("수정");
 
-            {
-                // 버튼 스타일 지정 및 클릭 이벤트 핸들링
-                detailBtn.setStyle("-fx-background-color: #007bff; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 4 8;");
-                detailBtn.setOnAction(e -> {
-                    MeetingItem item = getTableView().getItems().get(getIndex());
-                    showMeetingDetail(item); // 상세보기 팝업 호출
-                });
-            }
+             {
+                 // 버튼 컨테이너를 중앙정렬로 설정
+                 buttonContainer.setAlignment(Pos.CENTER);
+                 
+                 // 버튼 크기 및 스타일 설정
+                 detailBtn.setPrefWidth(60);
+                 detailBtn.setPrefHeight(25);
+                 detailBtn.setStyle("-fx-background-color: #007bff; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 2 4; -fx-font-size: 11px;");
+                 
+                 editBtn.setPrefWidth(50);
+                 editBtn.setPrefHeight(25);
+                 editBtn.setStyle("-fx-background-color: #28a745; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 2 4; -fx-font-size: 11px;");
+                 
+                 detailBtn.setOnAction(e -> {
+                     MeetingItem item = getTableView().getItems().get(getIndex());
+                     showMeetingDetail(item); // 상세보기 팝업 호출
+                 });
+                 
+                 editBtn.setOnAction(e -> {
+                     MeetingItem item = getTableView().getItems().get(getIndex());
+                     showMeetingEdit(item); // 수정 팝업 호출
+                 });
+                 
+                 buttonContainer.getChildren().addAll(detailBtn, editBtn);
+             }
 
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -167,7 +220,7 @@ public class MeetingListController {
                 if (empty) {
                     setGraphic(null); // 비어있으면 버튼 없음
                 } else {
-                    setGraphic(detailBtn); // 버튼 표시
+                    setGraphic(buttonContainer); // 버튼들 표시
                 }
             }
         });
@@ -179,43 +232,142 @@ public class MeetingListController {
     private void setupSearch() {
         // 검색 콤보박스 초기화
         searchComboBox.getItems().addAll("전체", "제목", "부서", "작성자");
-        searchComboBox.setValue(null);
+        searchComboBox.setValue("전체");
+        
+        // 부서 필터 콤보박스 초기화
+        departmentFilterComboBox.getItems().addAll("전체", "인사팀", "개발팀", "마케팅팀", "영업팀");
+        departmentFilterComboBox.setValue("전체");
     }
 
     // ==================== 데이터 관리 메서드 ====================
     
     /**
-     * 테스트용 더미 데이터를 생성하여 테이블에 로드
-     * 
-     * @param count 생성할 데이터 개수
+     * 데이터베이스에서 회의 목록을 로드합니다.
      */
-    private void loadDummyData() {
+    public void loadMeetingsFromDatabase() {
+        if (TEST_MODE) {
+            // 테스트 모드일 때만 더미 데이터 로드
+            loadTestData();
+        } else {
+            // 실제 서버에서 데이터 로드
+            loadDataFromServer();
+        }
+    }
+
+    /**
+     * 테스트 데이터를 로드합니다.
+     */
+    private void loadTestData() {
         fullData.clear();
-        // TODO: 데이터베이스에서 실제 회의 데이터를 가져와서 표시
-        // 현재는 빈 데이터로 초기화
-        viewData.addAll(fullData);
-        meetingTable.setItems(viewData);
+        viewData.clear();
+        System.out.println("테스트 데이터 로드 완료: 0개");
+        updatePagination();
     }
 
     /**
-     * 랜덤 부서명을 반환
-     * 
-     * @return 랜덤 선택된 부서명
+     * 서버에서 실제 데이터를 로드합니다.
      */
-    private String getRandomDepartment() {
-        String[] departments = {"개발팀", "인사팀", "마케팅팀", "영업팀", "총무팀"};
-        return departments[(int) (Math.random() * departments.length)];
+    void loadDataFromServer() {
+        // 로딩 인디케이터 표시
+        showLoading(true);
+
+        // 백그라운드에서 데이터 로드
+        javafx.concurrent.Task<Void> loadTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                // 현재 사용자 정보 및 부서 ID 가져오기
+                ApiClient apiClient = ApiClient.getInstance();
+                com.example.companycore.model.entity.User currentUser = apiClient.getCurrentUser();
+                String userDepartmentName = (currentUser != null) ? currentUser.getDepartmentName() : null;
+
+                if (userDepartmentName == null) {
+                    System.out.println("사용자 부서 ID를 찾을 수 없어 회의록을 필터링할 수 없습니다.");
+                    javafx.application.Platform.runLater(() -> {
+                        fullData.clear();
+                        viewData.clear();
+                        updatePagination();
+                        showLoading(false);
+                    });
+                    return null;
+                }
+
+                MeetingApiClient meetingApiClient = MeetingApiClient.getInstance();
+                List<MeetingApiClient.MeetingDto> meetings = meetingApiClient.getAllMeetingsSimple();
+
+                final List<MeetingItem> filteredMeetings = new ArrayList<>();
+                if (meetings != null) {
+                    for (MeetingApiClient.MeetingDto meetingDto : meetings) {
+                        // 사용자의 부서 ID와 회의록의 부서 ID가 일치하는 경우에만 추가
+                        if (userDepartmentName.equals(meetingDto.getDepartment())) {
+                            String title = meetingDto.getTitle() != null ? meetingDto.getTitle() : "제목 없음";
+                            String department = meetingDto.getDepartment() != null ? meetingDto.getDepartment() : "Unknown";
+                            String author = meetingDto.getAuthor() != null ? meetingDto.getAuthor() : "Unknown";
+                            String date = meetingDto.getStartTime() != null ?
+                                    meetingDto.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) : "Unknown";
+
+                            MeetingItem item = new MeetingItem(
+                                    meetingDto.getMeetingId(),
+                                    title,
+                                    department,
+                                    author,
+                                    date,
+                                    meetingDto.getDescription() != null ? meetingDto.getDescription() : "",
+                                    meetingDto.getLocation() != null ? meetingDto.getLocation() : "",
+                                    meetingDto.getAttachmentContent() != null ? meetingDto.getAttachmentContent() : "",
+                                    meetingDto.getAttachmentPath() != null ? meetingDto.getAttachmentPath() : "",
+                                    meetingDto.getAttachmentSize(),
+                                    meetingDto.getAttachmentFilename() != null ? meetingDto.getAttachmentFilename() : "",
+                                    meetingDto.getAttachmentContentType() != null ? meetingDto.getAttachmentContentType() : ""
+                            );
+                            filteredMeetings.add(item);
+                        }
+                    }
+                }
+
+                // UI 업데이트는 Platform.runLater에서 수행
+                javafx.application.Platform.runLater(() -> {
+                    fullData.clear();
+                    viewData.clear();
+                    fullData.addAll(filteredMeetings);
+                    viewData.addAll(fullData);
+                    System.out.println("서버에서 부서 ID로 필터링된 회의 데이터 로드 완료: " + fullData.size() + "개");
+                    updatePagination();
+                    showLoading(false);
+                });
+
+                return null;
+            }
+        };
+        
+        // 에러 처리
+        loadTask.setOnFailed(event -> {
+            System.err.println("회의 데이터 로드 실패: " + loadTask.getException().getMessage());
+            loadTask.getException().printStackTrace();
+            fullData.clear();
+            viewData.clear();
+            updatePagination();
+            showLoading(false);
+        });
+        
+        // 백그라운드 스레드에서 실행
+        Thread loadThread = new Thread(loadTask);
+        loadThread.setDaemon(true);
+        loadThread.start();
+    }
+    
+    /**
+     * 로딩 인디케이터 표시/숨김
+     */
+    private void showLoading(boolean show) {
+        if (loadingIndicator != null) {
+            loadingIndicator.setVisible(show);
+            loadingIndicator.setManaged(show);
+            meetingTable.setVisible(!show);
+            meetingTable.setManaged(!show);
+        }
     }
 
-    /**
-     * 랜덤 작성자명을 반환
-     * 
-     * @return 랜덤 선택된 작성자명
-     */
-    private String getRandomAuthor() {
-        String[] authors = {"김철수", "이영희", "박민수", "정수진", "최동욱"};
-        return authors[(int) (Math.random() * authors.length)];
-    }
+
 
     // ==================== 페이지네이션 메서드 ====================
     
@@ -223,42 +375,61 @@ public class MeetingListController {
      * 페이지네이션 UI를 구성하고 설정
      */
     private void setupPagination() {
-        int totalPages = (int) Math.ceil((double) viewData.size() / visibleRowCount);
-        pagination.setPageCount(totalPages);
-
-        pagination.setPageFactory(pageIndex -> {
-            applyPageItems(pageIndex);
-            return new Region(); // 빈 노드 반환
-        });
-
-        // 첫 페이지 초기화
-        if (!viewData.isEmpty()) {
-            applyPageItems(0);
-        }
-    }
-
-    /**
-     * 페이지네이션을 첫 페이지로 리셋
-     */
-    private void resetPagingToFirstPage() {
+        pagination.setPageCount(1);
         pagination.setCurrentPageIndex(0);
-        applyPageItems(0);
+        pagination.setPageFactory(this::createPage);
+        updatePagination();
     }
-
+    
     /**
-     * 해당 페이지의 데이터만 추려서 테이블에 적용
-     * 
-     * @param pageIndex 페이지 인덱스 (0부터 시작)
+     * 페이지네이션 업데이트
      */
-    private void applyPageItems(int pageIndex) {
-        int fromIndex = pageIndex * visibleRowCount;
-        int toIndex = Math.min(fromIndex + visibleRowCount, viewData.size());
-
-        if (fromIndex < viewData.size()) {
-            List<MeetingItem> pageData = viewData.subList(fromIndex, toIndex);
+    private void updatePagination() {
+        int totalPages = (int) Math.ceil((double) viewData.size() / visibleRowCount);
+        pagination.setPageCount(Math.max(1, totalPages));
+        
+        // 현재 페이지가 총 페이지 수를 초과하면 마지막 페이지로 설정
+        if (pagination.getCurrentPageIndex() >= totalPages) {
+            pagination.setCurrentPageIndex(Math.max(0, totalPages - 1));
+        }
+        
+        // 첫 페이지 데이터 로드
+        if (viewData.size() > 0) {
+            int startIndex = 0;
+            int endIndex = Math.min(visibleRowCount, viewData.size());
+            List<MeetingItem> pageData = viewData.subList(startIndex, endIndex);
             meetingTable.setItems(FXCollections.observableArrayList(pageData));
+            System.out.println("페이지네이션 업데이트: " + pageData.size() + "개 항목 (전체: " + viewData.size() + "개)");
+        } else {
+            meetingTable.setItems(FXCollections.observableArrayList());
+            System.out.println("페이지네이션 업데이트: 빈 목록");
         }
     }
+    
+    /**
+     * 페이지 생성
+     */
+    private Region createPage(int pageIndex) {
+        // 페이지 인덱스가 유효한지 확인
+        int totalPages = (int) Math.ceil((double) viewData.size() / visibleRowCount);
+        if (pageIndex >= totalPages) {
+            return new Region();
+        }
+        
+        // 현재 페이지의 데이터 계산
+        int startIndex = pageIndex * visibleRowCount;
+        int endIndex = Math.min(startIndex + visibleRowCount, viewData.size());
+        
+        // 현재 페이지의 데이터만 테이블에 설정
+        List<MeetingItem> pageData = viewData.subList(startIndex, endIndex);
+        meetingTable.setItems(FXCollections.observableArrayList(pageData));
+        
+        System.out.println("페이지 " + (pageIndex + 1) + " 로드: " + pageData.size() + "개 항목 (전체: " + viewData.size() + "개)");
+        
+        return new Region();
+    }
+
+
 
     // ==================== 이벤트 핸들러 메서드 ====================
     
@@ -294,16 +465,9 @@ public class MeetingListController {
         viewData.clear();
         viewData.addAll(filtered);
 
-        // 페이지네이션 재설정
-        int totalPages = (int) Math.ceil((double) viewData.size() / visibleRowCount);
-        pagination.setPageCount(totalPages);
+        // 페이지네이션 업데이트 및 첫 페이지로 리셋
+        updatePagination();
         pagination.setCurrentPageIndex(0);
-
-        if (!viewData.isEmpty()) {
-            applyPageItems(0);
-        } else {
-            meetingTable.setItems(FXCollections.observableArrayList());
-        }
     }
 
     /**
@@ -312,17 +476,50 @@ public class MeetingListController {
      */
     @FXML
     public void handleDelete() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("삭제 확인");
-        alert.setHeaderText(null);
-        alert.setContentText("선택된 회의를 삭제하시겠습니까?");
+        ObservableList<MeetingItem> selectedItems = meetingTable.getSelectionModel().getSelectedItems();
 
-        alert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                // 실제 삭제 로직은 여기에 구현
-                System.out.println("회의 삭제됨");
+        if (selectedItems.isEmpty()) {
+            new Alert(Alert.AlertType.WARNING, "삭제할 회의를 하나 이상 선택하세요.").showAndWait();
+            return;
+        }
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("회의 삭제");
+        alert.setHeaderText("회의 다중 삭제 확인");
+        alert.setContentText("정말로 선택된 " + selectedItems.size() + "개의 회의를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.");
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            List<MeetingItem> successfullyDeleted = new ArrayList<>();
+            List<String> failedDeletions = new ArrayList<>();
+
+            for (MeetingItem item : selectedItems) {
+                try {
+                    boolean success = meetingApiClient.deleteMeeting(item.getId());
+                    if (success) {
+                        successfullyDeleted.add(item);
+                    } else {
+                        failedDeletions.add(item.getTitle());
+                    }
+                } catch (Exception e) {
+                    failedDeletions.add(item.getTitle() + " (오류: " + e.getMessage() + ")");
+                    e.printStackTrace();
+                }
             }
-        });
+
+            // UI 및 데이터 소스에서 삭제
+            fullData.removeAll(successfullyDeleted);
+            viewData.removeAll(successfullyDeleted);
+            updatePagination();
+
+            // 결과 알림
+            if (failedDeletions.isEmpty()) {
+                new Alert(Alert.AlertType.INFORMATION, selectedItems.size() + "개의 회의가 성공적으로 삭제되었습니다.").showAndWait();
+            } else {
+                String failedTitles = String.join(", ", failedDeletions);
+                new Alert(Alert.AlertType.ERROR, "일부 회의 삭제에 실패했습니다: " + failedTitles).showAndWait();
+            }
+        }
     }
 
     /**
@@ -346,6 +543,10 @@ public class MeetingListController {
             FXMLLoader loader = new FXMLLoader(fxmlPath);
             Parent formRoot = loader.load();
 
+            // 컨트롤러 가져오기
+            MeetingFormController formController = loader.getController();
+            formController.setParentController(this);
+
             Stage stage = new Stage();
             stage.setTitle("회의록 등록");
             stage.setScene(new Scene(formRoot));
@@ -365,13 +566,117 @@ public class MeetingListController {
      * @param item 상세보기할 회의 아이템
      */
     private void showMeetingDetail(MeetingItem item) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("회의 상세보기");
-        alert.setHeaderText(item.getTitle());
-        alert.setContentText("부서: " + item.getDepartment() + "\n" +
-                "작성자: " + item.getAuthor() + "\n" +
-                "일자: " + item.getDate());
-        alert.showAndWait();
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/content/tasks/meetingDetailDialog.fxml"));
+            Parent root = loader.load();
+
+            MeetingDetailController controller = loader.getController();
+            controller.setMeetingItem(item);
+
+            Stage stage = new Stage();
+            stage.setTitle("회의 상세보기");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("오류");
+            alert.setHeaderText(null);
+            alert.setContentText("상세보기 창을 열 수 없습니다: " + e.getMessage());
+            alert.showAndWait();
+        }
     }
 
+    /**
+     * 회의 삭제 기능
+     */
+    private void deleteMeeting(MeetingItem item) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("회의 삭제");
+        alert.setHeaderText("회의 삭제 확인");
+        alert.setContentText("정말로 '" + item.getTitle() + "' 회의를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.");
+        
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                // 서버에서 회의 삭제
+                boolean success = meetingApiClient.deleteMeeting(item.getId());
+                
+                if (success) {
+                    // 성공 시 목록에서 제거
+                    fullData.remove(item);
+                    viewData.remove(item);
+                    
+                    // 성공 메시지 표시
+                    Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+                    successAlert.setTitle("삭제 완료");
+                    successAlert.setHeaderText("회의 삭제 완료");
+                    successAlert.setContentText("회의가 성공적으로 삭제되었습니다.");
+                    successAlert.showAndWait();
+                    
+                    // 테이블 새로고침
+                    updatePagination();
+                } else {
+                    // 실패 메시지 표시
+                    Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                    errorAlert.setTitle("삭제 실패");
+                    errorAlert.setHeaderText("회의 삭제 실패");
+                    errorAlert.setContentText("회의 삭제 중 오류가 발생했습니다.");
+                    errorAlert.showAndWait();
+                }
+            } catch (Exception e) {
+                System.err.println("회의 삭제 중 오류 발생: " + e.getMessage());
+                e.printStackTrace();
+                
+                Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                errorAlert.setTitle("삭제 실패");
+                errorAlert.setHeaderText("회의 삭제 실패");
+                errorAlert.setContentText("회의 삭제 중 오류가 발생했습니다: " + e.getMessage());
+                errorAlert.showAndWait();
+            }
+        }
+    }
+
+    /**
+     * 회의 수정 팝업을 표시
+     * 
+     * @param item 수정할 회의 아이템
+     */
+    private void showMeetingEdit(MeetingItem item) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/companycore/view/content/tasks/meetingEdit.fxml"));
+            Parent root = loader.load();
+
+            MeetingEditController editController = loader.getController();
+            editController.setParentController(this);
+            editController.setMeetingData(item); // 수정할 회의 아이템 설정
+
+            Stage stage = new Stage();
+            stage.setTitle("회의록 수정");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("오류");
+            alert.setHeaderText(null);
+            alert.setContentText("수정 창을 열 수 없습니다: " + e.getMessage());
+            alert.showAndWait();
+        }
+    }
+
+    
+
+    /**
+     * 현재 Stage를 가져옵니다.
+     * 
+     * @return 현재 Stage
+     */
+    private Stage getStage() {
+        return (Stage) meetingTable.getScene().getWindow();
+    }
 }

@@ -52,4 +52,8 @@ module com.example.companycore {
     // DTO 패키지 설정 추가
     exports com.example.companycore.model.dto;
     opens com.example.companycore.model.dto to com.fasterxml.jackson.databind;
+
+    // Service 패키지 설정 추가 (Jackson 직렬화/역직렬화를 위해)
+    exports com.example.companycore.service;
+    opens com.example.companycore.service to com.fasterxml.jackson.databind;
 }

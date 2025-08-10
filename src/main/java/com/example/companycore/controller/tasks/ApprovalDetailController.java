@@ -1,115 +1,336 @@
 package com.example.companycore.controller.tasks;
 
 import com.example.companycore.model.dto.ApprovalItem;
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
-import java.util.List;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Base64;
 
-/**
- * 결재 상세 정보를 표시하는 컨트롤러 클래스
- * 
- * 주요 기능:
- * - 결재 상세 정보 표시
- * - 결재 내용 및 첨부파일 관리
- * - 다이얼로그 창 제어
- * - 결재 데이터 바인딩
- * 
- * @author Company Core Team
- * @version 1.0
- */
 public class ApprovalDetailController {
 
-    // ==================== FXML UI 컴포넌트 ====================
-    
-    /** 결재 제목 라벨 */
     @FXML private Label titleLabel;
-    
-    /** 작성자 라벨 */
-    @FXML private Label writerLabel;
-    
-    /** 날짜 라벨 */
-    @FXML private Label dateLabel;
-    
-    /** 부서 라벨 */
     @FXML private Label departmentLabel;
-    
-    /** 결재 내용 텍스트 영역 */
-    @FXML private TextArea contentArea;
-    
-    /** 첨부파일 리스트뷰 */
-    @FXML private ListView<String> attachmentListView;
+    @FXML private Label authorLabel;
+    @FXML private Label dateLabel;
+    @FXML private Label statusLabel;
+    @FXML private Text contentText;
+    @FXML private VBox attachmentContainer;
+    @FXML private VBox attachmentList;
 
-    // ==================== 상태 관리 ====================
-    
-    /** 다이얼로그 스테이지 참조 */
-    private Stage dialogStage;
+    private ApprovalItem approvalItem;
+//    private boolean isProgress = true;
 
-    // ==================== 설정 메서드 ====================
-    
-    /**
-     * 다이얼로그 스테이지를 설정
-     * 다이얼로그 창을 제어하기 위한 Stage 참조를 저장
-     * 
-     * @param stage 다이얼로그 스테이지
-     */
-    public void setDialogStage(Stage stage) {
-        this.dialogStage = stage;
+//    public boolean getIsProgress(){
+//        return isProgress;
+//    }
+
+
+    @FXML
+    public void initialize() {
+        // 초기화 로직
     }
 
     /**
-     * 결재 아이템의 데이터를 UI 컴포넌트에 바인딩
-     * 결재의 모든 정보(제목, 작성자, 날짜, 부서, 내용, 첨부파일)를 화면에 표시
+     * 결재 아이템을 설정하고 UI를 업데이트합니다.
      * 
      * @param item 표시할 결재 아이템
      */
     public void setApprovalItem(ApprovalItem item) {
-        // 기본 정보 설정 (null 체크 포함)
-        titleLabel.setText(item.getTitle() != null ? item.getTitle() : "");
-        writerLabel.setText(item.getAuthor() != null ? item.getAuthor() : "");
-        dateLabel.setText(item.getDate() != null ? item.getDate() : "");
-        departmentLabel.setText(item.getDepartment() != null ? item.getDepartment() : "");
-        contentArea.setText(item.getContent() != null ? item.getContent() : "");
-
-        // 첨부파일 설정
-        setupAttachments(item.getAttachments());
+        this.approvalItem = item;
+        // 서버에서 상세 정보를 가져와서 UI 업데이트
+        loadDetailFromServer();
     }
-    
+
+
+
     /**
-     * 첨부파일 목록을 설정
-     * 첨부파일이 있으면 리스트뷰에 표시하고, 없으면 빈 목록으로 설정
-     * 
-     * @param attachments 첨부파일 목록
+     * 서버에서 상세 정보를 가져와서 UI를 업데이트합니다.
      */
-    private void setupAttachments(List<String> attachments) {
-        if (attachments != null && !attachments.isEmpty()) {
-            // 첨부파일이 있으면 ObservableList로 변환하여 리스트뷰에 설정
-            attachmentListView.setItems(FXCollections.observableArrayList(attachments));
-        } else {
-            // 첨부파일이 없으면 리스트뷰를 비움
-            attachmentListView.getItems().clear();
+    private void loadDetailFromServer() {
+        if (approvalItem == null) return;
+        
+        try {
+            // 서버에서 상세 정보 가져오기
+            com.example.companycore.service.ApprovalApiClient approvalApiClient = 
+                com.example.companycore.service.ApprovalApiClient.getInstance();
+            
+            com.example.companycore.model.dto.ApprovalDto detailDto = 
+                approvalApiClient.getApprovalById(approvalItem.getServerId());
+            
+            if (detailDto != null) {
+                // 상세 정보로 ApprovalItem 업데이트
+                this.approvalItem = com.example.companycore.model.dto.ApprovalItem.fromApprovalDto(detailDto);
+                updateUI();
+            } else {
+                // 서버에서 정보를 가져올 수 없는 경우 기본 정보로 표시
+                updateUI();
+            }
+        } catch (Exception e) {
+            System.err.println("상세 정보 로드 중 오류: " + e.getMessage());
+            e.printStackTrace();
+            // 오류 발생 시 기본 정보로 표시
+            updateUI();
         }
     }
 
-    // ==================== 이벤트 핸들러 메서드 ====================
-    
+    /**
+     * UI를 결재 데이터로 업데이트합니다.
+     */
+    private void updateUI() {
+        if (approvalItem == null) return;
+
+        // 기본 정보 설정
+        titleLabel.setText(approvalItem.getTitle());
+        departmentLabel.setText(approvalItem.getDepartment());
+        authorLabel.setText(approvalItem.getAuthor());
+        dateLabel.setText(approvalItem.getDate());
+        statusLabel.setText(approvalItem.getStatusKorean());
+
+        // 상태에 따른 색상 설정
+        setStatusColor(approvalItem.getStatus());
+
+        // 내용 설정
+        contentText.setText(approvalItem.getContent() != null ? approvalItem.getContent() : "내용 없음");
+
+        // 첨부파일 처리
+        processAttachments();
+    }
+
+    /**
+     * 상태에 따른 색상을 설정합니다.
+     * 
+     * @param status 상태
+     */
+    private void setStatusColor(String status) {
+        if (status == null) return;
+
+        switch (status) {
+            case "승인됨":
+                statusLabel.setStyle("-fx-background-color: #d4edda; -fx-background-radius: 6; -fx-padding: 8; -fx-border-color: #c3e6cb; -fx-border-width: 1; -fx-border-radius: 6; -fx-text-fill: #155724; -fx-font-weight: bold;");
+                break;
+            case "거부됨":
+                statusLabel.setStyle("-fx-background-color: #f8d7da; -fx-background-radius: 6; -fx-padding: 8; -fx-border-color: #f5c6cb; -fx-border-width: 1; -fx-border-radius: 6; -fx-text-fill: #721c24; -fx-font-weight: bold;");
+                break;
+            case "대기중":
+            default:
+                statusLabel.setStyle("-fx-background-color: #fff3cd; -fx-background-radius: 6; -fx-padding: 8; -fx-border-color: #ffeaa7; -fx-border-width: 1; -fx-border-radius: 6; -fx-text-fill: #856404; -fx-font-weight: bold;");
+                break;
+        }
+    }
+
+    /**
+     * 첨부파일을 처리하고 UI에 표시합니다.
+     */
+    private void processAttachments() {
+        if (approvalItem == null) return;
+
+        String attachmentFilename = approvalItem.getAttachmentFilename();
+        Long attachmentSize = approvalItem.getAttachmentSize();
+
+        // 디버깅 정보 출력
+        System.out.println("🔍 첨부파일 정보 확인:");
+        System.out.println("  - 파일명: " + attachmentFilename);
+        System.out.println("  - 파일 크기: " + attachmentSize);
+        System.out.println("  - 첨부파일 내용 존재: " + (approvalItem.getAttachmentContent() != null && !approvalItem.getAttachmentContent().isEmpty()));
+
+        // 첨부파일이 있는 경우 표시 (파일명이나 크기가 있으면)
+        if ((attachmentFilename != null && !attachmentFilename.isEmpty()) || 
+            (attachmentSize != null && attachmentSize > 0)) {
+            
+            attachmentContainer.setVisible(true);
+            attachmentList.getChildren().clear();
+
+            // 실제 파일명 사용 (파일명이 없으면 기본값 사용)
+            String filename = attachmentFilename != null && !attachmentFilename.isEmpty() 
+                ? attachmentFilename 
+                : "첨부파일";
+
+            // 첨부파일 항목 생성
+            HBox attachmentItem = createAttachmentItem(filename, attachmentSize);
+            attachmentList.getChildren().add(attachmentItem);
+        } else {
+            attachmentContainer.setVisible(false);
+        }
+    }
+
+    /**
+     * 첨부파일 항목을 생성합니다.
+     * 
+     * @param filename 파일명
+     * @param fileSize 파일 크기
+     * @return 첨부파일 항목 HBox
+     */
+    private HBox createAttachmentItem(String filename, Long fileSize) {
+        HBox item = new HBox(10);
+        item.setStyle("-fx-padding: 8; -fx-background-color: white; -fx-background-radius: 4;");
+
+        // 파일 아이콘 (📎)
+        Label iconLabel = new Label("📎");
+        iconLabel.setStyle("-fx-font-size: 16px;");
+
+        // 파일 정보 (파일명과 크기를 한 줄에 표시)
+        HBox fileInfo = new HBox(8);
+        Label nameLabel = new Label(filename);
+        nameLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        
+        String sizeText = formatFileSize(fileSize != null ? fileSize : 0);
+        Label sizeLabel = new Label("(" + sizeText + ")");
+        sizeLabel.setStyle("-fx-text-fill: #6c757d; -fx-font-size: 12px;");
+        
+        fileInfo.getChildren().addAll(nameLabel, sizeLabel);
+
+        // 다운로드 버튼
+        Button downloadBtn = new Button("다운로드");
+        downloadBtn.setStyle("-fx-background-color: #5932EA; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-padding: 4 8;");
+        downloadBtn.setOnAction(e -> downloadAttachment(filename));
+
+        item.getChildren().addAll(iconLabel, fileInfo, downloadBtn);
+        return item;
+    }
+
+    /**
+     * 첨부파일을 다운로드합니다.
+     * 
+     * @param filename 파일명
+     */
+    private void downloadAttachment(String filename) {
+        if (approvalItem == null) {
+            showAlert("오류", "결재 정보가 없습니다.");
+            return;
+        }
+
+        try {
+            // 다운로드 위치 선택
+            DirectoryChooser directoryChooser = new DirectoryChooser();
+            directoryChooser.setTitle("다운로드 위치 선택");
+            File selectedDirectory = directoryChooser.showDialog(getStage());
+            
+            if (selectedDirectory != null) {
+                // 먼저 로컬에서 첨부파일 내용 확인
+                String attachmentContent = approvalItem.getAttachmentContent();
+                
+                if (attachmentContent != null && !attachmentContent.trim().isEmpty()) {
+                    // 로컬에 내용이 있으면 바로 다운로드
+                    downloadActualFile(selectedDirectory, filename, attachmentContent);
+                    showAlert("성공", "파일이 성공적으로 다운로드되었습니다.");
+                } else {
+                    // 로컬에 내용이 없으면 서버에서 가져오기
+                    loadAttachmentContentAndDownload(selectedDirectory, filename);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("오류", "파일 다운로드 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 서버에서 첨부파일 내용을 가져와서 다운로드합니다.
+     * 
+     * @param directory 다운로드 디렉토리
+     * @param filename 파일명
+     */
+    private void loadAttachmentContentAndDownload(File directory, String filename) {
+        // API를 사용하지 않고 로컬 데이터만 사용
+        System.err.println("❌ 첨부파일 내용이 로컬에 없습니다.");
+        showAlert("오류", "첨부파일 내용이 없습니다.\n\n업로드 시 첨부파일 내용이 저장되지 않았습니다.");
+    }
+
+    /**
+     * 실제 파일 다운로드 (Base64 디코딩)
+     */
+    private void downloadActualFile(File directory, String filename, String attachmentContent) throws IOException {
+        Path targetPath = Paths.get(directory.getAbsolutePath(), filename);
+        
+        // 서버에서 가져온 Base64로 인코딩된 파일 내용 사용
+        if (attachmentContent != null && !attachmentContent.trim().isEmpty()) {
+            try {
+                // Base64 디코딩
+                byte[] fileBytes = java.util.Base64.getDecoder().decode(attachmentContent);
+                Files.write(targetPath, fileBytes);
+                                 System.out.println("✅ 첨부파일 다운로드 완료: " + filename + " (" + fileBytes.length + " bytes) - Base64 내용 생략");
+            } catch (Exception e) {
+                System.out.println("Base64 디코딩 오류: " + e.getMessage());
+                throw new IOException("첨부파일 내용을 디코딩할 수 없습니다: " + e.getMessage());
+            }
+        } else {
+            // 파일 내용이 없는 경우 오류 발생
+            throw new IOException("첨부파일 내용이 없습니다.");
+        }
+    }
+
+    /**
+     * Base64 문자열이 유효한지 확인합니다.
+     * 
+     * @param str 확인할 문자열
+     * @return 유효한 Base64인 경우 true
+     */
+    private boolean isValidBase64(String str) {
+        if (str == null || str.trim().isEmpty()) {
+            return false;
+        }
+        
+        try {
+            // Base64 디코딩 시도
+            Base64.getDecoder().decode(str);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    /**
+     * 파일 크기를 포맷팅합니다.
+     * 
+     * @param bytes 파일 크기 (바이트)
+     * @return 포맷팅된 파일 크기 문자열
+     */
+    private String formatFileSize(long bytes) {
+        if (bytes < 1024) return bytes + " B";
+        int exp = (int) (Math.log(bytes) / Math.log(1024));
+        String pre = "KMGTPE".charAt(exp-1) + "";
+        return String.format("%.1f %sB", bytes / Math.pow(1024, exp), pre);
+    }
+
+    /**
+     * 알림 다이얼로그를 표시합니다.
+     * 
+     * @param title 제목
+     * @param content 내용
+     */
+    private void showAlert(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+
+    /**
+     * 현재 Stage를 가져옵니다.
+     * 
+     * @return 현재 Stage
+     */
+    private Stage getStage() {
+        return (Stage) titleLabel.getScene().getWindow();
+    }
+
     /**
      * 닫기 버튼 클릭 시 호출되는 메서드
-     * 다이얼로그 창을 닫는 기능을 수행
-     * FXML에서 onAction으로 연결됨
      */
     @FXML
-    private void onClose() {
-        if (dialogStage != null) {
-            // 다이얼로그 스테이지가 설정되어 있으면 해당 스테이지를 닫음
-            dialogStage.close();
-        } else {
-            // 다이얼로그 스테이지가 설정되어 있지 않으면 현재 씬의 윈도우를 숨김
-            contentArea.getScene().getWindow().hide();
-        }
+    private void handleClose() {
+        Stage stage = getStage();
+        stage.close();
     }
 }
