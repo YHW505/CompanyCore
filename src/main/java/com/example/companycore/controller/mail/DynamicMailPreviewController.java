@@ -193,6 +193,15 @@ public class DynamicMailPreviewController {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("첨부파일 저장");
         fileChooser.setInitialFileName(selectedMessage.getAttachmentFilename());
+        // 파일 확장자 필터 추가
+        String contentType = selectedMessage.getAttachmentContentType();
+        if (contentType != null && !contentType.isEmpty()) {
+            String extension = com.example.companycore.util.FileUtil.getExtensionFromContentType(contentType);
+            if (extension != null) {
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(contentType + " Files", "*" + extension));
+            }
+        }
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All Files", "*.*"));
         File file = fileChooser.showSaveDialog(null);
 
         if (file != null) {

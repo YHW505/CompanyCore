@@ -161,101 +161,35 @@ public class NoticeEditController {
      */
     private void setCurrentUserInfo() {
         try {
-            // JWT 토큰에서 사용자 정보 추출
-            String token = apiClient.getAuthToken();
-            if (token != null && token.contains(".")) {
-                String[] parts = token.split("\\.");
-                if (parts.length == 3) {
-                    String payload = parts[1];
-                    // Base64 디코딩 (패딩 추가)
-                    while (payload.length() % 4 != 0) {
-                        payload += "=";
-                    }
-                    String decodedPayload = new String(java.util.Base64.getUrlDecoder().decode(payload));
-                    
-                    // JSON 파싱
-                    com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                    com.fasterxml.jackson.databind.JsonNode payloadNode = mapper.readTree(decodedPayload);
-                    
-                    // 사용자 정보 설정
-                    if (payloadNode.has("sub")) {
-                        String employeeCode = payloadNode.get("sub").asText();
-                        
-                        // API를 통해 실제 사용자 정보 가져오기
-                        try {
-                            // 사용자 정보 API 호출 (실제 구현 필요)
-                            String userName = getUserNameFromApi(employeeCode);
-                            if (userName != null && !userName.trim().isEmpty()) {
-                                authorTextField.setText(userName);
-                            } else {
-                                // API에서 이름을 가져올 수 없는 경우 기본값
-                                authorTextField.setText("사용자");
-                            }
-                        } catch (Exception e) {
-                            System.out.println("사용자 정보 API 호출 실패: " + e.getMessage());
-                            authorTextField.setText("사용자");
-                        }
-                        
-                        authorTextField.setDisable(true); // 비활성화
-                    }
-                    
-                    // 부서 정보는 기본값으로 설정 (실제로는 API에서 사용자 정보를 가져와야 함)
-                    departmentComboBox.setValue("개발팀"); // 기본값
-                    departmentComboBox.setDisable(true); // 비활성화
-                    
-                    System.out.println("현재 사용자 정보 설정 완료");
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("사용자 정보 설정 중 오류: " + e.getMessage());
-            // 오류 발생 시 기본값 설정
-            authorTextField.setText("사용자");
-            authorTextField.setDisable(true);
-            departmentComboBox.setValue("개발팀");
-            departmentComboBox.setDisable(true);
-        }
-    }
-    
-    /**
-     * API를 통해 사용자 이름 가져오기
-     */
-    private String getUserNameFromApi(String employeeCode) {
-        try {
-            // UserApiClient를 통해 실제 사용자 정보 가져오기
-            UserApiClient userApiClient = UserApiClient.getInstance();
-            User user = userApiClient.getUserByEmployeeCode(employeeCode);
-            
-            if (user != null && user.getUsername() != null && !user.getUsername().trim().isEmpty()) {
-                System.out.println("사용자 정보 가져오기 성공: " + user.getUsername());
-                return user.getUsername();
+            // ApiClient를 통해 현재 로그인된 사용자 정보 가져오기
+            User currentUser = apiClient.getCurrentUser();
+
+            if (currentUser != null) {
+                // 사용자 이름과 부서 설정
+                authorTextField.setText(currentUser.getUsername());
+                departmentComboBox.setValue(currentUser.getDepartmentName());
+
+                // 필드 비활성화
+                authorTextField.setDisable(true);
+                departmentComboBox.setDisable(true);
+
+                System.out.println("현재 사용자 정보 설정 완료: " + currentUser.getUsername() + " / " + currentUser.getDepartmentName());
             } else {
-                // API에서 정보를 가져올 수 없는 경우 하드코딩된 정보 사용
-                System.out.println("API에서 사용자 정보를 가져올 수 없어 기본값 사용");
-                return getDefaultUserName(employeeCode);
+                // 사용자 정보를 가져올 수 없을 경우의 예외 처리
+                System.out.println("현재 사용자 정보를 가져올 수 없습니다. 기본값을 사용합니다.");
+                authorTextField.setText("사용자");
+                departmentComboBox.setValue("기타"); // 기본값을 "기타"로 변경
+                authorTextField.setDisable(true);
+                departmentComboBox.setDisable(true);
             }
         } catch (Exception e) {
-            System.out.println("사용자 이름 가져오기 실패: " + e.getMessage());
-            return getDefaultUserName(employeeCode);
-        }
-    }
-    
-    /**
-     * 기본 사용자 이름 반환 (API 실패 시 사용)
-     */
-    private String getDefaultUserName(String employeeCode) {
-        switch (employeeCode) {
-            case "emp001":
-                return "홍길동";
-            case "emp002":
-                return "김철수";
-            case "emp003":
-                return "이영희";
-            case "emp004":
-                return "박민수";
-            case "emp005":
-                return "정수진";
-            default:
-                return "사용자";
+            System.err.println("사용자 정보 설정 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
+            // 오류 발생 시 예외 처리
+            authorTextField.setText("사용자");
+            departmentComboBox.setValue("기타");
+            authorTextField.setDisable(true);
+            departmentComboBox.setDisable(true);
         }
     }
 

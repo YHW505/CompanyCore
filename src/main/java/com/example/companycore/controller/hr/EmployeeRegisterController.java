@@ -58,8 +58,6 @@ public class EmployeeRegisterController {
     @FXML
     private Button cancelButton;
     
-    private static int nextEmployeeId = 2534013; // 다음 사번
-    
     private ApiClient apiClient;
     
     @FXML
@@ -178,7 +176,7 @@ public class EmployeeRegisterController {
             }
             
             // User 객체 설정
-            newEmployee.setUserId((long) nextEmployeeId);
+            // newEmployee.setUserId((long) nextEmployeeId); // 서버에서 자동 생성되므로 주석 처리
             newEmployee.setEmployeeCode(employeeCode);
             newEmployee.setUsername(username);
             newEmployee.setJoinDate(LocalDate.now()); // 입사일은 오늘로 설정
@@ -195,7 +193,7 @@ public class EmployeeRegisterController {
             newEmployee.setRole(Role.EMPLOYEE); // 기본 역할은 사원
             newEmployee.setIsFirstLogin(true); // 첫 로그인 여부
             newEmployee.setIsActive(true); // 활성 상태
-            newEmployee.setCreatedAt(LocalDateTime.now()); // 생성 시간
+            // newEmployee.setCreatedAt(LocalDateTime.now()); // 서버에서 자동 생성되므로 주석 처리
             
             // 부서와 직급 ID는 임시로 설정 (실제로는 데이터베이스에서 조회해야 함)
             newEmployee.setDepartmentId(1); // 임시 부서 ID
@@ -217,9 +215,6 @@ public class EmployeeRegisterController {
             User createdUser = apiClient.createUser(newEmployee);
             
             if (createdUser != null) {
-                // 다음 사번 증가
-                nextEmployeeId++;
-                
                 showAlert("성공", "사원이 성공적으로 등록되었습니다.", Alert.AlertType.INFORMATION);
             } else {
                 showAlert("오류", "사원 등록에 실패했습니다.", Alert.AlertType.ERROR);

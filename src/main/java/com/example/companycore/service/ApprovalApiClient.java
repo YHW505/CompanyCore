@@ -124,13 +124,19 @@ public class ApprovalApiClient extends BaseApiClient {
      */
     public ApprovalDto approveApproval(Long approvalId) {
         try {
+            // 현재 로그인한 사용자 ID 가져오기
+            Long approverId = getCurrentUserId();
+
+            Map<String, Object> requestBody = Map.of("approverId", approverId);
+            String jsonBody = objectMapper.writeValueAsString(requestBody);
+
             HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/approvals/" + approvalId + "/approve");
             HttpRequest request = builder
-                    .POST(HttpRequest.BodyPublishers.noBody())
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                    .header("Content-Type", "application/json")
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            // logResponseInfo(response, "결재 승인");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -155,7 +161,12 @@ public class ApprovalApiClient extends BaseApiClient {
      */
     public ApprovalDto rejectApproval(Long approvalId, String rejectionReason) {
         try {
-            Map<String, String> requestBody = Map.of("rejectionReason", rejectionReason);
+            Long approverId = getCurrentUserId();
+
+            Map<String, Object> requestBody = Map.of(
+                    "rejectionReason", rejectionReason,
+                    "approverId", approverId
+            );
             String jsonBody = objectMapper.writeValueAsString(requestBody);
 
             HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/approvals/" + approvalId + "/reject");
@@ -165,7 +176,6 @@ public class ApprovalApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            // logResponseInfo(response, "결재 거부");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
@@ -180,6 +190,16 @@ public class ApprovalApiClient extends BaseApiClient {
             handleChunkedTransferError(e, "결재 거부");
         }
         return null;
+    }
+
+    // 현재 로그인한 사용자 ID를 얻는 헬퍼 메서드
+    private Long getCurrentUserId() {
+        var currentUser = ApiClient.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            return currentUser.getUserId();
+        } else {
+            throw new IllegalStateException("로그인된 사용자가 없습니다.");
+        }
     }
 
     /**

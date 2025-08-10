@@ -269,56 +269,77 @@ public class NoticeApiClient extends BaseApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            // logResponseInfo(response, "ID로 공지사항 조회");
 
             if (response.statusCode() == 200) {
                 String responseBody = getSafeResponseBody(response);
                 if (responseBody != null && !responseBody.trim().isEmpty()) {
-                    JsonNode noticeNode = objectMapper.readTree(responseBody);
-                    NoticeItem notice = new NoticeItem();
-                    
-                    // API 응답 필드에 맞게 매핑
-                    if (noticeNode.has("id")) {
-                        notice.setNoticeId(noticeNode.get("id").asLong());
-                    }
-                    if (noticeNode.has("title")) {
-                        notice.setTitle(noticeNode.get("title").asText());
-                    }
-                    if (noticeNode.has("content")) {
-                        notice.setContent(noticeNode.get("content").asText());
-                    }
-                    if (noticeNode.has("authorDepartment")) {
-                        notice.setDepartment(noticeNode.get("authorDepartment").asText());
-                    }
-                    if (noticeNode.has("authorName")) {
-                        notice.setAuthor(noticeNode.get("authorName").asText());
-                    }
-                    if (noticeNode.has("createdAt")) {
-                        String createdAtStr = noticeNode.get("createdAt").asText();
-                        try {
-                            LocalDateTime createdAt = LocalDateTime.parse(createdAtStr.replace("Z", ""));
-                            notice.setCreatedAt(createdAt);
-                            notice.setDate(createdAt.toLocalDate());
-                        } catch (Exception e) {
-                            System.out.println("날짜 파싱 오류: " + createdAtStr);
-                            notice.setDate(LocalDate.now());
+                    JsonNode rootNode = objectMapper.readTree(responseBody);
+                    if (rootNode.has("data")) {
+                        JsonNode noticeNode = rootNode.get("data");
+                        NoticeItem notice = new NoticeItem();
+
+                        // API 응답 필드에 맞게 매핑
+                        if (noticeNode.has("id")) {
+                            notice.setNoticeId(noticeNode.get("id").asLong());
                         }
-                    }
-                    if (noticeNode.has("updatedAt")) {
-                        String updatedAtStr = noticeNode.get("updatedAt").asText();
-                        try {
-                            LocalDateTime updatedAt = LocalDateTime.parse(updatedAtStr.replace("Z", ""));
-                            notice.setUpdatedAt(updatedAt);
-                        } catch (Exception e) {
-                            System.out.println("업데이트 날짜 파싱 오류: " + updatedAtStr);
+                        if (noticeNode.has("title")) {
+                            notice.setTitle(noticeNode.get("title").asText());
                         }
+                        if (noticeNode.has("content")) {
+                            notice.setContent(noticeNode.get("content").asText());
+                        }
+                        if (noticeNode.has("authorDepartment")) {
+                            notice.setDepartment(noticeNode.get("authorDepartment").asText());
+                        }
+                        if (noticeNode.has("authorName")) {
+                            notice.setAuthor(noticeNode.get("authorName").asText());
+                        }
+                        if (noticeNode.has("createdAt")) {
+                            String createdAtStr = noticeNode.get("createdAt").asText();
+                            try {
+                                LocalDateTime createdAt = LocalDateTime.parse(createdAtStr.replace("Z", ""));
+                                notice.setCreatedAt(createdAt);
+                                notice.setDate(createdAt.toLocalDate());
+                            } catch (Exception e) {
+                                System.out.println("날짜 파싱 오류: " + createdAtStr);
+                                notice.setDate(LocalDate.now());
+                            }
+                        }
+                        if (noticeNode.has("updatedAt")) {
+                            String updatedAtStr = noticeNode.get("updatedAt").asText();
+                            try {
+                                LocalDateTime updatedAt = LocalDateTime.parse(updatedAtStr.replace("Z", ""));
+                                notice.setUpdatedAt(updatedAt);
+                            } catch (Exception e) {
+                                System.out.println("업데이트 날짜 파싱 오류: " + updatedAtStr);
+                            }
+                        }
+
+                        // 첨부파일 정보 매핑 추가
+                        if (noticeNode.has("hasAttachment") && noticeNode.get("hasAttachment").asBoolean()) {
+                            notice.setHasAttachments(true);
+                            if (noticeNode.has("attachmentFilename")) {
+                                notice.setAttachmentFilename(noticeNode.get("attachmentFilename").asText(null));
+                            }
+                            if (noticeNode.has("attachmentContentType")) {
+                                notice.setAttachmentContentType(noticeNode.get("attachmentContentType").asText(null));
+                            }
+                            if (noticeNode.has("attachmentSize")) {
+                                notice.setAttachmentSize(noticeNode.get("attachmentSize").asLong(0));
+                            }
+                            if (noticeNode.has("attachmentContent")) {
+                                notice.setAttachmentContent(noticeNode.get("attachmentContent").asText(null));
+                            }
+                        } else {
+                            notice.setHasAttachments(false);
+                        }
+
+                        // 기본값 설정
+                        notice.setSelected(false);
+                        notice.setImportant(false);
+
+                        return notice;
                     }
-                    
-                    // 기본값 설정
-                    notice.setSelected(false);
-                    notice.setImportant(false);
-                    
-                    return notice;
                 }
             }
         } catch (Exception e) {

@@ -15,7 +15,7 @@
         <Region HBox.hgrow="ALWAYS"/>
         <Button fx:id="closeBtn" text="닫기" 
                 style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 15;"
-                onAction="#handleClose"/>
+                onAction="#onClose"/>
     </HBox>
 
     <!-- 메인 콘텐츠 -->
@@ -51,11 +51,11 @@
 
         <!-- 내용 -->
         <VBox spacing="5">
-            <Label text="내용" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-            <ScrollPane fitToWidth="true" fitToHeight="true" style="-fx-background-color: transparent; -fx-border-color: #ddd; -fx-border-width: 1; -fx-border-radius: 6;">
-                <Text fx:id="contentText" style="-fx-padding: 10; -fx-text-fill: #2c3e50;" wrappingWidth="550"/>
-            </ScrollPane>
+            <Label text="내용" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+            <TextArea fx:id="contentText" editable="false" wrapText="true"
+                      prefRowCount="10" style="-fx-text-fill: #2c3e50;" />
         </VBox>
+
 
         <!-- 첨부파일 -->
         <VBox spacing="5" fx:id="attachmentContainer" visible="false">

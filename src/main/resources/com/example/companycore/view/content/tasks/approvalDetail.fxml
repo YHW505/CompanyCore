@@ -32,7 +32,7 @@
 
         <!-- 작성자 정보 행 -->
         <Label text="작성자:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-        <Label fx:id="writerLabel" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+        <Label fx:id="authorLabel" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
         <!-- 날짜 정보 행 -->
         <Label text="날짜:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
@@ -41,6 +41,10 @@
         <!-- 부서 정보 행 -->
         <Label text="부서:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
         <Label fx:id="departmentLabel" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+        <!-- 상태 정보 행 -->
+        <Label text="상태:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+        <Label fx:id="statusLabel" GridPane.columnIndex="1" GridPane.rowIndex="4" />
         
         <!-- ==================== 그리드 레이아웃 설정 ==================== -->
         <!-- 컬럼 제약 조건: 2개의 컬럼을 균등하게 분배 -->
@@ -51,27 +55,28 @@
         
         <!-- 행 제약 조건: 4개의 행을 균등하게 분배 -->
         <rowConstraints>
-           <RowConstraints />
-           <RowConstraints />
-           <RowConstraints />
-           <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
         </rowConstraints>
     </GridPane>
 
     <!-- ==================== 결재 내용 섹션 ==================== -->
     <!-- 결재 내용을 표시하는 텍스트 영역 -->
     <Label text="내용:" />
-    <TextArea fx:id="contentArea" 
+    <TextArea fx:id="contentText"
               editable="false" 
               prefRowCount="10" 
               wrapText="true" />
 
     <!-- ==================== 첨부파일 섹션 ==================== -->
     <!-- 첨부파일 목록을 표시하는 리스트 뷰 -->
+    <!-- 첨부파일 섹션 -->
     <Label text="첨부파일:" />
-    <ListView fx:id="attachmentListView" 
-              prefHeight="54.0" 
-              prefWidth="512.0" />
+    <VBox fx:id="attachmentList" spacing="5" prefWidth="512.0" />
+
 
     <!-- ==================== 액션 버튼 ==================== -->
     <!-- 다이얼로그를 닫는 버튼 -->
