@@ -1,6 +1,7 @@
 package com.example.companycore.controller.tasks;
 
 import com.example.companycore.model.dto.ApprovalItem;
+import com.example.companycore.service.ApiClient;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -29,8 +30,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
 
 public class ApprovalController {
 
@@ -50,17 +54,12 @@ public class ApprovalController {
     private ObservableList<ApprovalItem> viewData = FXCollections.observableArrayList();
 
     private int visibleRowCount = 10;
-    private static final boolean TEST_MODE = true;
 
     @FXML
     public void initialize() {
         setupTable();
         setupPagination();
-        if (TEST_MODE) {
-            loadApprovalsFromDatabase();
-        } else {
-            loadDataFromServer();
-        }
+        loadDataFromServer();
     }
 
     private void setupTable() {
@@ -93,14 +92,51 @@ public class ApprovalController {
 
                 approveBtn.setOnAction(e -> {
                     ApprovalItem item = getTableView().getItems().get(getIndex());
-                    item.setStatus("승인");
-                    getTableView().refresh();
+                    // API 호출을 통해 승인 처리
+                    try {
+                        ApiClient.getInstance().getApprovalApiClient().approveApproval(item.getServerId());
+                        Platform.runLater(() -> {
+                            item.setStatus("APPROVED"); // 백엔드와 일치하는 상태 값 사용
+                            getTableView().refresh();
+                            new Alert(Alert.AlertType.INFORMATION, "결재가 승인되었습니다.").showAndWait();
+                        });
+                    } catch (Exception ex) {
+                        Platform.runLater(() -> {
+                            new Alert(Alert.AlertType.ERROR, "결재 승인 실패: " + ex.getMessage()).showAndWait();
+                        });
+                    }
                 });
 
                 rejectBtn.setOnAction(e -> {
                     ApprovalItem item = getTableView().getItems().get(getIndex());
-                    item.setStatus("거부");
-                    getTableView().refresh();
+
+                    // 거부 사유 입력 다이얼로그
+                    TextInputDialog dialog = new TextInputDialog();
+                    dialog.setTitle("결재 거부");
+                    dialog.setHeaderText("결재를 거부하시겠습니까?");
+                    dialog.setContentText("거부 사유를 입력하세요:");
+                    ((Button) dialog.getDialogPane().lookupButton(ButtonType.OK)).setText("확인");
+                    ((Button) dialog.getDialogPane().lookupButton(ButtonType.CANCEL)).setText("취소");
+
+                    dialog.showAndWait().ifPresent(rejectionReason -> {
+                        if (rejectionReason.trim().isEmpty()) {
+                            Platform.runLater(() -> new Alert(Alert.AlertType.WARNING, "거부 사유를 입력해야 합니다.").showAndWait());
+                            return;
+                        }
+                        // API 호출을 통해 거부 처리
+                        try {
+                            ApiClient.getInstance().getApprovalApiClient().rejectApproval(item.getServerId(), rejectionReason);
+                            Platform.runLater(() -> {
+                                item.setStatus("REJECTED"); // 백엔드와 일치하는 상태 값 사용
+                                getTableView().refresh();
+                                new Alert(Alert.AlertType.INFORMATION, "결재가 거부되었습니다.").showAndWait();
+                            });
+                        } catch (Exception ex) {
+                            Platform.runLater(() -> {
+                                new Alert(Alert.AlertType.ERROR, "결재 거부 실패: " + ex.getMessage()).showAndWait();
+                            });
+                        }
+                    });
                 });
             }
 
@@ -113,16 +149,14 @@ public class ApprovalController {
                 } else {
                     ApprovalItem approvalItem = getTableView().getItems().get(getIndex());
                     String status = approvalItem.getStatus();
-                    if ("승인".equals(status)) {
+                    if ("APPROVED".equals(status)) {
                         Label label = new Label("승인됨");
                         label.setStyle("-fx-text-fill: #28a745; -fx-font-weight: bold;");
                         setGraphic(label);
-                        setText(null);
-                    } else if ("거부".equals(status)) {
+                    } else if ("REJECTED".equals(status)) {
                         Label label = new Label("거부됨");
                         label.setStyle("-fx-text-fill: #dc3545; -fx-font-weight: bold;");
                         setGraphic(label);
-                        setText(null);
                     } else {
                         setGraphic(container);
                         setText(null);
@@ -201,30 +235,60 @@ public class ApprovalController {
         Task<ObservableList<ApprovalItem>> task = new Task<>() {
             @Override
             protected ObservableList<ApprovalItem> call() throws Exception {
-                HttpClient client = HttpClient.newHttpClient();
-                // 결재 승인 목록을 가져오기 위해 pending 엔드포인트 사용
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create("http://localhost:8080/api/approvals/pending/1")) // userId = 1로 가정
-                        .GET()
-                        .build();
-
-                HttpResponse<String> response = client.send(
-                        request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-
-                if (response.statusCode() != 200) {
-                    throw new IllegalStateException("서버 오류: " + response.statusCode());
+                // 현재 사용자 정보 가져오기
+                var currentUser = ApiClient.getInstance().getCurrentUser();
+                if (currentUser == null || currentUser.getDepartmentId() == null) {
+                    Platform.runLater(() -> new Alert(Alert.AlertType.ERROR, "사용자 정보 또는 부서 정보를 가져올 수 없습니다.").showAndWait());
+                    return FXCollections.emptyObservableList();
                 }
 
-                ObjectMapper mapper = new ObjectMapper();
-                mapper.registerModule(new JavaTimeModule());
+                // departmentId는 Integer 타입이므로 변환
+                Integer departmentId = currentUser.getDepartmentId();
 
-                List<ApprovalItem> dtoList = mapper.readValue(response.body(), new TypeReference<>() {});
-                var items = dtoList.stream().map(dto -> new ApprovalItem(
-                        dto.getId(), dto.getTitle(), dto.getDepartment(), dto.getAuthor(),
-                        dto.getDate(), null, dto.getStatus()
-                )).toList();
+                // ApprovalApiClient를 통해 페이지네이션된 대기중인 결재 목록 가져오기
+                // 여기서는 첫 페이지, 10개씩, requestDate 기준으로 내림차순 정렬을 기본으로 합니다.
+                Map<String, Object> responseMap = ApiClient.getInstance().getApprovalApiClient()
+                        .getMyPendingWithPagination(departmentId, 0, 10, "requestDate", "desc");
 
-                return FXCollections.observableArrayList(items);
+                if (responseMap == null || !responseMap.containsKey("content")) {
+                    throw new IllegalStateException("서버 응답이 유효하지 않습니다.");
+                }
+
+                // "content" 키의 값을 List<Map<String, Object>>로 변환
+                List<Map<String, Object>> contentList = (List<Map<String, Object>>) responseMap.get("content");
+
+                // Map 리스트를 ApprovalItem 리스트로 변환
+                List<ApprovalItem> approvalItems = new ArrayList<>();
+                for (Map<String, Object> itemMap : contentList) {
+                    // 필요한 필드들을 추출하여 ApprovalItem 생성
+                    Long serverId = ((Number) itemMap.get("id")).longValue();
+                    String title = (String) itemMap.get("title");
+                    String content = (String) itemMap.get("content");
+                    String status = (String) itemMap.get("status");
+                    String requestDateStr = (String) itemMap.get("requestDate");
+                    
+                    // requester 정보 추출
+                    Map<String, Object> requesterMap = (Map<String, Object>) itemMap.get("requester");
+                    String author = (requesterMap != null) ? (String) requesterMap.get("username") : "알 수 없음";
+                    String department = (requesterMap != null) ? (String) requesterMap.get("department") : "알 수 없음";
+
+                    // 날짜 파싱 (ISO 8601 형식)
+                    LocalDate requestDate = null;
+                    if (requestDateStr != null) {
+                        try {
+                            requestDate = LocalDateTime.parse(requestDateStr).toLocalDate();
+                        } catch (Exception e) {
+                            System.err.println("날짜 파싱 오류: " + requestDateStr + " - " + e.getMessage());
+                        }
+                    }
+
+                    approvalItems.add(new ApprovalItem(
+                            serverId, title, department, author,
+                            (requestDate != null) ? requestDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) : "날짜 없음",
+                            content, status
+                    ));
+                }
+                return FXCollections.observableArrayList(approvalItems);
             }
         };
 

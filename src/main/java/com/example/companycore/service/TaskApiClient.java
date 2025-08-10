@@ -73,8 +73,109 @@ public class TaskApiClient extends BaseApiClient {
      * 특정 사용자에게 할당된 작업 목록을 가져옵니다.
      */
     public List<Task> getTasksAssignedToUser(Long userId) {
+        return getTasksAssignedToUser(userId, null);
+    }
+
+    /**
+     * 특정 사용자에게 할당된 작업 목록을 가져옵니다. (상태별 필터링 포함)
+     */
+//    public List<Task> getTasksAssignedToUser(Long userId, String status) {
+//        try {
+//            StringBuilder endpointBuilder = new StringBuilder("/tasks/user/").append(userId);
+//            if (status != null && !status.trim().isEmpty()) {
+//                endpointBuilder.append("?status=").append(status);
+//            }
+//            String endpoint = endpointBuilder.toString();
+//
+//            HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
+//                    .GET()
+//                    .build();
+//
+//            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+//
+//            if (response.statusCode() == 200) {
+//                if (response.body() == null || response.body().trim().isEmpty()) {
+//                    return new ArrayList<>();
+//                }
+//
+//                try {
+//                    JsonNode rootNode = objectMapper.readTree(response.body());
+//                    JsonNode dataNode = rootNode.get("data");
+//                    if (dataNode != null && dataNode.isArray()) {
+//                        List<Task> tasks = objectMapper.readValue(dataNode.toString(),
+//                                objectMapper.getTypeFactory().constructCollectionType(List.class, Task.class));
+//                        return tasks;
+//                    } else {
+//                        System.out.println("응답에 'data' 필드가 없거나 배열이 아닙니다.");
+//                        return new ArrayList<>();
+//                    }
+//                } catch (Exception e) {
+//                    System.out.println("사용자 작업 목록 파싱 실패: " + e.getMessage());
+//                    return new ArrayList<>();
+//                }
+//            } else {
+//                System.out.println("사용자 작업 목록 요청 실패 - 상태 코드: " + response.statusCode());
+//                return new ArrayList<>();
+//            }
+//        } catch (Exception e) {
+//            System.out.println("사용자 작업 목록 요청 중 예외 발생: " + e.getMessage());
+//            return new ArrayList<>();
+//        }
+//    }
+    /**
+     * 특정 사용자에게 할당된 작업 목록을 가져옵니다. (상태별 필터링 포함)
+     */
+    public List<Task> getTasksAssignedToUser(Long userId, String status) {
         try {
-            String endpoint = "/tasks/assigned-to/" + userId;
+            StringBuilder endpointBuilder = new StringBuilder("/tasks/user/").append(userId);
+            if (status != null && !status.trim().isEmpty()) {
+                endpointBuilder.append("?status=").append(status);
+            }
+            String endpoint = endpointBuilder.toString();
+
+            HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                if (response.body() == null || response.body().trim().isEmpty()) {
+                    return new ArrayList<>();
+                }
+
+                try {
+                    // JSON 응답을 JsonNode로 파싱하고 "data" 부분만 추출
+                    JsonNode dataNode = objectMapper.readTree(response.body()).get("data");
+
+                    if (dataNode != null && dataNode.isArray()) {
+                        // TypeReference를 사용한 더 간결한 변환
+                        return objectMapper.convertValue(dataNode, new TypeReference<List<Task>>() {});
+                    } else {
+                        System.out.println("응답에 'data' 배열이 없습니다.");
+                        return new ArrayList<>();
+                    }
+
+                } catch (Exception e) {
+                    System.out.println("사용자 작업 목록 파싱 실패: " + e.getMessage());
+                    return new ArrayList<>();
+                }
+            } else {
+                System.out.println("사용자 작업 목록 요청 실패 - 상태 코드: " + response.statusCode());
+                return new ArrayList<>();
+            }
+        } catch (Exception e) {
+            System.out.println("사용자 작업 목록 요청 중 예외 발생: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * 특정 사용자가 담당자로 할당받은 작업 목록을 가져옵니다.
+     */
+    public List<Task> getMyAssignedTasks(Long userId) {
+        try {
+            String endpoint = "/tasks/user/" + userId;
             HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
                     .GET()
                     .build();
@@ -91,15 +192,15 @@ public class TaskApiClient extends BaseApiClient {
                             objectMapper.getTypeFactory().constructCollectionType(List.class, Task.class));
                     return tasks;
                 } catch (Exception e) {
-                    System.out.println("사용자 작업 목록 파싱 실패: " + e.getMessage());
+                    System.out.println("사용자에게 할당된 작업 목록 파싱 실패: " + e.getMessage());
                     return new ArrayList<>();
                 }
             } else {
-                System.out.println("사용자 작업 목록 요청 실패 - 상태 코드: " + response.statusCode());
+                System.out.println("사용자에게 할당된 작업 목록 요청 실패 - 상태 코드: " + response.statusCode());
                 return new ArrayList<>();
             }
         } catch (Exception e) {
-            System.out.println("사용자 작업 목록 요청 중 예외 발생: " + e.getMessage());
+            System.out.println("사용자에게 할당된 작업 목록 요청 중 예외 발생: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -278,10 +379,11 @@ public class TaskApiClient extends BaseApiClient {
     /**
      * 새 작업을 생성합니다.
      */
-    public TaskDto createTask(TaskDto taskDto) {
+    public TaskDto createTask(TaskDto taskDto, Long userId) {
         try {
             String json = objectMapper.writeValueAsString(taskDto);
             HttpRequest request = createAuthenticatedRequestBuilder("/tasks")
+                    .header("User-Id", userId.toString())   // User-Id 헤더 추가
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 

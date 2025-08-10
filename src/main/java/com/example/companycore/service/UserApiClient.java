@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.time.LocalDate;
+
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
@@ -362,6 +364,20 @@ public class UserApiClient extends BaseApiClient {
                         System.out.println("✅ UserUpdateResponse에서 userInfo 필드 파싱 성공!");
                         JsonNode userInfoNode = rootNode.get("userInfo");
                         User user = objectMapper.treeToValue(userInfoNode, User.class);
+                        // departmentId와 departmentName을 명시적으로 설정
+                        if (userInfoNode.has("departmentId")) {
+                            user.setDepartmentId(userInfoNode.get("departmentId").asInt());
+                        }
+                        if (userInfoNode.has("departmentName")) {
+                            user.setDepartmentName(userInfoNode.get("departmentName").asText());
+                        }
+                        // Department 객체 생성 및 설정
+                        if (userInfoNode.has("departmentId") && userInfoNode.has("departmentName")) {
+                            Department department = new Department();
+                            department.setDepartmentId(userInfoNode.get("departmentId").asInt());
+                            department.setDepartmentName(userInfoNode.get("departmentName").asText());
+                            user.setDepartment(department);
+                        }
                         return user;
                     } else if (rootNode.has("data")) {
                         System.out.println("✅ UserUpdateResponse에서 data 필드 파싱 성공!");
@@ -370,6 +386,12 @@ public class UserApiClient extends BaseApiClient {
                             System.out.println("✅ data 필드에서 파싱 성공!");
                             JsonNode userInfoNode = dataNode.get("userInfo");
                             User user = objectMapper.treeToValue(userInfoNode, User.class);
+                            // departmentName을 명시적으로 설정
+                            if (userInfoNode.has("department") && userInfoNode.get("department").has("departmentName")) {
+                                user.setDepartmentName(userInfoNode.get("department").get("departmentName").asText());
+                            } else if (userInfoNode.has("departmentName")) {
+                                user.setDepartmentName(userInfoNode.get("departmentName").asText());
+                            }
                             return user;
                         } else {
                             System.out.println("❌ data 필드가 null입니다!");
@@ -379,6 +401,13 @@ public class UserApiClient extends BaseApiClient {
                         // 직접 User로 파싱 시도
                         System.out.println("✅ 직접 User 파싱 성공!");
                         User user = objectMapper.readValue(response.body(), User.class);
+                        // departmentName을 명시적으로 설정
+                        JsonNode responseNode = objectMapper.readTree(response.body());
+                        if (responseNode.has("department") && responseNode.get("department").has("departmentName")) {
+                            user.setDepartmentName(responseNode.get("department").get("departmentName").asText());
+                        } else if (responseNode.has("departmentName")) {
+                            user.setDepartmentName(responseNode.get("departmentName").asText());
+                        }
                         return user;
                     }
 
@@ -477,10 +506,53 @@ public class UserApiClient extends BaseApiClient {
      */
     public User createUser(User user) {
         try {
-            String json = objectMapper.writeValueAsString(user);
-            System.out.println("사용자 생성 요청 JSON:");
+            // Manually create a JSON object to match the server's expectations
+            ObjectNode requestBody = objectMapper.createObjectNode();
+            requestBody.put("employeeCode", user.getEmployeeCode());
+            requestBody.put("username", user.getUsername());
+
+            // Server expects date as a JSON array due to @JsonFormat(shape = JsonFormat.Shape.ARRAY)
+            if (user.getJoinDate() != null) {
+                LocalDate date = user.getJoinDate();
+                requestBody.putArray("joinDate")
+                           .add(date.getYear())
+                           .add(date.getMonthValue())
+                           .add(date.getDayOfMonth());
+            }
+
+            requestBody.put("password", user.getPassword());
+            requestBody.put("email", user.getEmail());
+            requestBody.put("phone", user.getPhone());
+            requestBody.put("address", user.getAddress());
+
+            // Send IDs for department and position
+            requestBody.put("departmentId", user.getDepartmentId());
+            requestBody.put("positionId", user.getPositionId());
+
+            requestBody.put("role", user.getRole() != null ? user.getRole().name() : null);
+
+            // Server expects Integer for booleans
+            if (user.getIsFirstLogin() != null) {
+                requestBody.put("isFirstLogin", user.getIsFirstLogin() ? 1 : 0);
+            }
+            if (user.getIsActive() != null) {
+                requestBody.put("isActive", user.getIsActive() ? 1 : 0);
+            }
+
+            if (user.getBirthDate() != null) {
+                 LocalDate date = user.getBirthDate();
+                 requestBody.putArray("birthDate")
+                           .add(date.getYear())
+                           .add(date.getMonthValue())
+                           .add(date.getDayOfMonth());
+            }
+
+            // Do NOT send userId or createdAt
+
+            String json = objectMapper.writeValueAsString(requestBody);
+            System.out.println("Final Corrected User Creation Request JSON:");
             System.out.println(json);
-            
+
             HttpRequest request = createAuthenticatedRequestBuilder("/users/create")
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .header("Content-Type", "application/json")

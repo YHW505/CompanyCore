@@ -57,6 +57,22 @@ public class ApprovalItem {
         this.attachmentSize = new SimpleLongProperty();
     }
 
+    // UI용 생성자 (Long ID 포함)
+    public ApprovalItem(Long serverId, String title, String department, String author,
+                        String date, String content, String status) {
+        this.id = new SimpleStringProperty(String.valueOf(serverId));
+        this.serverId = serverId;
+        this.title = new SimpleStringProperty(title);
+        this.department = new SimpleStringProperty(department);
+        this.author = new SimpleStringProperty(author);
+        this.date = new SimpleStringProperty(date);
+        this.content = new SimpleStringProperty(content);
+        this.status = new SimpleStringProperty(status);
+        this.attachmentContent = new SimpleStringProperty();
+        this.attachmentFilename = new SimpleStringProperty();
+        this.attachmentSize = new SimpleLongProperty();
+    }
+
     // 서버 통신용 생성자
     public ApprovalItem() {
         this.id = new SimpleStringProperty();

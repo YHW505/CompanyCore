@@ -74,9 +74,10 @@ public class ComposeMailController {
 
             if (selectedFile != null) {
                 try {
+                    String sanitizedFilename = sanitizeFilename(selectedFile.getName());
                     String encodedFile = com.example.companycore.util.FileUtil.encodeFileToBase64(selectedFile);
                     message.setAttachmentContent(encodedFile);
-                    message.setAttachmentFilename(selectedFile.getName());
+                    message.setAttachmentFilename(sanitizedFilename);
                     message.setAttachmentSize(selectedFile.length());
                     message.setAttachmentContentType(com.example.companycore.util.FileUtil.getMimeType(selectedFile.getName()));
                 } catch (java.io.IOException e) {
@@ -121,6 +122,15 @@ public class ComposeMailController {
 
             new Thread(sendMailTask).start();
         }
+    }
+
+    /**
+     * 파일명을 안전한 문자로만 구성되도록 처리합니다.
+     */
+    private String sanitizeFilename(String filename) {
+        if (filename == null) return "attachment";
+        // 한글, 영문, 숫자, 그리고 특정 특수문자(._-)만 허용하고 나머지는 제거합니다.
+        return filename.replaceAll("[^a-zA-Z0-9가-힣._-]", "");
     }
 
     /**

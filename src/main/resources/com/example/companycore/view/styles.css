@@ -98,7 +98,74 @@
 /* 리사이징 지원을 위한 스타일 */
 .resizable-content {
     -fx-pref-width: 100%;
-    -fx-pref-height: 100%;
-    -fx-min-width: 800px;
-    -fx-min-height: 600px;
+}
+
+/* 캘린더 스크롤바 스타일 */
+.calendar-scroll-pane {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.calendar-scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.calendar-scroll-pane .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 8;
+}
+
+.calendar-scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color: #bdc3c7;
+    -fx-background-radius: 4;
+}
+
+.calendar-scroll-pane .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #95a5a6;
+}
+
+.calendar-scroll-pane .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+}
+
+.calendar-scroll-pane .scroll-bar:vertical .increment-button,
+.calendar-scroll-pane .scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+/* 업무 리스트 스크롤바 스타일 */
+.tasks-scroll-pane {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.tasks-scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.tasks-scroll-pane .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 8;
+}
+
+.tasks-scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color: #bdc3c7;
+    -fx-background-radius: 4;
+}
+
+.tasks-scroll-pane .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #95a5a6;
+}
+
+.tasks-scroll-pane .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+}
+
+.tasks-scroll-pane .scroll-bar:vertical .increment-button,
+.tasks-scroll-pane .scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
 }

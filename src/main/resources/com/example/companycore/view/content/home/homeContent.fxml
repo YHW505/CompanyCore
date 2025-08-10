@@ -70,8 +70,21 @@
             <!-- 간단한 캘린더 -->
             <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
                 <Label text="캘린더" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-                <Label text="January 2025" style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d; -fx-padding: 10 0;"/>
-                <Label text="오늘: 2025년 1월 7일" style="-fx-font-size: 12px; -fx-text-fill: #27ae60; -fx-font-weight: bold;"/>
+                <ScrollPane fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;" styleClass="calendar-scroll-pane">
+                    <VBox fx:id="calendarContainer" spacing="5" style="-fx-padding: 10 0 0 0;"/>
+                </ScrollPane>
+                
+                <!-- 선택된 날짜의 업무 리스트 -->
+                <VBox fx:id="selectedDateInfo" spacing="10" style="-fx-padding: 15 0 0 0;" visible="false">
+                    <Separator style="-fx-background-color: #ecf0f1;"/>
+                    <VBox spacing="5">
+                        <Label fx:id="selectedDateLabel" text="" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                        <Label fx:id="selectedDateScheduleCount" text="" style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d;"/>
+                    </VBox>
+                    <ScrollPane fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;" styleClass="tasks-scroll-pane">
+                        <VBox fx:id="selectedDateTasksContainer" spacing="8" style="-fx-padding: 5 0 0 0;"/>
+                    </ScrollPane>
+                </VBox>
             </VBox>
         </VBox>
     </HBox>
