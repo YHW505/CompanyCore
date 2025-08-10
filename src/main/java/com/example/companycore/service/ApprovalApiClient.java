@@ -130,7 +130,7 @@ public class ApprovalApiClient extends BaseApiClient {
             Map<String, Object> requestBody = Map.of("approverId", approverId);
             String jsonBody = objectMapper.writeValueAsString(requestBody);
 
-            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/approvals/" + approvalId + "/approve");
+            HttpRequest.Builder builder = createAuthenticatedRequestBuilder("/approvals/approve/" + approvalId);
             HttpRequest request = builder
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .header("Content-Type", "application/json")
@@ -553,6 +553,38 @@ public class ApprovalApiClient extends BaseApiClient {
         }
         return null;
     }
+
+    public List<Map<String, Object>> getAllApprovalsWithPagination(Integer departmentId) {
+        try {
+            // 현재 사용자 정보 가져오기
+            var currentUser = ApiClient.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                System.err.println("현재 사용자 정보를 가져올 수 없습니다.");
+                return null;
+            }
+
+            String endpoint = String.format("/approvals/department/%d",
+                    departmentId);
+
+            HttpRequest.Builder builder = createAuthenticatedRequestBuilder(endpoint);
+            HttpRequest request = builder.GET().build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            // logResponseInfo(response, "내가 결재해야 할 대기중인 목록 조회 (페이지네이션)");
+
+            if (response.statusCode() == 200) {
+                String responseBody = getSafeResponseBody(response);
+                if (responseBody != null && !responseBody.trim().isEmpty()) {
+                    return objectMapper.readValue(responseBody, new TypeReference<List<Map<String, Object>>>() {});
+                }
+            }
+        } catch (Exception e) {
+            handleChunkedTransferError(e, "내가 결재해야 할 대기중인 목록 조회 (페이지네이션)");
+        }
+        return null;
+    }
+
+
 
     /**
      * 모든 결재 목록 조회 (관리자용)

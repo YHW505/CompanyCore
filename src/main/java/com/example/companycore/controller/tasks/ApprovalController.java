@@ -247,15 +247,15 @@ public class ApprovalController {
 
                 // ApprovalApiClient를 통해 페이지네이션된 대기중인 결재 목록 가져오기
                 // 여기서는 첫 페이지, 10개씩, requestDate 기준으로 내림차순 정렬을 기본으로 합니다.
-                Map<String, Object> responseMap = ApiClient.getInstance().getApprovalApiClient()
-                        .getMyPendingWithPagination(departmentId, 0, 10, "requestDate", "desc");
+                List<Map<String, Object>> responseMap = ApiClient.getInstance().getApprovalApiClient()
+                        .getAllApprovalsWithPagination(departmentId);
 
-                if (responseMap == null || !responseMap.containsKey("content")) {
+                if (responseMap == null ) {
                     throw new IllegalStateException("서버 응답이 유효하지 않습니다.");
                 }
 
                 // "content" 키의 값을 List<Map<String, Object>>로 변환
-                List<Map<String, Object>> contentList = (List<Map<String, Object>>) responseMap.get("content");
+                List<Map<String, Object>> contentList = (List<Map<String, Object>>) responseMap;
 
                 // Map 리스트를 ApprovalItem 리스트로 변환
                 List<ApprovalItem> approvalItems = new ArrayList<>();
