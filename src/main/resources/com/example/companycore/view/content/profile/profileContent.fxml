@@ -54,7 +54,7 @@
             <VBox spacing="15" HBox.hgrow="ALWAYS">
                 <!-- 이름 -->
                 <HBox alignment="CENTER_LEFT" style="-fx-padding: 15 0; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
-                    <Label text="이름" style="-fx-font-size: 14px; -fx-text-fill: #666; -fx-min-width: 80;"/>
+                    <Label text="부서" style="-fx-font-size: 14px; -fx-text-fill: #666; -fx-min-width: 80;"/>
                     <Label fx:id="nameLabel" text="사용자 이름" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
                 </HBox>
                 
