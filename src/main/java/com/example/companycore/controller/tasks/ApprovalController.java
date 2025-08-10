@@ -50,29 +50,28 @@ public class ApprovalController {
     private ObservableList<ApprovalItem> viewData = FXCollections.observableArrayList();
 
     private int visibleRowCount = 10;
-    private static final boolean TEST_MODE = true;
+    private static final boolean TEST_MODE = false;
 
     @FXML
     public void initialize() {
-        setupTable();
-        setupPagination();
-        if (TEST_MODE) {
-            loadApprovalsFromDatabase();
-        } else {
-            loadDataFromServer();
-        }
-    }
-
-    private void setupTable() {
         approvalTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         approvalTable.setFixedCellSize(40);
-        approvalTable.setPrefHeight(427);
-        approvalTable.setMaxHeight(427);
-        approvalTable.setStyle("-fx-table-header-height: 30px; -fx-scroll-bar-policy: never; -fx-pref-height: 427px; -fx-max-height: 427px; -fx-min-height: 427px; -fx-table-header-background: #f0f0f0;");
+
+        visibleRowCount = (int) (approvalTable.getHeight() / approvalTable.getFixedCellSize());
+        if (visibleRowCount == 0) visibleRowCount = 10;
+
+        approvalTable.heightProperty().addListener((obs, oldVal, newVal) -> {
+            int newCount = (int) (newVal.doubleValue() / approvalTable.getFixedCellSize());
+            if (newCount != visibleRowCount && newCount > 0) {
+                visibleRowCount = newCount;
+                resetPagingToFirstPage();
+            }
+        });
 
         colNumber.setCellValueFactory(cellData -> {
             ApprovalItem item = cellData.getValue();
-            int index = viewData.indexOf(item) + 1 + pagination.getCurrentPageIndex() * visibleRowCount;
+            int index = approvalTable.getItems().indexOf(item) + 1
+                    + pagination.getCurrentPageIndex() * visibleRowCount;
             return new ReadOnlyStringWrapper(String.valueOf(index));
         });
 
@@ -131,13 +130,12 @@ public class ApprovalController {
             }
         });
 
-        // 컬럼별 스타일 설정
-        colNumber.setStyle("-fx-table-header-height: 30px; -fx-alignment: center;");
-        colTitle.setStyle("-fx-table-header-height: 30px; -fx-alignment: center-left;");
-        colDepartment.setStyle("-fx-table-header-height: 30px; -fx-alignment: center;");
-        colAuthor.setStyle("-fx-table-header-height: 30px; -fx-alignment: center;");
-        colDate.setStyle("-fx-table-header-height: 30px; -fx-alignment: center;");
-        colAction.setStyle("-fx-table-header-height: 30px; -fx-alignment: center;");
+        colNumber.setStyle("-fx-alignment: CENTER;");
+        colTitle.setStyle("-fx-alignment: CENTER;");
+        colDepartment.setStyle("-fx-alignment: CENTER;");
+        colAuthor.setStyle("-fx-alignment: CENTER;");
+        colDate.setStyle("-fx-alignment: CENTER;");
+        colAction.setStyle("-fx-alignment: CENTER;");
 
         approvalTable.setPlaceholder(new Label("데이터가 없습니다."));
 
@@ -154,46 +152,51 @@ public class ApprovalController {
 
         // ComboBox 초기값 및 아이템 세팅
         searchComboBox.getSelectionModel().select("전체");
-    }
 
-    private void setupPagination() {
+        // TODO: 데이터베이스에서 결재 데이터 로드
+        // loadDataFromDatabase();
+
         pagination.setPageFactory(this::createPage);
-        pagination.setVisible(true);
-        updatePagination();
     }
 
-    private void updatePagination() {
-        int totalPages = (int) Math.ceil((double) fullData.size() / visibleRowCount);
-        pagination.setPageCount(Math.max(1, totalPages));
-        pagination.setVisible(true);
-        
-        // 현재 페이지 데이터 로드
-        int currentPage = pagination.getCurrentPageIndex();
-        int startIndex = currentPage * visibleRowCount;
-        int endIndex = Math.min(startIndex + visibleRowCount, fullData.size());
-        
-        viewData.clear();
-        if (startIndex < fullData.size()) {
-            viewData.addAll(fullData.subList(startIndex, endIndex));
+    private void fillDummyData(int count) {
+        String[] departments = {"인사부", "총무부", "개발1팀", "개발2팀", "영업부"};
+        String[] authors = {"한교동", "김다빈", "케로케로피", "김다번", "김다분"};
+
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        for (int i = 1; i <= count; i++) {
+            fullData.add(new ApprovalItem(
+                    String.valueOf(i),
+                    "기안서 " + i,
+                    departments[i % departments.length],
+                    authors[i % authors.length],
+                    LocalDate.now().minusDays(i).format(fmt),
+                    null,
+                    ""
+            ));
         }
-        
-        approvalTable.setItems(viewData);
     }
 
+    private void resetPagingToFirstPage() {
+        int count = Math.max((viewData.size() + visibleRowCount - 1) / visibleRowCount, 1);
+        pagination.setPageCount(count);
+        pagination.setCurrentPageIndex(0);
+        applyPageItems(0);
+    }
 
-
-    /**
-     * 데이터베이스에서 결재 목록을 로드합니다.
-     */
-    private void loadApprovalsFromDatabase() {
-        // 현재는 빈 데이터로 초기화 (API 연동 예정)
-        fullData.clear();
-        updatePagination();
-        System.out.println("결재 데이터 로드 완료: 0개");
+    private void applyPageItems(int pageIndex) {
+        if (viewData.isEmpty()) {
+            approvalTable.setItems(FXCollections.observableArrayList());
+            return;
+        }
+        int from = pageIndex * visibleRowCount;
+        int to = Math.min(from + visibleRowCount, viewData.size());
+        approvalTable.setItems(FXCollections.observableArrayList(viewData.subList(from, to)));
     }
 
     private Node createPage(int pageIndex) {
-        updatePagination();
+        applyPageItems(pageIndex);
         return new Region();
     }
 
@@ -202,9 +205,8 @@ public class ApprovalController {
             @Override
             protected ObservableList<ApprovalItem> call() throws Exception {
                 HttpClient client = HttpClient.newHttpClient();
-                // 결재 승인 목록을 가져오기 위해 pending 엔드포인트 사용
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create("http://localhost:8080/api/approvals/pending/1")) // userId = 1로 가정
+                        .uri(URI.create("http://localhost:8080/api/approvals"))
                         .GET()
                         .build();
 
@@ -230,7 +232,8 @@ public class ApprovalController {
 
         task.setOnSucceeded(e -> {
             fullData.setAll(task.getValue());
-            updatePagination();
+            viewData = FXCollections.observableArrayList(fullData);
+            resetPagingToFirstPage();
         });
 
         task.setOnFailed(e -> Platform.runLater(() -> {
@@ -277,7 +280,7 @@ public class ApprovalController {
             }
         }
 
-        updatePagination();
+        resetPagingToFirstPage();
 
         approvalTable.setPlaceholder(
                 new Label(viewData.isEmpty() ? "검색 결과가 없습니다." : "데이터가 없습니다.")
@@ -298,7 +301,12 @@ public class ApprovalController {
         confirm.showAndWait().ifPresent(response -> {
             if (response == ButtonType.YES) {
                 fullData.remove(selected);
-                updatePagination();
+                viewData.remove(selected);
+                int current = pagination.getCurrentPageIndex();
+                int totalPages = Math.max((viewData.size() + visibleRowCount - 1) / visibleRowCount, 1);
+                pagination.setPageCount(totalPages);
+                pagination.setCurrentPageIndex(Math.min(current, totalPages - 1));
+                applyPageItems(pagination.getCurrentPageIndex());
                 new Alert(Alert.AlertType.INFORMATION, "삭제되었습니다.").showAndWait();
             }
         });

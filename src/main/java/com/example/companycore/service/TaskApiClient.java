@@ -1,17 +1,13 @@
 package com.example.companycore.service;
 
-import com.example.companycore.model.dto.TaskDto;
 import com.example.companycore.model.entity.Task;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 작업 관련 API 클라이언트
@@ -73,109 +69,8 @@ public class TaskApiClient extends BaseApiClient {
      * 특정 사용자에게 할당된 작업 목록을 가져옵니다.
      */
     public List<Task> getTasksAssignedToUser(Long userId) {
-        return getTasksAssignedToUser(userId, null);
-    }
-
-    /**
-     * 특정 사용자에게 할당된 작업 목록을 가져옵니다. (상태별 필터링 포함)
-     */
-//    public List<Task> getTasksAssignedToUser(Long userId, String status) {
-//        try {
-//            StringBuilder endpointBuilder = new StringBuilder("/tasks/user/").append(userId);
-//            if (status != null && !status.trim().isEmpty()) {
-//                endpointBuilder.append("?status=").append(status);
-//            }
-//            String endpoint = endpointBuilder.toString();
-//
-//            HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
-//                    .GET()
-//                    .build();
-//
-//            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-//
-//            if (response.statusCode() == 200) {
-//                if (response.body() == null || response.body().trim().isEmpty()) {
-//                    return new ArrayList<>();
-//                }
-//
-//                try {
-//                    JsonNode rootNode = objectMapper.readTree(response.body());
-//                    JsonNode dataNode = rootNode.get("data");
-//                    if (dataNode != null && dataNode.isArray()) {
-//                        List<Task> tasks = objectMapper.readValue(dataNode.toString(),
-//                                objectMapper.getTypeFactory().constructCollectionType(List.class, Task.class));
-//                        return tasks;
-//                    } else {
-//                        System.out.println("응답에 'data' 필드가 없거나 배열이 아닙니다.");
-//                        return new ArrayList<>();
-//                    }
-//                } catch (Exception e) {
-//                    System.out.println("사용자 작업 목록 파싱 실패: " + e.getMessage());
-//                    return new ArrayList<>();
-//                }
-//            } else {
-//                System.out.println("사용자 작업 목록 요청 실패 - 상태 코드: " + response.statusCode());
-//                return new ArrayList<>();
-//            }
-//        } catch (Exception e) {
-//            System.out.println("사용자 작업 목록 요청 중 예외 발생: " + e.getMessage());
-//            return new ArrayList<>();
-//        }
-//    }
-    /**
-     * 특정 사용자에게 할당된 작업 목록을 가져옵니다. (상태별 필터링 포함)
-     */
-    public List<Task> getTasksAssignedToUser(Long userId, String status) {
         try {
-            StringBuilder endpointBuilder = new StringBuilder("/tasks/user/").append(userId);
-            if (status != null && !status.trim().isEmpty()) {
-                endpointBuilder.append("?status=").append(status);
-            }
-            String endpoint = endpointBuilder.toString();
-
-            HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
-                    .GET()
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 200) {
-                if (response.body() == null || response.body().trim().isEmpty()) {
-                    return new ArrayList<>();
-                }
-
-                try {
-                    // JSON 응답을 JsonNode로 파싱하고 "data" 부분만 추출
-                    JsonNode dataNode = objectMapper.readTree(response.body()).get("data");
-
-                    if (dataNode != null && dataNode.isArray()) {
-                        // TypeReference를 사용한 더 간결한 변환
-                        return objectMapper.convertValue(dataNode, new TypeReference<List<Task>>() {});
-                    } else {
-                        System.out.println("응답에 'data' 배열이 없습니다.");
-                        return new ArrayList<>();
-                    }
-
-                } catch (Exception e) {
-                    System.out.println("사용자 작업 목록 파싱 실패: " + e.getMessage());
-                    return new ArrayList<>();
-                }
-            } else {
-                System.out.println("사용자 작업 목록 요청 실패 - 상태 코드: " + response.statusCode());
-                return new ArrayList<>();
-            }
-        } catch (Exception e) {
-            System.out.println("사용자 작업 목록 요청 중 예외 발생: " + e.getMessage());
-            return new ArrayList<>();
-        }
-    }
-
-    /**
-     * 특정 사용자가 담당자로 할당받은 작업 목록을 가져옵니다.
-     */
-    public List<Task> getMyAssignedTasks(Long userId) {
-        try {
-            String endpoint = "/tasks/user/" + userId;
+            String endpoint = "/tasks/assigned-to/" + userId;
             HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
                     .GET()
                     .build();
@@ -192,15 +87,15 @@ public class TaskApiClient extends BaseApiClient {
                             objectMapper.getTypeFactory().constructCollectionType(List.class, Task.class));
                     return tasks;
                 } catch (Exception e) {
-                    System.out.println("사용자에게 할당된 작업 목록 파싱 실패: " + e.getMessage());
+                    System.out.println("사용자 작업 목록 파싱 실패: " + e.getMessage());
                     return new ArrayList<>();
                 }
             } else {
-                System.out.println("사용자에게 할당된 작업 목록 요청 실패 - 상태 코드: " + response.statusCode());
+                System.out.println("사용자 작업 목록 요청 실패 - 상태 코드: " + response.statusCode());
                 return new ArrayList<>();
             }
         } catch (Exception e) {
-            System.out.println("사용자에게 할당된 작업 목록 요청 중 예외 발생: " + e.getMessage());
+            System.out.println("사용자 작업 목록 요청 중 예외 발생: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -379,11 +274,10 @@ public class TaskApiClient extends BaseApiClient {
     /**
      * 새 작업을 생성합니다.
      */
-    public TaskDto createTask(TaskDto taskDto, Long userId) {
+    public Task createTask(Task task) {
         try {
-            String json = objectMapper.writeValueAsString(taskDto);
+            String json = objectMapper.writeValueAsString(task);
             HttpRequest request = createAuthenticatedRequestBuilder("/tasks")
-                    .header("User-Id", userId.toString())   // User-Id 헤더 추가
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 
@@ -391,7 +285,7 @@ public class TaskApiClient extends BaseApiClient {
 
             if (response.statusCode() == 201 || response.statusCode() == 200) {
                 try {
-                    TaskDto createdTask = objectMapper.readValue(response.body(), TaskDto.class);
+                    Task createdTask = objectMapper.readValue(response.body(), Task.class);
                     return createdTask;
                 } catch (Exception e) {
                     System.out.println("생성된 작업 파싱 실패: " + e.getMessage());
@@ -473,48 +367,6 @@ public class TaskApiClient extends BaseApiClient {
         } catch (Exception e) {
             System.out.println("작업 조회 중 예외 발생: " + e.getMessage());
             return null;
-        }
-    }
-
-    /**
-     * 특정 사용자의 특정 타입 작업 조회 (페이지네이션 포함)
-     * @param userId 사용자 ID
-     * @param taskType 작업 타입
-     * @param page 페이지 번호 (0부터 시작)
-     * @param size 페이지 크기
-     * @param sortBy 정렬 필드
-     * @param sortDir 정렬 방향 (asc/desc)
-     * @return 페이지네이션된 작업 목록
-     */
-    public Map<String, Object> getTasksByAssignedToAndTypeWithPagination(Long userId, String taskType, int page, int size, String sortBy, String sortDir) {
-        try {
-            String endpoint = String.format("/tasks/assigned-to/%d/type/%s/page?page=%d&size=%d&sortBy=%s&sortDir=%s",
-                    userId, taskType, page, size, sortBy, sortDir);
-
-            HttpRequest request = createAuthenticatedRequestBuilder(endpoint)
-                    .GET()
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 200) {
-                if (response.body() == null || response.body().trim().isEmpty()) {
-                    return new HashMap<>();
-                }
-
-                try {
-                    return objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
-                } catch (Exception e) {
-                    System.out.println("페이지네이션된 작업 목록 파싱 실패: " + e.getMessage());
-                    return new HashMap<>();
-                }
-            } else {
-                System.out.println("페이지네이션된 작업 목록 요청 실패 - 상태 코드: " + response.statusCode());
-                return new HashMap<>();
-            }
-        } catch (Exception e) {
-            System.out.println("페이지네이션된 작업 목록 요청 중 예외 발생: " + e.getMessage());
-            return new HashMap<>();
         }
     }
 } 
